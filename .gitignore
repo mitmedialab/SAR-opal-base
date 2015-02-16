@@ -28,5 +28,7 @@ sar-opal-base/*.sln*
 Icon?
 ehthumbs.db
 [Tt]humbs.db 
-
-
+# ======================== #
+# ignore packaged app also #
+# ======================== #
+*.apk

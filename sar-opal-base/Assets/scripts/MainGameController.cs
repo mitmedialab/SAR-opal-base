@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 /**
  * The SAR-opal-base game main controller. Orchestrates everything: 
@@ -7,6 +8,9 @@ using System.Collections;
  * game objecgs based on that input, deals with touch events and
  * other tablet-specific things.
  */
+using System;
+
+
 public class MainGameController : MonoBehaviour 
 {
 
@@ -17,14 +21,72 @@ public class MainGameController : MonoBehaviour
         PlayObjectProperties pops = new PlayObjectProperties();
         pops.setAll("ball2", false, null, new Vector3(-200,50,0), null);
         this.InstantiatePlayObject(pops);
-	}
-	
-	// Update is called once per frame
-	void Update () 
-	{
-	
+
 	}
 
+    /** On enable, initialize stuff */
+    private void OnEnable()
+    {
+        // subscribe to gesture events
+        GameObject[] gos = GameObject.FindGameObjectsWithTag(Constants.TAG_PLAY_OBJECT);
+        foreach (GameObject go in gos)
+        {
+            TouchScript.Gestures.TapGesture tg = go.GetComponent<TouchScript.Gestures.TapGesture>();
+            if (tg != null) {
+                tg.Tapped += TapHandler;
+                Debug.Log (go.name + " subscribed to gesture events!");
+            }
+        }
+    }
+
+    /** On disable, disable some stuff */
+    private void OnDisable()
+    {
+        // unsubscribe from gesture events
+        GameObject[] gos = GameObject.FindGameObjectsWithTag(Constants.TAG_PLAY_OBJECT);
+        foreach (GameObject go in gos)
+        {
+            TouchScript.Gestures.TapGesture tg = go.GetComponent<TouchScript.Gestures.TapGesture>();
+            if (tg != null) {
+                tg.Tapped -= TapHandler;
+                Debug.Log (go.name + " unsubscribed from gesture events");
+            }
+        }
+    }
+	
+	/** 
+     * Update is called once per frame 
+     */
+	void Update () 
+	{
+        // if user presses escape or 'back' button on android, exit program
+        if (Input.GetKeyDown (KeyCode.Escape))
+            Application.Quit ();
+	}
+
+    /** 
+     * Handle all tap events - log them and trigger actions in response
+     * TODO need to trigger action on tap, e.g., play sound
+     */
+    private void TapHandler(object sender, EventArgs e)
+    {
+        // get the gesture that was sent to us
+        // this gesture will tell us what object was touched
+        var gesture = sender as TouchScript.Gestures.TapGesture;
+        TouchScript.Hit.ITouchHit hit;
+        // get info about where the hit object was located when the gesture was
+        // recognized - i.e., where on the object (in screen dimensions) did
+        // the tap occur?
+        if (gesture.GetTargetHitResult(out hit)) 
+        {
+            // want the info as a 2D point 
+            TouchScript.Hit.ITouchHit2D hit2d = (TouchScript.Hit.ITouchHit2D) hit; 
+            Debug.Log ("TAP registered on " + gesture.gameObject.name + " at " + hit2d.Point);
+        } else {
+            // this probably won't ever happen, but in case it does, we'll log it
+            Debug.Log ("!! could not register where TAP was located!");
+        }
+    }
 
 	/**
 	 * Instantiate a new game object with the specified properties
@@ -34,10 +96,11 @@ public class MainGameController : MonoBehaviour
 		GameObject go = new GameObject();
 
 		// set object name
-		go.name = (pops.Name() != "") ? pops.Name() : Random.value.ToString();
+		go.name = (pops.Name() != "") ? pops.Name() : UnityEngine.Random.value.ToString();
+        Debug.Log ("Creating new play object: " + pops.Name());
 
         // set tag
-        go.tag = "PlayObject";
+        go.tag = Constants.TAG_PLAY_OBJECT;
 
 		// move object to initial position 
         go.transform.position = pops.initPosn;//pops.initPosn.x, pops.initPosn.y, pops.initPosn.z);
@@ -69,9 +132,22 @@ public class MainGameController : MonoBehaviour
         // TODO should this be a parameter too?
         go.transform.localScale = new Vector3(100,100,100);
 
-		// TODO add other necessary components/scripts, like colliders or touch stuff
+        // add rigidbody
+        Rigidbody2D rb2d = go.AddComponent<Rigidbody2D>();
+        rb2d.gravityScale = 0; // don't want gravity, otherwise objects will fall
 
+        // add polygon collider
+        go.AddComponent<PolygonCollider2D>();
 
+        // add tapgesture
+        TouchScript.Gestures.TapGesture tg = go.AddComponent<TouchScript.Gestures.TapGesture>();
+        tg.CombineTouches = false;
+        tg.Tapped += TapHandler;
+        Debug.Log (go.name + " subscribed to gesture events!");
+
+        // TODO need to subscribe to tap gestures!
 	}
+
+
 
 }

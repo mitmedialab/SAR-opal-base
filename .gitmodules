@@ -1,0 +1,3 @@
+[submodule "TouchScript"]
+	path = TouchScript
+	url = https://github.com/TouchScript/TouchScript

@@ -9,7 +9,7 @@ public static class Constants
 
     /** tag applied to all playobjects */
     public const string TAG_PLAY_OBJECT = "PlayObject";
-
+    public const string TAG_LIGHT = "Light";
 
 
 

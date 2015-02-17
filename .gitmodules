@@ -1,6 +1,3 @@
 [submodule "TouchScript"]
 	path = TouchScript
 	url = https://github.com/TouchScript/TouchScript
-[submodule "LeanTween"]
-	path = LeanTween
-	url = https://github.com/dentedpixel/LeanTween

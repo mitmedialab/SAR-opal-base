@@ -152,7 +152,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
 --- !u!1 &950648932
 GameObject:
   m_ObjectHideFlags: 0
@@ -180,7 +180,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
 --- !u!114 &950648934
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -192,6 +192,45 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5315b0af36ac499b92d399a46b73901, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1288011094
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1288011096}
+  - 114: {fileID: 1288011095}
+  m_Layer: 0
+  m_Name: GestureManager
+  m_TagString: GestureManager
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1288011095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1288011094}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c72dbb975a77f477091b72469cd8eb40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &1288011096
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1288011094}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 1
 --- !u!1 &1648052060
 GameObject:
   m_ObjectHideFlags: 0
@@ -441,7 +480,7 @@ Transform:
   m_LocalScale: {x: 137.7883, y: 137.788361, z: 137.788361}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 6
 --- !u!114 &1814297115
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -647,7 +686,7 @@ Transform:
   m_LocalScale: {x: 219.431274, y: 219.431366, z: 219.431366}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
 --- !u!114 &2051130755
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -737,8 +776,8 @@ AudioSource:
   MinDistance: 1
   MaxDistance: 500
   Pan2D: 0
-  rolloffMode: 2
-  BypassEffects: 1
+  rolloffMode: 0
+  BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
   rolloffCustomCurve:

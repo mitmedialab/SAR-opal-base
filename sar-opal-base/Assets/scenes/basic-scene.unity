@@ -84,7 +84,6 @@ GameObject:
   - 4: {fileID: 74158692}
   - 114: {fileID: 74158690}
   - 114: {fileID: 74158689}
-  - 114: {fileID: 74158688}
   - 114: {fileID: 74158691}
   m_Layer: 0
   m_Name: TouchScript
@@ -93,23 +92,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &74158688
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 74158687}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 923107734, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  showTouchId: 1
-  showTags: 0
-  texture: {fileID: 2800000, guid: f5c75ed8c6bed0f489d9003aa739aff7, type: 3}
-  useDPI: 1
-  touchSize: 1
-  fontColor: {r: 0, g: 1, b: 1, a: 1}
 --- !u!114 &74158689
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -370,6 +352,7 @@ GameObject:
   - 58: {fileID: 1814297110}
   - 114: {fileID: 1814297116}
   - 114: {fileID: 1814297117}
+  - 114: {fileID: 1814297118}
   m_Layer: 0
   m_Name: Bird
   m_TagString: PlayObject
@@ -454,7 +437,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1814297109}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -292, y: -42, z: 0}
+  m_LocalPosition: {x: -223, y: -207, z: 0}
   m_LocalScale: {x: 137.7883, y: 137.788361, z: 137.788361}
   m_Children: []
   m_Father: {fileID: 0}
@@ -521,6 +504,20 @@ MonoBehaviour:
   requireGestureToFail: {fileID: 0}
   friendlyGestures: []
   ignoreChildren: 0
+--- !u!114 &1814297118
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1814297109}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 037379eaac6224f988f36488ce820dfe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scaleUpBy: 1.10000002
+  scaleUpOnce: 1.29999995
+  scaleTime: .800000012
 --- !u!1 &2050085287
 GameObject:
   m_ObjectHideFlags: 0
@@ -609,6 +606,7 @@ GameObject:
   - 82: {fileID: 2051130759}
   - 114: {fileID: 2051130760}
   - 114: {fileID: 2051130761}
+  - 114: {fileID: 2051130762}
   m_Layer: 0
   m_Name: Dragon
   m_TagString: PlayObject
@@ -739,8 +737,8 @@ AudioSource:
   MinDistance: 1
   MaxDistance: 500
   Pan2D: 0
-  rolloffMode: 0
-  BypassEffects: 0
+  rolloffMode: 2
+  BypassEffects: 1
   BypassListenerEffects: 0
   BypassReverbZones: 0
   rolloffCustomCurve:
@@ -752,7 +750,7 @@ AudioSource:
       outSlope: 0
       tangentMode: 0
     - time: 1
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -818,3 +816,17 @@ MonoBehaviour:
   requireGestureToFail: {fileID: 0}
   friendlyGestures: []
   ignoreChildren: 0
+--- !u!114 &2051130762
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2051130752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 037379eaac6224f988f36488ce820dfe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scaleUpBy: 1.10000002
+  scaleUpOnce: 1.29999995
+  scaleTime: .800000012

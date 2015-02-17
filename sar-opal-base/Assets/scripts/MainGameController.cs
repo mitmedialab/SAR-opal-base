@@ -21,16 +21,16 @@ public class MainGameController : MonoBehaviour
     {
         // Create a new game object programatically as a test
         PlayObjectProperties pops = new PlayObjectProperties ();
-        pops.setAll ("ball2", false, null, new Vector3 (-200, 50, 0), null);
+        pops.setAll("ball2", false, "chimes", new Vector3 (-200, 50, 0), null);
         this.InstantiatePlayObject (pops);
        
         // set up light
-        this.highlight = GameObject.FindGameObjectWithTag (Constants.TAG_LIGHT);
+        this.highlight = GameObject.FindGameObjectWithTag(Constants.TAG_LIGHT);
         if (this.highlight != null) {
             this.highlight.SetActive (false);
-            Debug.Log ("Got light: " + this.highlight.name);
+            Debug.Log("Got light: " + this.highlight.name);
         } else {
-            Debug.Log ("ERROR: No light found");
+            Debug.Log("ERROR: No light found");
         }
     }
 
@@ -40,27 +40,7 @@ public class MainGameController : MonoBehaviour
         // subscribe to gesture events
         GameObject[] gos = GameObject.FindGameObjectsWithTag (Constants.TAG_PLAY_OBJECT);
         foreach (GameObject go in gos) {
-            TapGesture tg = go.GetComponent<TapGesture> ();
-            if (tg != null) {
-                tg.Tapped += tappedHandler;
-                Debug.Log (go.name + " subscribed to pan events");
-            }
-            PanGesture pg = go.GetComponent<PanGesture> ();
-            if (pg != null) {
-                pg.Panned += pannedHandler;
-                pg.PanCompleted += panCompleteHandler;
-                Debug.Log (go.name + " subscribed to pan events");
-            }
-            PressGesture prg = go.GetComponent<PressGesture> ();
-            if (prg != null) {
-                prg.Pressed += pressedHandler;
-                Debug.Log (go.name + " subscribed to press events");
-            }
-            ReleaseGesture rg = go.GetComponent<ReleaseGesture> ();
-            if (rg != null) {
-                rg.Released += releasedHandler;
-                Debug.Log (go.name + " subscribed to release events");
-            }
+            AddAndSubscribeToGestures(go, true);
         }
     }
 
@@ -105,6 +85,51 @@ public class MainGameController : MonoBehaviour
     }
 
     #region gesture handlers
+    /** Subscribes a play object to all relevant gestures - tap, pan,
+     * press, release */
+    private void AddAndSubscribeToGestures(GameObject go, bool draggable)
+    {
+        // add a tap gesture component if one doesn't exist
+        TapGesture tg = go.GetComponent<TapGesture>();
+        if (tg == null) {
+            tg = go.AddComponent<TapGesture>();
+        }
+        // checking for null anyway in case adding the component didn't work
+        if (tg != null) {
+            tg.Tapped += tappedHandler; // subscribe to tap events
+            Debug.Log (go.name + " subscribed to pan events");
+        }
+        if (draggable)
+        {
+            // add pan gesture component if one doesn't exist yet
+            PanGesture pg = go.GetComponent<PanGesture>();
+            if (pg == null) {
+                pg = go.AddComponent<PanGesture>();
+            }
+            if (pg != null) {
+                pg.Panned += pannedHandler;
+                pg.PanCompleted += panCompleteHandler;
+                Debug.Log (go.name + " subscribed to pan events");
+            }
+        }
+        PressGesture prg = go.GetComponent<PressGesture>();
+        if (prg == null) {
+            prg = go.AddComponent<PressGesture>();
+        }
+        if (prg != null) {
+            prg.Pressed += pressedHandler;
+            Debug.Log (go.name + " subscribed to press events");
+        }
+        ReleaseGesture rg = go.GetComponent<ReleaseGesture>();
+        if (rg == null) {
+            rg = go.AddComponent<ReleaseGesture>();
+        }
+        if (rg != null) {
+            rg.Released += releasedHandler;
+            Debug.Log (go.name + " subscribed to release events");
+        }
+    }
+
     /** 
      * Handle all tap events - log them and trigger actions in response
      * TODO need to trigger action on tap, e.g., play sound
@@ -124,6 +149,12 @@ public class MainGameController : MonoBehaviour
             ITouchHit2D hit2d = (ITouchHit2D)hit; 
             Debug.Log ("TAP registered on " + gesture.gameObject.name + " at " + hit2d.Point);
             // TODO trigger sound on tap
+            if (!gesture.gameObject.audio.isPlaying) // not already playing sound
+            {
+                Debug.Log ("going to play a sound for " + gesture.gameObject.name);
+                //TODO StartCoroutine(PlayObjectSoundAndPulse(go));
+                PlaySoundAndPulse(gesture.gameObject);
+            }
         } else {
             // this probably won't ever happen, but in case it does, we'll log it
             Debug.Log ("!! could not register where TAP was located!");
@@ -228,58 +259,43 @@ public class MainGameController : MonoBehaviour
         // load audio - add an audio source component to the object if there
         // is an audio file to load
         if (pops.audioFile != null) {
-            AudioSource audioSource = go.AddComponent<AudioSource> ();
+            AudioSource audioSource = go.AddComponent<AudioSource>();
             try {
                 // to load a sound file this way, the sound file needs to be in an existing 
-                // Assets/Resources folder or subfolder - TODO may need to change how we load
-                audioSource.clip = Resources.Load (pops.audioFile) as AudioClip;
+                // Assets/Resources folder or subfolder 
+                audioSource.clip = Resources.Load(Constants.AUDIO_FILE_PATH + 
+                                                  pops.audioFile) as AudioClip;
             } catch (UnityException e) {
-                Debug.Log ("ERROR could not load audio: " + pops.audioFile + "\n" + e);
+                Debug.Log("ERROR could not load audio: " + pops.audioFile + "\n" + e);
             }
             audioSource.loop = false;
             audioSource.playOnAwake = false;
         }
 
         // load sprite/image for object
-        SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer> ();
-        Sprite sprite = Resources.Load<Sprite> (Constants.GRAPHICS_FILE_PATH + pops.Name ());
+        SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
+        Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + pops.Name());
         if (sprite == null)
             Debug.Log ("ERROR could not load sprite: " 
-                + Constants.GRAPHICS_FILE_PATH + pops.Name ());
+                + Constants.GRAPHICS_FILE_PATH + pops.Name());
         spriteRenderer.sprite = sprite; 
 
         // TODO should this be a parameter too?
         go.transform.localScale = new Vector3 (100, 100, 100);
 
         // add rigidbody
-        Rigidbody2D rb2d = go.AddComponent<Rigidbody2D> ();
+        Rigidbody2D rb2d = go.AddComponent<Rigidbody2D>();
         rb2d.gravityScale = 0; // don't want gravity, otherwise objects will fall
 
         // add polygon collider
-        go.AddComponent<CircleCollider2D> ();
+        go.AddComponent<CircleCollider2D>();
 
-        // add tap gestures
-        TapGesture tg = go.AddComponent<TapGesture> ();
-        tg.CombineTouches = false;
-        tg.Tapped += tappedHandler;
-        Debug.Log (go.name + " subscribed to tap events");
-
-        // add drag gestures
-        PanGesture pg = go.AddComponent<PanGesture> ();
-        pg.Panned += pannedHandler;
-        pg.PanCompleted += panCompleteHandler;
-        Debug.Log (go.name + " subscribed to pan events");
-
-        // add press gestures
-        PressGesture prg = go.AddComponent<PressGesture> ();
-        prg.Pressed += pressedHandler;
-        Debug.Log (go.name + " subscribed to press events");
-
-        // add release gestures
-        ReleaseGesture rg = go.AddComponent<ReleaseGesture> ();
-        rg.Released += releasedHandler;
-        Debug.Log (go.name + " subscribed to release events");
-
+        // add and subscribe to gestures
+        AddAndSubscribeToGestures(go, pops.draggable);
+        
+        // add pulsing behavior (draws attention to actionable objects)
+        go.AddComponent<GrowShrinkBehavior>();
+        
     }
 
     /**
@@ -324,5 +340,37 @@ public class MainGameController : MonoBehaviour
         }
     }
 
+    /** 
+     * Plays the first sound attached to the object, if one exists 
+     */ 
+    private bool PlaySound(GameObject go)
+    { 
+        // play audio clip if this game object has a clip to play
+        AudioSource auds = go.GetComponent<AudioSource>();
+        if (auds != null && auds.clip != null)
+        {
+            Debug.Log ("playing clip for object " + go.name);
+
+            // play the audio clip attached to the game object
+            go.audio.Play();
+            return true;   
+        } else {
+            Debug.Log ("no sound found for " + go.name + "!");
+            return false;
+        }
+    }
+    /**
+     * Plays the first sound attached to an object, if one exists, while
+     * also pulsing the object's size (to draw attention to it)
+     */
+    private void PlaySoundAndPulse(GameObject go)
+    {
+        if (go != null)
+        {
+           // play a sound, if it exists, also pulse
+           if (PlaySound(go))
+                go.GetComponent<GrowShrinkBehavior>().ScaleUpOnce();
+        }
+    }
 
 }

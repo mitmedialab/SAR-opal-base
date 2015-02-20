@@ -4,3 +4,6 @@
 [submodule "LeanTween"]
 	path = Libraries/LeanTween
 	url = https://github.com/dentedpixel/LeanTween
+[submodule "Libraries/websocket-sharp"]
+	path = Libraries/websocket-sharp
+	url = https://github.com/sta/websocket-sharp

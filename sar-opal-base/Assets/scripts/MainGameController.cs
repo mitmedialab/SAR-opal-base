@@ -14,6 +14,9 @@ public class MainGameController : MonoBehaviour
 {
     // gesture manager
     private GestureManager gestureManager = null;
+    
+    // rosbridge websocket client
+    private RosbridgeWebSocketClient clientSocket = null;
 
     /** Called on start, use to initialize stuff  */
     void Start ()
@@ -25,6 +28,22 @@ public class MainGameController : MonoBehaviour
         PlayObjectProperties pops = new PlayObjectProperties ();
         pops.setAll("ball2", false, "chimes", new Vector3 (-200, 50, 0), null);
         this.InstantiatePlayObject (pops);
+		
+		// set up rosbridge websocket client
+		// note: does not attempt to reconnect if connection fails
+		if (this.clientSocket == null)
+		{
+			this.clientSocket = new RosbridgeWebSocketClient(
+				"18.85.38.90", "9090");
+			
+			this.clientSocket.SetupSocket();
+			this.clientSocket.receivedMsgEvent += 
+				new ReceivedMessageEventHandler(HandleClientSocketReceivedMsgEvent);
+				
+			this.clientSocket.SendMessage(Constants.ROS_PUBLISH);
+			this.clientSocket.SendMessage(Constants.ROS_SUBSCRIBE);
+			this.clientSocket.SendMessage(Constants.ROS_TEST);
+		}
     }
 
     /** On enable, initialize stuff */
@@ -36,7 +55,16 @@ public class MainGameController : MonoBehaviour
     /** On disable, disable some stuff */
     private void OnDestroy ()
     {
-        
+		// close websocket
+		if (this.clientSocket != null)
+		{
+			this.clientSocket.CloseSocket();
+    
+			// unsubscribe from received message events
+			this.clientSocket.receivedMsgEvent -= HandleClientSocketReceivedMsgEvent;
+		}
+		
+		Debug.Log("destroyed main game controller");
     }
     
     /** 
@@ -132,15 +160,15 @@ public class MainGameController : MonoBehaviour
     /**
      * Received message from remote controller - process and deal with message
      * */
-    void HandleClientReceivedMsgEvent (object sender, int msg)
+    void HandleClientSocketReceivedMsgEvent (object sender, int cmd, string props)
     {
-        Debug.Log ("!! MSG received from remote: " + msg);
+        Debug.Log ("!! MSG received from remote: " + cmd);
         
         // TODO parse message - then pass parsed content to switch
         
         // process first token to determine which message type this is
         // if there is a second token, this is the message argument
-        switch (msg)
+        switch (cmd)
         {
             case Constants.DISABLE_TOUCH:
                 // disable touch events from user

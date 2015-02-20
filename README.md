@@ -3,7 +3,7 @@ A generalized Unity game template designed for use in a child-robot interaction 
 
 
 ## Submodules
-You don't need to pull in these submodules for the main project to run, but if you want their source, extra examples, prefabs, etc, then you can.
+You don't need to pull in these submodules for the main project to run (the necessary scripts or dlls have been copied into the Assets/Plugins folder), but if you want their source, extra examples, prefabs, etc, then you can.
 
 ### TouchScript
 [TouchScript] (https://github.com/TouchScript/TouchScript "TouchScript") makes it easy to detect and respond to touch events, such as taps and drags. You can build it from source following the instructions [here] (https://github.com/TouchScript/TouchScript/wiki/Building-TouchScript "Building TouchScript").
@@ -17,8 +17,18 @@ Note that the MainCamera in the Unity scene needs a CameraLayer2D component atta
 
 If you pull in the submodule, you can get the examples, prefabs, etc. The necessary .cs file is in the SAR-opal-base Assets/Plugins folder already.
 
+### websocket-sharp
+[Websocket-sharp] (https://github.com/sta/websocket-sharp "websocket-sharp git") is a .Net implementation of websockets, and is used to communicate with the ROS rosbridge_server.
+
+Note that if you try to build this project, the Newtonsoft.Json dll appears to be missing, so I copied over the prebuilt dll from bin/Debug.
+
+### MiniJSON
+[MiniJSON] (https://gist.github.com/darktable/1411710 "miniJSON") is a pretty basic C# JSON encoder and decoder. It can serialize and deserialize JSON strings, which are sent to and received from the ROS rosbridge_server. I've used the code mostly as-is, with one or two of the bug fixes listed in the comments on the github gist page added in.
+
+
 ## Miscellaneous Notes
 - When adding new audio to the project, make sure each audio clip is set as a 2D sound. This will ensure it plays without the default volume rolloff that 3D sounds have (and thus, is audible when played). Note that the Force2DAudio script in Assets/Editor will automatically set any audio files that Unity imports from the Assets folder as 2D sounds, so you probably won't have to worry about this.
+
 
 
 

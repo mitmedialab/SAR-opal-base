@@ -8,7 +8,9 @@ public static class Constants
     public const string GRAPHICS_FILE_PATH = "graphics/base-images/";
     public const string AUDIO_FILE_PATH = "audio/";
 
-    /** tag applied to all playobjects */
+    /// <summary>
+    /// tag applied to all playobjects
+    /// </summary>
     public const string TAG_PLAY_OBJECT = "PlayObject";
     public const string TAG_LIGHT = "Light";
     public const string TAG_GESTURE_MAN = "GestureManager";
@@ -22,8 +24,9 @@ public static class Constants
     public const int LOAD_OBJECT = 5;
     
     // TODO ROS
-    public const string ROS_PUBLISH = @"{""op"":""advertise"",""topic"":""/unity_to_rosbridge"",""type"":""std_msgs/String""}";
-    public const string ROS_SUBSCRIBE = @"{""op"":""subscribe"",""topic"":""/ros_to_unity"",""type"":""std_msgs/String""}";
+    public const string ROS_PUBLISH = @"{""op"":""advertise"",""topic"":""/opal_tablet"",""type"":""std_msgs/String""}";
+    public const string ROS_SUBSCRIBE = @"{""op"":""subscribe"",""topic"":""/opal_command"",""type"":""sar_opal_msgs/OpalCommand""}";
 
+	public const string ROS_TEST = @"{""op"":""publish"",""topic"":""/opal_tablet"",""msg"":{""data"":""Hello World!""}}";
 
 }

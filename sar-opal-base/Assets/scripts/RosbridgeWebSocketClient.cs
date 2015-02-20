@@ -12,9 +12,9 @@ public delegate void ReceivedMessageEventHandler(object sender,
 
 
 /**
- * TODO
- * rosbridge web socket client
- * for communication with the teleop / remote controller of app
+ * Web socket client
+ * For receiving commands from a remote controller or teleop
+ * and to allow us to send back log messages
  * */
 public class RosbridgeWebSocketClient
 {
@@ -98,14 +98,13 @@ public class RosbridgeWebSocketClient
 		                        "Closing normally");
 	}
 
-     /**
+    /**
 	 * public request to send message 
 	 */
 	public bool SendMessage(String msg)
 	{
 		if (this.clientSocket.IsAlive)
 		{
-			Debug.Log ("sending message...");
 			return this.SendToServer(msg);
 		}
 		else
@@ -115,13 +114,14 @@ public class RosbridgeWebSocketClient
 		}
 	}
 
-     /**
-	 * send string message to server
-	 * */
+    /**
+     * send string message to server
+	 */
 	private bool SendToServer(String msg)
 	{
 		// build message:
 		//String fullMsg = Json.Serialize("test");
+        // TODO use rosbridge utilities to build message
 		Debug.Log ("want to send message: " + msg);
 		
 		// try sending to server
@@ -162,7 +162,7 @@ public class RosbridgeWebSocketClient
 		
 		// or might be "topic": "/opal_command", "msg": {"command": 2, 
 		//  "properties": ""}, "op": "publish"}
-		
+        
 		// parse data, see if it's valid
 		// should be valid json, so we try parsing the json
 		Dictionary<String, object> data = null;
@@ -174,9 +174,11 @@ public class RosbridgeWebSocketClient
 				return;
 			}
 							
-			Debug.Log ("deserialized objects from json");
+			Debug.Log ("deserialized objects from json!");
 			
-			// got valid json! 
+            // TODO use rosbridge utilities to decode message
+        
+            // got valid json! 
 			// is there a command in here?
 			int command = 2;
 			

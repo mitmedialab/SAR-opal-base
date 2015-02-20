@@ -24,9 +24,18 @@ public static class Constants
     public const int LOAD_OBJECT = 5;
     
     // TODO ROS
-    public const string ROS_PUBLISH = @"{""op"":""advertise"",""topic"":""/opal_tablet"",""type"":""std_msgs/String""}";
-    public const string ROS_SUBSCRIBE = @"{""op"":""subscribe"",""topic"":""/opal_command"",""type"":""sar_opal_msgs/OpalCommand""}";
+    public const string OUR_ROSTOPIC = "/opal_tablet";
+    public const string CMD_ROSTOPIC = "/opal_command";
+    
+    public const string ROS_PUBLISH = @"{""op"":""advertise"",""topic"":""/opal"
+		+ "_tablet"",""type"":""std_msgs/String""}";
+    public const string ROS_SUBSCRIBE = @"{""op"":""subscribe"",""topic"":""/opal"
+		+ "_command"",""type"":""sar_opal_msgs/OpalCommand""}";
+	public const string ROS_TEST = @"{""op"":""publish"",""topic"":""/opal"
+		+ "_tablet"",""msg"":{""data"":""Hello World!""}}";
 
-	public const string ROS_TEST = @"{""op"":""publish"",""topic"":""/opal_tablet"",""msg"":{""data"":""Hello World!""}}";
+
+	
+
 
 }

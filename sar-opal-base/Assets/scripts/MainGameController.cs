@@ -28,6 +28,25 @@ public class MainGameController : MonoBehaviour
         PlayObjectProperties pops = new PlayObjectProperties ();
         pops.setAll("ball2", false, "chimes", new Vector3 (-200, 50, 0), null);
         this.InstantiatePlayObject (pops);
+        
+		// set up ros messages
+		Dictionary<string,object> rosSubscribe = new Dictionary<string, object>();
+		rosSubscribe.Add("op", "subscribe");
+		rosSubscribe.Add("topic", "/opal_command");
+		rosSubscribe.Add("type", "sar_opal_msgs/OpalCommand");
+		
+		Dictionary<string,object> rosAdvertise = new Dictionary<string, object>();
+		rosAdvertise.Add("op", "advertise");
+		rosAdvertise.Add("topic", "/opal_tablet");
+		rosAdvertise.Add("type", "std_msgs/String"); // TODO make OpalLog tablet msg
+		
+		Dictionary<string,object> rosPublish = new Dictionary<string, object>();
+		rosAdvertise.Add("op", "publish");
+		rosAdvertise.Add("topic", "/opal_tablet");
+		Dictionary<string,object> rosMessage = new Dictionary<string, object>();
+		rosMessage.Add("data","Opal tablet checking in");
+		rosAdvertise.Add("msg", rosMessage); // TODO make OpalLog tablet msg
+		
 		
 		// set up rosbridge websocket client
 		// note: does not attempt to reconnect if connection fails

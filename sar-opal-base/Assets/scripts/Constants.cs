@@ -14,14 +14,16 @@ public static class Constants
     public const string TAG_GESTURE_MAN = "GestureManager";
 
     /** messages we can receive */
-    public const string DISABLE_TOUCH = "disable";
-    public const string ENABLE_TOUCH = "enable";
-    public const string RELOAD = "reload";
-    public const string SIDEKICK_SAY = "sidekick-say";
-    public const string SIDEKICK_DO = "sidekick-do";
-    public const string LOAD_OBJECT = "load";
-    public const string LOAD_BACKGROUND = "background";
+    public const int DISABLE_TOUCH = 1;
+    public const int ENABLE_TOUCH = 2;
+    public const int RESET = 0;
+    public const int SIDEKICK_SAY = 4;
+    public const int SIDEKICK_DO = 3;
+    public const int LOAD_OBJECT = 5;
     
+    // TODO ROS
+    public const string ROS_PUBLISH = @"{""op"":""advertise"",""topic"":""/unity_to_rosbridge"",""type"":""std_msgs/String""}";
+    public const string ROS_SUBSCRIBE = @"{""op"":""subscribe"",""topic"":""/ros_to_unity"",""type"":""std_msgs/String""}";
 
 
 }

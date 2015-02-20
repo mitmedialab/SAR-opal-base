@@ -132,7 +132,7 @@ public class MainGameController : MonoBehaviour
     /**
      * Received message from remote controller - process and deal with message
      * */
-    void HandleClientReceivedMsgEvent (object sender, String msg)
+    void HandleClientReceivedMsgEvent (object sender, int msg)
     {
         Debug.Log ("!! MSG received from remote: " + msg);
         
@@ -152,7 +152,7 @@ public class MainGameController : MonoBehaviour
                 this.gestureManager.allowTouch = true;
                 break;
                 
-            case Constants.RELOAD:
+            case Constants.RESET:
                 // reload the current level
                 // e.g., when the robot's turn starts, want all characters back in their
                 // starting configuration for use with automatic playbacks
@@ -168,12 +168,9 @@ public class MainGameController : MonoBehaviour
                 
             case Constants.LOAD_OBJECT:
                 // TODO instantiate new playobject with the specified properties
-                break;
-            
-            case Constants.LOAD_BACKGROUND:
                 // TODO load new background image with the specified properties
                 break;
-                
+            
             // TODO what other messages?
         }
     }

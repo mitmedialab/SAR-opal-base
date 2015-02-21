@@ -29,39 +29,24 @@ public class MainGameController : MonoBehaviour
         pops.setAll("ball2", false, "chimes", new Vector3 (-200, 50, 0), null);
         this.InstantiatePlayObject (pops);
         
-		// set up ros messages
-		Dictionary<string,object> rosSubscribe = new Dictionary<string, object>();
-		rosSubscribe.Add("op", "subscribe");
-		rosSubscribe.Add("topic", "/opal_command");
-		rosSubscribe.Add("type", "sar_opal_msgs/OpalCommand");
-		
-		Dictionary<string,object> rosAdvertise = new Dictionary<string, object>();
-		rosAdvertise.Add("op", "advertise");
-		rosAdvertise.Add("topic", "/opal_tablet");
-		rosAdvertise.Add("type", "std_msgs/String"); // TODO make OpalLog tablet msg
-		
-		Dictionary<string,object> rosPublish = new Dictionary<string, object>();
-		rosAdvertise.Add("op", "publish");
-		rosAdvertise.Add("topic", "/opal_tablet");
-		Dictionary<string,object> rosMessage = new Dictionary<string, object>();
-		rosMessage.Add("data","Opal tablet checking in");
-		rosAdvertise.Add("msg", rosMessage); // TODO make OpalLog tablet msg
-		
-		
 		// set up rosbridge websocket client
 		// note: does not attempt to reconnect if connection fails
 		if (this.clientSocket == null)
 		{
 			this.clientSocket = new RosbridgeWebSocketClient(
-				"18.85.38.90", "9090");
+				"192.168.1.36", //"18.85.38.90",
+                "9090");
 			
 			this.clientSocket.SetupSocket();
 			this.clientSocket.receivedMsgEvent += 
 				new ReceivedMessageEventHandler(HandleClientSocketReceivedMsgEvent);
 				
-			this.clientSocket.SendMessage(Constants.ROS_PUBLISH);
-			this.clientSocket.SendMessage(Constants.ROS_SUBSCRIBE);
-			this.clientSocket.SendMessage(Constants.ROS_TEST);
+			this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+                Constants.OUR_ROSTOPIC, Constants.OUR_ROSMSG_TYPE));
+            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonSubscribeMsg(
+                Constants.CMD_ROSTOPIC, Constants.CMD_ROSMSG_TYPE));
+            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishMsg(
+                Constants.OUR_ROSTOPIC, "Opal tablet checking in!"));
 		}
     }
 

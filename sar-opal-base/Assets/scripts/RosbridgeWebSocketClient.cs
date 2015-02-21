@@ -119,10 +119,7 @@ public class RosbridgeWebSocketClient
 	 */
 	private bool SendToServer(String msg)
 	{
-		// build message:
-		//String fullMsg = Json.Serialize("test");
-        // TODO use rosbridge utilities to build message
-		Debug.Log ("want to send message: " + msg);
+		Debug.Log ("sending message: " + msg);
 		
 		// try sending to server
 		try
@@ -155,48 +152,22 @@ public class RosbridgeWebSocketClient
 	{
 		Debug.Log ("Received message: " + e.Data);
 		
-		// might be {"topic": "/opal_command", "msg": {"command": 5, "properties": 
-		// "{\"draggable\": \"true\", \"initPosition\": {\"y\": \"300\", \"x\": \"-300\",
-		//  \"z\": \"0\"}, \"name\": \"ball2\", \"endPositions\": \"null\", \"audioFile\": 
-		// \"chimes\"}"}, "op": "publish"}
-		
-		// or might be "topic": "/opal_command", "msg": {"command": 2, 
-		//  "properties": ""}, "op": "publish"}
+        // TODO use rosbridge utilities to decode and parse message
+        RosbridgeUtilities.DecodeROSJsonCommand(e.Data);
         
-		// parse data, see if it's valid
-		// should be valid json, so we try parsing the json
-		Dictionary<String, object> data = null;
-		//try {
-			data = Json.Deserialize(e.Data) as Dictionary<String, object>;
-			if (data == null)
-			{ 	
-				Debug.Log ("Could not parse json!");
-				return;
-			}
-							
-			Debug.Log ("deserialized objects from json!");
+		int command = 2;
 			
-            // TODO use rosbridge utilities to decode message
-        
-            // got valid json! 
-			// is there a command in here?
-			int command = 2;
+		// got a command!
+		// we let the game controller sort out if it's a real command or not
+		// as well as what to do with the extra properties, if any
+		String properties = "pops";
 			
-			// got a command!
-			// we let the game controller sort out if it's a real command or not
-			// as well as what to do with the extra properties, if any
-			String properties = "pops";
-			
-			// fire event indicating that we received a message
-			if (this.receivedMsgEvent != null)
-			{
-				// only send subset of msg that is actual message
-				this.receivedMsgEvent(this, command, properties);
-			}
-		//} catch (Exception err)
-		//{
-		//	Debug.Log("Error in HandleMessage: " + err);
-		//}
+		// fire event indicating that we received a message
+		if (this.receivedMsgEvent != null)
+		{
+			// only send subset of msg that is actual message
+			this.receivedMsgEvent(this, command, properties);
+		}
 	}
 	
 	/**

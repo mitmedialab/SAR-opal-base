@@ -67,7 +67,7 @@ public static class RosbridgeUtilities
     /// <param name="command">the command received</param>
     /// <param name="properties">command properties received</param>
     public static void DecodeROSJsonCommand(string rosmsg, out int command,
-                                            out LoadObjectProperties properties)
+                                            out object properties)
     {
         // set up out objects
         command = -1;

@@ -24,11 +24,17 @@ public class MainGameController : MonoBehaviour
         // find gesture manager
         FindGestureManager(); 
        
-        // Create a new game object programatically as a test
-        PlayObjectProperties pops = new PlayObjectProperties ();
+        // Create a new game object programmatically as a test
+        PlayObjectProperties pops = new PlayObjectProperties();
         pops.setAll("ball2", Constants.TAG_PLAY_OBJECT, false, "chimes", 
-                    new Vector3 (-200, 50, 0), null);
+                    new Vector3 (-200, 50, 2), null);
         this.InstantiatePlayObject (pops);
+        
+        // Create a new background programmatically as a test
+        BackgroundObjectProperties bops = new BackgroundObjectProperties();
+        bops.setAll("playground", Constants.TAG_BACKGROUND, 
+                    new Vector3(0,0,0));
+        this.InstantiateBackground(bops);
         
 		// set up rosbridge websocket client
 		// note: does not attempt to reconnect if connection fails
@@ -148,6 +154,42 @@ public class MainGameController : MonoBehaviour
         
     }
     
+    /// <summary>
+    /// Instantiates a background image object
+    /// </summary>
+    /// <param name="bops">properties of the background image object to load</param>
+    private void InstantiateBackground(BackgroundObjectProperties bops)
+    {
+        // remove previous background if there was one
+        this.DestroyObjectsByTag(new string[] {Constants.TAG_BACKGROUND});
+    
+        // now make a new background
+        GameObject go = new GameObject();
+        
+        // set object name
+        go.name = (bops.Name() != "") ? bops.Name() : UnityEngine.Random.value.ToString ();
+        Debug.Log ("Creating new background: " + bops.Name ());
+        
+        // set tag
+        go.tag = Constants.TAG_BACKGROUND;
+        
+        // move object to initial position 
+        go.transform.position = new Vector3(0,0,0);
+        
+        // load sprite/image for object
+        SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
+        Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + bops.Name());
+        if (sprite == null)
+            Debug.Log ("ERROR could not load sprite: " 
+                       + Constants.GRAPHICS_FILE_PATH + bops.Name());
+        spriteRenderer.sprite = sprite; 
+        
+        // TODO should this be a parameter too?
+        go.transform.localScale = new Vector3 (100, 100, 100);
+        
+        
+    }
+    
     /** Find the gesture manager */ 
     private void FindGestureManager()
     {
@@ -217,7 +259,27 @@ public class MainGameController : MonoBehaviour
         Debug.Log("Reloading current scene...");
 
         // TODO move all play objects back to their initial positions
+        // TODO need to save initial positions for objects for reloading
         
+    }
+    
+    /// <summary>
+    /// Destroy objects with the specified tags
+    /// </summary>
+    /// <param name="tags">tags of objects to destory</param>
+    void DestroyObjectsByTag(string[] tags)
+    {
+        // destroy objects with the specified tags
+        foreach (string tag in tags)
+        {
+            GameObject[] objs = GameObject.FindGameObjectsWithTag(tag);
+            if (objs.Length == 0) return;
+            foreach (GameObject go in objs)
+            {
+                Debug.Log ("destroying " + go.name);
+                Destroy(go);
+            }
+        }
     }
 
 }

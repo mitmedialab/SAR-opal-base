@@ -7,7 +7,7 @@ using System.Collections.Generic;
  */
 public class LoadObjectProperties 
 {
-    /** name of the image/texture to load
+    /** name of the image/texture to load */
     protected string objName = "";
     
     /** tag of object */

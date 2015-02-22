@@ -154,7 +154,7 @@ public class RosbridgeWebSocketClient
 		
         // use rosbridge utilities to decode and parse message
         int command = -1;
-        LoadObjectProperties properties = null;
+        object properties = null;
         RosbridgeUtilities.DecodeROSJsonCommand(e.Data, out command, out properties);
         
 		// got a command!

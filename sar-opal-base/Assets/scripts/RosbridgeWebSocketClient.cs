@@ -8,7 +8,7 @@ using MiniJSON;
 // received message event -- fire when we get a message
 // so others can listen for the messages
 public delegate void ReceivedMessageEventHandler(object sender, 
-                               int command, String properties);
+                               int command, object properties);
 
 
 /**
@@ -152,7 +152,7 @@ public class RosbridgeWebSocketClient
 	{
 		Debug.Log ("Received message: " + e.Data);
 		
-        // TODO use rosbridge utilities to decode and parse message
+        // use rosbridge utilities to decode and parse message
         int command = -1;
         LoadObjectProperties properties = null;
         RosbridgeUtilities.DecodeROSJsonCommand(e.Data, out command, out properties);
@@ -160,13 +160,12 @@ public class RosbridgeWebSocketClient
 		// got a command!
 		// we let the game controller sort out if it's a real command or not
 		// as well as what to do with the extra properties, if any
-		String pops = "pops";
 			
 		// fire event indicating that we received a message
 		if (this.receivedMsgEvent != null)
 		{
 			// only send subset of msg that is actual message
-			this.receivedMsgEvent(this, command, pops);
+			this.receivedMsgEvent(this, command, properties);
 		}
 	}
 	

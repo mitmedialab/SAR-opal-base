@@ -134,18 +134,20 @@ public static class RosbridgeUtilities
             return;
         }
         
-        // TODO properties could be just a string (e.g. if command is SIDEKICK_DO)
-        // TODO we need to deal with that case!
-        
         // otherwise, we've got properties, decode them.
         Debug.Log("properties: " + msg["properties"]);
+        
         // parse data, see if it's valid json
         Dictionary<string, object> props = null;
         props = Json.Deserialize((string)msg["properties"]) as Dictionary<string, object>;
         // if we can't deserialize the json message, return
         if (props == null)
         {   
-            Debug.Log ("Could not parse JSON properties!");
+            Debug.Log ("Could not parse JSON properties! Could just be a string.");
+            
+            // so properties could be just a string (e.g. if command is SIDEKICK_DO)
+            properties = (string)msg["properties"];
+            
             return;
         }
         // otherwise, we got properties!
@@ -225,7 +227,11 @@ public static class RosbridgeUtilities
     
     }
     
-    /** convert an object to an int array */
+    /// <summary>
+    /// convert an object to an int array
+    /// </summary>
+    /// <returns>int array</returns>
+    /// <param name="en">object that is secretly an int array</param>
     private static int[] ObjectToIntArray(IEnumerable en)
     {
         // C# is weird about conversions from object to arrays

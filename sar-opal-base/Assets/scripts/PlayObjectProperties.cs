@@ -76,7 +76,7 @@ public class PlayObjectProperties : LoadObjectProperties
     /** set audio file */
     public void SetAudioFile(string audioFile)
     {
-        // TODO do some kind of error check on this?
+        // TODO audio file - do some kind of error check on this?
         this.audioFile = audioFile;
     }
     

@@ -165,12 +165,10 @@ public class MainGameController : MonoBehaviour
     /**
      * Received message from remote controller - process and deal with message
      * */
-    void HandleClientSocketReceivedMsgEvent (object sender, int cmd, string props)
+    void HandleClientSocketReceivedMsgEvent (object sender, int cmd, object props)
     {
         Debug.Log ("!! MSG received from remote: " + cmd);
-        
-        // TODO parse message - then pass parsed content to switch
-        
+                
         // process first token to determine which message type this is
         // if there is a second token, this is the message argument
         switch (cmd)
@@ -217,9 +215,8 @@ public class MainGameController : MonoBehaviour
     void ReloadScene()
     {
         Debug.Log("Reloading current scene...");
-        
-        // move all play objects back to their initial positions
-        // TODO 
+
+        // TODO move all play objects back to their initial positions
         
     }
 

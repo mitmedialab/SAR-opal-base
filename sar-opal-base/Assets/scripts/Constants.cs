@@ -14,6 +14,13 @@ public static class Constants
     public const string TAG_PLAY_OBJECT = "PlayObject";
     public const string TAG_LIGHT = "Light";
     public const string TAG_GESTURE_MAN = "GestureManager";
+    public const string TAG_BACKGROUND = "Background";
+    
+    // edges of screen - used to make sure objects aren't dragged off the screen
+    public const int LEFT_SIDE = -640;
+    public const int RIGHT_SIDE = 640;
+    public const int TOP_SIDE = 390;
+    public const int BOTTOM_SIDE = -390;
 
     /** messages we can receive */
     public const int DISABLE_TOUCH = 1;

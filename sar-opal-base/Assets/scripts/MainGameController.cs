@@ -26,7 +26,8 @@ public class MainGameController : MonoBehaviour
        
         // Create a new game object programatically as a test
         PlayObjectProperties pops = new PlayObjectProperties ();
-        pops.setAll("ball2", false, "chimes", new Vector3 (-200, 50, 0), null);
+        pops.setAll("ball2", Constants.TAG_PLAY_OBJECT, false, "chimes", 
+                    new Vector3 (-200, 50, 0), null);
         this.InstantiatePlayObject (pops);
         
 		// set up rosbridge websocket client
@@ -97,19 +98,19 @@ public class MainGameController : MonoBehaviour
         go.tag = Constants.TAG_PLAY_OBJECT;
 
         // move object to initial position 
-        go.transform.position = pops.initPosn;//pops.initPosn.x, pops.initPosn.y, pops.initPosn.z);
+        go.transform.position = pops.InitPosition();//pops.initPosn.x, pops.initPosn.y, pops.initPosn.z);
 
         // load audio - add an audio source component to the object if there
         // is an audio file to load
-        if (pops.audioFile != null) {
+        if (pops.AudioFile() != null) {
             AudioSource audioSource = go.AddComponent<AudioSource>();
             try {
                 // to load a sound file this way, the sound file needs to be in an existing 
                 // Assets/Resources folder or subfolder 
                 audioSource.clip = Resources.Load(Constants.AUDIO_FILE_PATH + 
-                                                  pops.audioFile) as AudioClip;
+                                                  pops.AudioFile()) as AudioClip;
             } catch (UnityException e) {
-                Debug.Log("ERROR could not load audio: " + pops.audioFile + "\n" + e);
+                Debug.Log("ERROR could not load audio: " + pops.AudioFile() + "\n" + e);
             }
             audioSource.loop = false;
             audioSource.playOnAwake = false;

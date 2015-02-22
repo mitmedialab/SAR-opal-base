@@ -153,20 +153,20 @@ public class RosbridgeWebSocketClient
 		Debug.Log ("Received message: " + e.Data);
 		
         // TODO use rosbridge utilities to decode and parse message
-        RosbridgeUtilities.DecodeROSJsonCommand(e.Data);
+        int command = -1;
+        LoadObjectProperties properties = null;
+        RosbridgeUtilities.DecodeROSJsonCommand(e.Data, out command, out properties);
         
-		int command = 2;
-			
 		// got a command!
 		// we let the game controller sort out if it's a real command or not
 		// as well as what to do with the extra properties, if any
-		String properties = "pops";
+		String pops = "pops";
 			
 		// fire event indicating that we received a message
 		if (this.receivedMsgEvent != null)
 		{
 			// only send subset of msg that is actual message
-			this.receivedMsgEvent(this, command, properties);
+			this.receivedMsgEvent(this, command, pops);
 		}
 	}
 	

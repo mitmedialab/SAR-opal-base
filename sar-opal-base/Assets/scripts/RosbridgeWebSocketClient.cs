@@ -18,7 +18,7 @@ public delegate void ReceivedMessageEventHandler(object sender,
  * */
 public class RosbridgeWebSocketClient
 {
-	private string SERVER = "127.0.0.1"; // TODO connect to hostname?
+	private string SERVER = "";
 	private string PORT_NUM = null;
 	public event ReceivedMessageEventHandler receivedMsgEvent;
 	private WebSocket clientSocket; // client websocket
@@ -37,17 +37,24 @@ public class RosbridgeWebSocketClient
 	     this.PORT_NUM = portNum;
 	}
 	
-	/**
-	 * destructor
-	 * closes socket properly
-	 */
+     /// <summary>
+     /// Releases unmanaged resources and performs other cleanup operations 
+     /// before the <see cref="RosbridgeWebSocketClient"/> is reclaimed by
+     /// garbage collection. Closes web socket properly.
+     /// </summary>
 	~RosbridgeWebSocketClient()
 	{
 		try
 		{
 		 	// close socket
 			if (this.clientSocket != null)
+            {
 				this.clientSocket.Close();
+                this.clientSocket.OnOpen -= HandleOnOpen;
+                this.clientSocket.OnClose -= HandleOnClose;
+                this.clientSocket.OnError -= HandleOnError;
+                this.clientSocket.OnMessage -= HandleOnMessage;
+            }
 		}
 		catch (Exception e)
 		{
@@ -55,18 +62,25 @@ public class RosbridgeWebSocketClient
 		}
 	}
 	
-    /**
-     * Set up the web socket for communication through rosbridge
-     # and register handlers for messages
-     */	
+    /// <summary>
+    /// Set up the web socket for communication through rosbridge
+    /// and register handlers for messages
+    /// </summary>
 	public void SetupSocket()
 	{
+        if (this.SERVER == "")
+            return;
+    
 		// create new websocket that listens and sends to the
 		// specified server on the specified port
 		try
 		{
-		    this.clientSocket = new WebSocket(("ws://" + SERVER +
+            Debug.Log("creating new websocket... ");
+            this.clientSocket = new WebSocket(("ws://" + SERVER +
 			    (PORT_NUM == null ? "" : ":" + PORT_NUM)));
+            
+            // so if the IP address is one on the current network, throws error properly
+            // but if it doesn't exist, hangs
 		  
 			// OnOpen event occurs when the websocket connection is established
 			this.clientSocket.OnOpen += HandleOnOpen;
@@ -80,27 +94,38 @@ public class RosbridgeWebSocketClient
 			// OnClose event occurs when the connection has been closed
 			this.clientSocket.OnClose += HandleOnClose;
 			
+            Debug.Log("connecting to websocket...");
 			// connect to the server
-			this.clientSocket.Connect ();
+			this.clientSocket.Connect();
 		} catch (Exception e)
 		{
 			Debug.Log ("Error starting websocket: " + e);
 		}
 	}
 
-	/** 
-	 * public request to close the socket
-	 */
+
+    /// <summary>
+    /// public request to close the socket
+    /// </summary>
 	public void CloseSocket()
 	{
 		// close the socket
-		this.clientSocket.Close(WebSocketSharp.CloseStatusCode.Normal,
-		                        "Closing normally");
+        if (this.clientSocket != null)
+        {
+    		this.clientSocket.Close(WebSocketSharp.CloseStatusCode.Normal,
+    		                        "Closing normally");
+            this.clientSocket.OnOpen -= HandleOnOpen;
+            this.clientSocket.OnClose -= HandleOnClose;
+            this.clientSocket.OnError -= HandleOnError;
+            this.clientSocket.OnMessage -= HandleOnMessage;
+        }
 	}
 
-    /**
-	 * public request to send message 
-	 */
+    /// <summary>
+    /// Public request to send message 
+    /// </summary>
+    /// <returns><c>true</c>, if message was sent, <c>false</c> otherwise.</returns>
+    /// <param name="msg">Message.</param>
 	public bool SendMessage(String msg)
 	{
 		if (this.clientSocket.IsAlive)
@@ -114,9 +139,11 @@ public class RosbridgeWebSocketClient
 		}
 	}
 
-    /**
-     * send string message to server
-	 */
+    /// <summary>
+    /// Sends string message to server
+    /// </summary>
+    /// <returns><c>true</c>, if message was sent, <c>false</c> otherwise.</returns>
+    /// <param name="msg">Message.</param>
 	private bool SendToServer(String msg)
 	{
 		Debug.Log ("sending message: " + msg);
@@ -135,19 +162,23 @@ public class RosbridgeWebSocketClient
 		}
 	}
 	
-	/**
-	 * Handle OnOpen events, which occur when the websocket connection
-	 * has been established
-	 */
+    /// <summary>
+    /// Handle OnOpen events, which occur when the websocket connection
+    /// has been established
+    /// </summary>
+    /// <param name="sender">Sender.</param>
+    /// <param name="e">E.</param>
 	void HandleOnOpen (object sender, EventArgs e)
 	{
 	    // connection opened
 	    Debug.Log("---- Opened WebSocket ----");
 	}
 	
-	/**
-	 * Handle OnMessage events, which occur when we receive a message 
-	 */	
+    /// <summary>
+    /// Handle OnMessage events, which occur when we receive a message
+    /// </summary>
+    /// <param name="sender">Sender.</param>
+    /// <param name="e">E.</param>
 	 void HandleOnMessage (object sender, MessageEventArgs e)
 	{
 		Debug.Log ("Received message: " + e.Data);
@@ -169,19 +200,23 @@ public class RosbridgeWebSocketClient
 		}
 	}
 	
-	/**
-	 * OnError event occurs when there's an error
-	 */
+    /// <summary>
+    /// OnError event occurs when there's an error
+    /// </summary>
+    /// <param name="sender">Sender.</param>
+    /// <param name="e">E.</param>
 	void HandleOnError (object sender, ErrorEventArgs e)
 	{
 		Debug.LogError("Error in websocket! " + e.Message + "\n" +
 		               e.Exception);
 	}
 	
-	/**
-	 * Handle OnClose events, which occur when the websocket connection
-	 * has been closed
-	 */
+	/// <summary>
+    /// Handle OnClose events, which occur when the websocket connection
+    /// has been closed
+    /// </summary>
+    /// <param name="sender">Sender.</param>
+    /// <param name="e">E.</param>
 	void HandleOnClose (object sender, CloseEventArgs e)
 	{
 		Debug.Log ("Websocket closed");

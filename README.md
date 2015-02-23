@@ -22,6 +22,8 @@ If you pull in the submodule, you can get the examples, prefabs, etc. The necess
 
 Note that if you try to build this project, the Newtonsoft.Json dll appears to be missing, so I copied over the prebuilt dll from bin/Debug.
 
+The tablet app will try to connect to the IP address or host name specified in the websocket_config file. Note that if this address does not exist on the network, there is a 90s timeout before it'll give up trying (hardcoded in the library, so one could patch the library to change the timeout length if one so desires). If the address does exist but if you've forgotten to start rosbridge_server, the connection will be refused.
+
 ### MiniJSON
 [MiniJSON] (https://gist.github.com/darktable/1411710 "miniJSON") is a pretty basic C# JSON encoder and decoder. It can serialize and deserialize JSON strings, which are sent to and received from the ROS rosbridge_server. I've used the code mostly as-is, with one or two of the bug fixes listed in the comments on the github gist page added in.
 

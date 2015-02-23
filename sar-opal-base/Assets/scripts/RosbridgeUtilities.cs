@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections;
+using System.IO;
 using System;
 using MiniJSON;
 using UnityEngine;
@@ -225,6 +226,58 @@ public static class RosbridgeUtilities
             }
         }
     
+    }
+    
+    /// <summary>
+    /// Decodes the websocket JSON config file
+    /// </summary>
+    /// <param name="path">Path.</param>
+    /// <param name="server">Server.</param>
+    /// <param name="port">Port.</param>
+    public static void DecodeWebsocketJSONConfig(string path, 
+                                                 out string server,
+                                                 out string port)
+    {
+        server = "";
+        port = "";
+        if (!File.Exists(path))
+        {
+            Debug.Log("can't find file");
+            return;
+        }
+        string config = "";
+        try 
+        {
+            config = File.ReadAllText(path);
+            Debug.Log("got config: " + config);
+            config.Replace("\n", "");
+            Debug.Log("config now: " + config);
+            
+            Dictionary<string, object> data = null;
+            data = Json.Deserialize(config) as Dictionary<string, object>;
+            if (data == null)
+            {   
+                Debug.Log ("Could not parse JSON message!");
+                return;
+            }
+            Debug.Log ("deserialized " + data.Count + " objects from JSON!");
+            
+            // if the message doesn't have both part, consider it invalid
+            if (!data.ContainsKey("server") && !data.ContainsKey("port"))
+            {
+                Debug.Log("Did not get a valid message!");
+                return;
+            }
+            
+            // get server and port
+            server = (string)data["server"];
+            port = (string)data["port"];
+            Debug.Log("server: " + server + "  port: " + port);
+            
+        } catch (Exception e) {
+            Debug.Log("Could not read websocket config file! Error: " + e);
+        }
+            
     }
     
     /// <summary>

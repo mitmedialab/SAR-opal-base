@@ -40,9 +40,16 @@ public class MainGameController : MonoBehaviour
 		// note: does not attempt to reconnect if connection fails
 		if (this.clientSocket == null)
 		{
+            // load websocket config from file
+            string server = "";
+            string port = "";
+            RosbridgeUtilities.DecodeWebsocketJSONConfig(Application.dataPath +
+                "/Resources/websocket_config.txt",
+                out server, out port);
+        
 			this.clientSocket = new RosbridgeWebSocketClient(
-				"192.168.1.36", //"18.85.38.90",
-                "9090");
+				server, // can pass hostname or IP address
+                port);
 			
 			this.clientSocket.SetupSocket();
 			this.clientSocket.receivedMsgEvent += 

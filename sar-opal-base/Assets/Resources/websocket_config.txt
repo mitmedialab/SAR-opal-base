@@ -1,0 +1,4 @@
+{
+	"server": "emerald"
+	"port": "9090"
+}

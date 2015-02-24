@@ -14,6 +14,9 @@ public class MainGameController : MonoBehaviour
 {
     // gesture manager
     private GestureManager gestureManager = null;
+    
+    // rosbridge websocket client
+    private RosbridgeWebSocketClient clientSocket = null;
 
     /** Called on start, use to initialize stuff  */
     void Start ()
@@ -21,10 +24,44 @@ public class MainGameController : MonoBehaviour
         // find gesture manager
         FindGestureManager(); 
        
-        // Create a new game object programatically as a test
-        PlayObjectProperties pops = new PlayObjectProperties ();
-        pops.setAll("ball2", false, "chimes", new Vector3 (-200, 50, 0), null);
+        // Create a new game object programmatically as a test
+        PlayObjectProperties pops = new PlayObjectProperties();
+        pops.setAll("ball2", Constants.TAG_PLAY_OBJECT, false, "chimes", 
+                    new Vector3 (-200, 50, 2), null);
         this.InstantiatePlayObject (pops);
+        
+        // Create a new background programmatically as a test
+        BackgroundObjectProperties bops = new BackgroundObjectProperties();
+        bops.setAll("playground", Constants.TAG_BACKGROUND, 
+                    new Vector3(0,0,0));
+        this.InstantiateBackground(bops);
+        
+		// set up rosbridge websocket client
+		// note: does not attempt to reconnect if connection fails
+		if (this.clientSocket == null)
+		{
+            // load websocket config from file
+            string server = "";
+            string port = "";
+            RosbridgeUtilities.DecodeWebsocketJSONConfig(Application.dataPath +
+                "/Resources/websocket_config.txt",
+                out server, out port);
+        
+			this.clientSocket = new RosbridgeWebSocketClient(
+                server, // can pass hostname or IP address
+                port);
+			
+			this.clientSocket.SetupSocket();
+			this.clientSocket.receivedMsgEvent += 
+				new ReceivedMessageEventHandler(HandleClientSocketReceivedMsgEvent);
+				
+			this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+                Constants.OUR_ROSTOPIC, Constants.OUR_ROSMSG_TYPE));
+            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonSubscribeMsg(
+                Constants.CMD_ROSTOPIC, Constants.CMD_ROSMSG_TYPE));
+            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishMsg(
+                Constants.OUR_ROSTOPIC, "Opal tablet checking in!"));
+		}
     }
 
     /** On enable, initialize stuff */
@@ -36,7 +73,16 @@ public class MainGameController : MonoBehaviour
     /** On disable, disable some stuff */
     private void OnDestroy ()
     {
-        
+		// close websocket
+		if (this.clientSocket != null)
+		{
+			this.clientSocket.CloseSocket();
+    
+			// unsubscribe from received message events
+			this.clientSocket.receivedMsgEvent -= HandleClientSocketReceivedMsgEvent;
+		}
+		
+		Debug.Log("destroyed main game controller");
     }
     
     /** 
@@ -65,19 +111,19 @@ public class MainGameController : MonoBehaviour
         go.tag = Constants.TAG_PLAY_OBJECT;
 
         // move object to initial position 
-        go.transform.position = pops.initPosn;//pops.initPosn.x, pops.initPosn.y, pops.initPosn.z);
+        go.transform.position = pops.InitPosition();//pops.initPosn.x, pops.initPosn.y, pops.initPosn.z);
 
         // load audio - add an audio source component to the object if there
         // is an audio file to load
-        if (pops.audioFile != null) {
+        if (pops.AudioFile() != null) {
             AudioSource audioSource = go.AddComponent<AudioSource>();
             try {
                 // to load a sound file this way, the sound file needs to be in an existing 
                 // Assets/Resources folder or subfolder 
                 audioSource.clip = Resources.Load(Constants.AUDIO_FILE_PATH + 
-                                                  pops.audioFile) as AudioClip;
+                                                  pops.AudioFile()) as AudioClip;
             } catch (UnityException e) {
-                Debug.Log("ERROR could not load audio: " + pops.audioFile + "\n" + e);
+                Debug.Log("ERROR could not load audio: " + pops.AudioFile() + "\n" + e);
             }
             audioSource.loop = false;
             audioSource.playOnAwake = false;
@@ -115,6 +161,42 @@ public class MainGameController : MonoBehaviour
         
     }
     
+    /// <summary>
+    /// Instantiates a background image object
+    /// </summary>
+    /// <param name="bops">properties of the background image object to load</param>
+    private void InstantiateBackground(BackgroundObjectProperties bops)
+    {
+        // remove previous background if there was one
+        this.DestroyObjectsByTag(new string[] {Constants.TAG_BACKGROUND});
+    
+        // now make a new background
+        GameObject go = new GameObject();
+        
+        // set object name
+        go.name = (bops.Name() != "") ? bops.Name() : UnityEngine.Random.value.ToString ();
+        Debug.Log ("Creating new background: " + bops.Name ());
+        
+        // set tag
+        go.tag = Constants.TAG_BACKGROUND;
+        
+        // move object to initial position 
+        go.transform.position = new Vector3(0,0,0);
+        
+        // load sprite/image for object
+        SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
+        Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + bops.Name());
+        if (sprite == null)
+            Debug.Log ("ERROR could not load sprite: " 
+                       + Constants.GRAPHICS_FILE_PATH + bops.Name());
+        spriteRenderer.sprite = sprite; 
+        
+        // TODO should this be a parameter too?
+        go.transform.localScale = new Vector3 (100, 100, 100);
+        
+        
+    }
+    
     /** Find the gesture manager */ 
     private void FindGestureManager()
     {
@@ -132,15 +214,13 @@ public class MainGameController : MonoBehaviour
     /**
      * Received message from remote controller - process and deal with message
      * */
-    void HandleClientReceivedMsgEvent (object sender, int msg)
+    void HandleClientSocketReceivedMsgEvent (object sender, int cmd, object props)
     {
-        Debug.Log ("!! MSG received from remote: " + msg);
-        
-        // TODO parse message - then pass parsed content to switch
-        
+        Debug.Log ("!! MSG received from remote: " + cmd);
+                
         // process first token to determine which message type this is
         // if there is a second token, this is the message argument
-        switch (msg)
+        switch (cmd)
         {
             case Constants.DISABLE_TOUCH:
                 // disable touch events from user
@@ -184,10 +264,29 @@ public class MainGameController : MonoBehaviour
     void ReloadScene()
     {
         Debug.Log("Reloading current scene...");
+
+        // TODO move all play objects back to their initial positions
+        // TODO need to save initial positions for objects for reloading
         
-        // move all play objects back to their initial positions
-        // TODO 
-        
+    }
+    
+    /// <summary>
+    /// Destroy objects with the specified tags
+    /// </summary>
+    /// <param name="tags">tags of objects to destory</param>
+    void DestroyObjectsByTag(string[] tags)
+    {
+        // destroy objects with the specified tags
+        foreach (string tag in tags)
+        {
+            GameObject[] objs = GameObject.FindGameObjectsWithTag(tag);
+            if (objs.Length == 0) return;
+            foreach (GameObject go in objs)
+            {
+                Debug.Log ("destroying " + go.name);
+                Destroy(go);
+            }
+        }
     }
 
 }

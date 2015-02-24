@@ -48,7 +48,7 @@ public class MainGameController : MonoBehaviour
                 out server, out port);
         
 			this.clientSocket = new RosbridgeWebSocketClient(
-				server, // can pass hostname or IP address
+                server, // can pass hostname or IP address
                 port);
 			
 			this.clientSocket.SetupSocket();

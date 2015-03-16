@@ -5,7 +5,7 @@ using System.Collections.Generic;
 /**
  * properties of an object to load, such as initial position
  */
-public class LoadObjectProperties 
+public class SceneObjectProperties 
 {
     /** name of the image/texture to load */
     protected string objName = "";
@@ -17,7 +17,7 @@ public class LoadObjectProperties
     protected Vector3 initPosn = new Vector3(0, 0, 0);
     
     /** constructor */
-    public LoadObjectProperties()
+    public SceneObjectProperties()
     {
     }
     

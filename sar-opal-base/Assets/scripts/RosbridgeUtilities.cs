@@ -8,12 +8,12 @@ using UnityEngine;
 public static class RosbridgeUtilities
 {
     /// <summary>
-    /// Build a JSON string message to publish over rosbridge
+    /// Builds a JSON string message to publish over rosbridge
     /// </summary>
     /// <returns>A JSON string to send</returns>
     /// <param name="topic">The topic to publish on </param>
-    /// <param name="message">The message to send</param>
-    public static string GetROSJsonPublishMsg(string topic, string message)
+    /// <param name="message">The string message to send</param>
+    public static string GetROSJsonPublishStringMsg(string topic, string message)
     {
         // build a dictionary of things to include in the message
         Dictionary<string,object> rosPublish = new Dictionary<string, object>();
@@ -25,6 +25,103 @@ public static class RosbridgeUtilities
         
         return Json.Serialize(rosPublish);
     }
+    
+    /// <summary>
+    /// Builds a JSON metrics log message to publish over rosbridge
+    /// </summary>
+    /// <returns>A JSON string to send</returns>
+    /// <param name="topic">The topic to publish on</param>
+    /// <param name="objectName">Name of object that has current goal</param>
+    /// <param name="distance">Distance to object's goal</param>
+    /// <param name="timestamp">Time of the action</param>
+    public static string GetROSJsonPublishMetricsMsg(string topic, string objectName,
+        float distance, DateTime timestamp)
+    {
+        // build a dictionary of things to include in the message
+        Dictionary<string,object> rosPublish = new Dictionary<string, object>();
+        rosPublish.Add("op", "publish");
+        rosPublish.Add("topic", topic);
+        Dictionary<string,object> rosMessage = new Dictionary<string, object>();
+        rosMessage.Add("objectName", objectName);
+        rosMessage.Add("distance", distance);
+        rosMessage.Add("timestamp", timestamp);
+        rosPublish.Add("msg", rosMessage);
+        
+        return Json.Serialize(rosPublish);
+    }
+    
+    /// <summary>
+    /// Builds a JSON action log message to publish over rosbridge
+    /// </summary>
+    /// <returns>A JSON string to send</returns>
+    /// <param name="topic">The topic to publish on</param>
+    /// <param name="objectName">Name of object that was acted upon</param>
+    /// <param name="distance">Position of the object</param>
+    /// <param name="timestamp">Time of the action</param>
+    public static string GetROSJsonPublishActionMsg(string topic, string objectName,
+                                    string action, float[] position, DateTime timestamp)
+    {
+        // build a dictionary of things to include in the message
+        Dictionary<string,object> rosPublish = new Dictionary<string, object>();
+        rosPublish.Add("op", "publish");
+        rosPublish.Add("topic", topic);
+        Dictionary<string,object> rosMessage = new Dictionary<string, object>();
+        rosMessage.Add("objectName", objectName);
+        rosMessage.Add("position", position);
+        rosMessage.Add("action", action);
+        rosMessage.Add("timestamp", timestamp);
+        rosPublish.Add("msg", rosMessage);
+        
+        return Json.Serialize(rosPublish);
+    }
+    
+    /// <summary>
+    /// Builds a JSON scene 'keyframe' log message to publish over rosbridge
+    /// </summary>
+    /// <returns>A JSON string to send</returns>
+    /// <param name="topic">The topic to publish on</param>
+    /// <param name="background">Name of current background image</param>
+    /// <param name="objects">array of objects present in scene</param>
+    /// <param name="timestamp">Time of the action</param>
+    public static string GetROSJsonPublishSceneMsg(string topic, string background,
+        SceneObject[] objects, DateTime timestamp)
+    {
+        // build a dictionary of things to include in the message
+        Dictionary<string,object> rosPublish = new Dictionary<string, object>();
+        rosPublish.Add("op", "publish");
+        rosPublish.Add("topic", topic);
+        Dictionary<string,object> rosMessage = new Dictionary<string, object>();
+        rosMessage.Add("background", background);
+        rosMessage.Add("timestamp", timestamp);
+
+        /*foreach (SceneObject obj in objects)
+        {
+            Dictionary<string,object> objd = new Dictionary<string, object>();
+            //objd.Add(" //TODO add scene objects to keyframe message!
+        }   */     
+        
+        rosMessage.Add("objects", objects);
+        rosPublish.Add("msg", rosMessage);
+        
+        return Json.Serialize(rosPublish);
+    }
+
+    /*public static string GetROSJsonSceneObject(string name, float[] position,
+                                               string state)
+    {
+        // build a dictionary of things to include in the message
+        Dictionary<string,object> rosPublish = new Dictionary<string, object>();
+        rosPublish.Add("op", "publish");
+        rosPublish.Add("topic", topic);
+        Dictionary<string,object> rosMessage = new Dictionary<string, object>();
+        rosMessage.Add("background", background);
+        rosMessage.Add("objects", objects);
+        rosMessage.Add("timestamp", timestamp);
+        rosPublish.Add("msg", rosMessage);
+        
+        return Json.Serialize(rosPublish);
+    }*/
+
     
     /// <summary>
     /// Build a JSON string message to subscribe to a rostopic over rosbridge
@@ -90,7 +187,7 @@ public static class RosbridgeUtilities
         data = Json.Deserialize(rosmsg) as Dictionary<string, object>;
         if (data == null)
         {   
-            Debug.Log ("Could not parse JSON message!");
+            Debug.LogWarning("Could not parse JSON message!");
             return;
         }
         Debug.Log ("deserialized " + data.Count + " objects from JSON!");
@@ -104,7 +201,7 @@ public static class RosbridgeUtilities
         // if the message doesn't have all three parts, consider it invalid
         if (!data.ContainsKey("msg") && !data.ContainsKey("topic") && !data.ContainsKey("op"))
         {
-            Debug.Log("Did not get a valid message!");
+            Debug.LogWarning("Did not get a valid message!");
             return;
         }
         
@@ -121,7 +218,7 @@ public static class RosbridgeUtilities
             try {
                 command = Convert.ToInt32(msg["command"]);
             } catch (Exception ex) {
-                Debug.Log("Error! Could not get command: " + ex);
+                Debug.LogError("Error! Could not get command: " + ex);
             }
             
         }
@@ -144,7 +241,7 @@ public static class RosbridgeUtilities
         // if we can't deserialize the json message, return
         if (props == null)
         {   
-            Debug.Log ("Could not parse JSON properties! Could just be a string.");
+            Debug.Log("Could not parse JSON properties! Could just be a string.");
             
             // so properties could be just a string (e.g. if command is SIDEKICK_DO)
             properties = (string)msg["properties"];
@@ -167,13 +264,13 @@ public static class RosbridgeUtilities
             if (props.ContainsKey("draggable")) pops.draggable = 
                 Convert.ToBoolean(props["draggable"]);
             } catch (Exception ex) {
-                Debug.Log("Error! Could not determine if draggable: " + ex);
+                Debug.LogError("Error! Could not determine if draggable: " + ex);
             }
         
         try {
         if (props.ContainsKey("audioFile")) pops.SetAudioFile((string)props["audioFile"]);
         } catch (Exception ex) {
-            Debug.Log("Error! Could not get audio file: " + ex);
+            Debug.LogError("Error! Could not get audio file: " + ex);
         }
             
             if (props.ContainsKey("initPosition")) 
@@ -185,7 +282,7 @@ public static class RosbridgeUtilities
                     Debug.Log("posn: " + posn);
                     pops.SetInitPosition(new Vector3(posn[0], posn[1], posn[2]));
                 } catch (Exception ex) {
-                Debug.Log("Error! Could not get initial position: " + ex);
+                Debug.LogError("Error! Could not get initial position: " + ex);
                 }
             }
             
@@ -200,7 +297,7 @@ public static class RosbridgeUtilities
                         pops.AddEndPosition(new Vector3(posn[0], posn[1], posn[2]));
                     }
                 } catch (Exception ex) {
-                    Debug.Log("Error! Could not get end position: " + ex);
+                    Debug.LogError("Error! Could not get end position: " + ex);
                 }
             }
             
@@ -221,7 +318,7 @@ public static class RosbridgeUtilities
                     Debug.Log("posn: " + posn);
                     bops.SetInitPosition(new Vector3(posn[0], posn[1], posn[2]));
                 } catch (Exception ex) {
-                    Debug.Log("Error! Could not get initial position: " + ex);
+                    Debug.LogError("Error! Could not get initial position: " + ex);
                 }
             }
         }
@@ -234,48 +331,51 @@ public static class RosbridgeUtilities
     /// <param name="path">Path.</param>
     /// <param name="server">Server.</param>
     /// <param name="port">Port.</param>
-    public static void DecodeWebsocketJSONConfig(string path, 
+    public static bool DecodeWebsocketJSONConfig(string path, 
                                                  out string server,
                                                  out string port)
     {
         server = "";
         port = "";
-        if (!File.Exists(path))
-        {
-            Debug.Log("can't find file");
-            return;
-        }
+        //if (!File.Exists(path))
+        //{
+        //    Debug.LogError("ERROR: can't find websocket config file at " +
+        //              path);
+        //    return;
+        //}
         string config = "";
         try 
         {
             config = File.ReadAllText(path);
             Debug.Log("got config: " + config);
             config.Replace("\n", "");
-            Debug.Log("config now: " + config);
             
             Dictionary<string, object> data = null;
             data = Json.Deserialize(config) as Dictionary<string, object>;
             if (data == null)
             {   
-                Debug.Log ("Could not parse JSON message!");
-                return;
+                Debug.LogError("Could not parse JSON message!");
+                return false;
             }
             Debug.Log ("deserialized " + data.Count + " objects from JSON!");
             
-            // if the message doesn't have both part, consider it invalid
+            // if the message doesn't have both parts, consider it invalid
             if (!data.ContainsKey("server") && !data.ContainsKey("port"))
             {
-                Debug.Log("Did not get a valid message!");
-                return;
+                Debug.LogError("Did not get a valid message!");
+                return false;
             }
             
             // get server and port
             server = (string)data["server"];
             port = (string)data["port"];
             Debug.Log("server: " + server + "  port: " + port);
+            return true;
             
         } catch (Exception e) {
-            Debug.Log("Could not read websocket config file! Error: " + e);
+            Debug.LogError("Could not read websocket config file! File path given was " 
+                + path + "\nError: " + e);
+               return false;
         }
             
     }

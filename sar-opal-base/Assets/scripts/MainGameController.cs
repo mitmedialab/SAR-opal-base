@@ -23,17 +23,18 @@ public class MainGameController : MonoBehaviour
     {
         // find gesture manager
         FindGestureManager(); 
+        this.gestureManager.logEvent += new GestureManager.LogEventHandler(HandleLogEvent);
        
         // Create a new game object programmatically as a test
         PlayObjectProperties pops = new PlayObjectProperties();
         pops.setAll("ball2", Constants.TAG_PLAY_OBJECT, false, "chimes", 
-                    new Vector3 (-200, 50, 2), null);
+                    new Vector3 (-200, 50, -2), null);
         this.InstantiatePlayObject (pops);
         
         // Create a new background programmatically as a test
         BackgroundObjectProperties bops = new BackgroundObjectProperties();
         bops.setAll("playground", Constants.TAG_BACKGROUND, 
-                    new Vector3(0,0,0));
+                    new Vector3(0,0,2));
         this.InstantiateBackground(bops);
         
 		// set up rosbridge websocket client
@@ -43,26 +44,48 @@ public class MainGameController : MonoBehaviour
             // load websocket config from file
             string server = "";
             string port = "";
-            RosbridgeUtilities.DecodeWebsocketJSONConfig(Application.dataPath +
-                "/Resources/websocket_config.txt",
-                out server, out port);
+            string path = "";
+            
+            // find the websocket config file
+            #if UNITY_ANDROID
+            path = Constants.CONFIG_PATH_ANDROID + Constants.WEBSOCKET_CONFIG;
+            Debug.Log("trying android path: " + path);
+            #endif
+            
+            #if UNITY_EDITOR
+            path = Application.dataPath + Constants.CONFIG_PATH_OSX + Constants.WEBSOCKET_CONFIG;
+            Debug.Log("osx 1 path: " + path);
+            #endif
         
-			this.clientSocket = new RosbridgeWebSocketClient(
-                server, // can pass hostname or IP address
-                port);
+            // load file
+            if(!RosbridgeUtilities.DecodeWebsocketJSONConfig(path, out server, out port))
+            {
+                Debug.LogWarning("Could not read websocket config file! Trying "
+                                 + "hardcoded IP 18.85.39.32 and port 9090");
+                this.clientSocket = new RosbridgeWebSocketClient(
+                    "18.85.39.32",// server, // can pass hostname or IP address
+                    "9090"); //port);   
+            }
+            else
+            {
+                this.clientSocket = new RosbridgeWebSocketClient(
+                    server, // can pass hostname or IP address
+                    port);  
+            }
 			
 			this.clientSocket.SetupSocket();
 			this.clientSocket.receivedMsgEvent += 
 				new ReceivedMessageEventHandler(HandleClientSocketReceivedMsgEvent);
 				
 			this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
-                Constants.OUR_ROSTOPIC, Constants.OUR_ROSMSG_TYPE));
+                Constants.LOG_ROSTOPIC, Constants.LOG_ROSMSG_TYPE));
             this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonSubscribeMsg(
                 Constants.CMD_ROSTOPIC, Constants.CMD_ROSMSG_TYPE));
-            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishMsg(
-                Constants.OUR_ROSTOPIC, "Opal tablet checking in!"));
+            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
+                Constants.LOG_ROSTOPIC, "Opal tablet checking in!"));
 		}
     }
+
 
     /** On enable, initialize stuff */
     private void OnEnable ()
@@ -217,7 +240,8 @@ public class MainGameController : MonoBehaviour
     void HandleClientSocketReceivedMsgEvent (object sender, int cmd, object props)
     {
         Debug.Log ("!! MSG received from remote: " + cmd);
-                
+        this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(Constants.LOG_ROSTOPIC, "got message"));
+        
         // process first token to determine which message type this is
         // if there is a second token, this is the message argument
         switch (cmd)
@@ -255,12 +279,11 @@ public class MainGameController : MonoBehaviour
         }
     }
     
-    
-    /**
-     * Reload the current scene by moving all objects back to
-     * their initial positions and resetting any other relevant
-     * things
-     */
+    /// <summary>
+    /// Reload the current scene by moving all objects back to
+    /// their initial positions and resetting any other relevant
+    /// things
+    /// </summary>
     void ReloadScene()
     {
         Debug.Log("Reloading current scene...");
@@ -288,5 +311,49 @@ public class MainGameController : MonoBehaviour
             }
         }
     }
+    
+    /// <summary>
+    /// Logs the state of the current scene and sends as a ROS message
+    /// </summary>
+    private void LogCurrentScene()
+    {
+        // find background image
+        
+        
+        // find all game objects currently in scene
+        
+        
+        // update list of current game objects
+        
+    }
+    
+    /// <summary>
+    /// Handles log message events
+    /// </summary>
+    /// <param name="sender">sender</param>
+    /// <param name="logme">event to log</param>
+    void HandleLogEvent (object sender, LogEvent logme)
+    {
+        switch(logme.type)
+        {
+        case LogEvent.EventType.Action:
+            RosbridgeUtilities.GetROSJsonPublishActionMsg(Constants.ACTION_ROSTOPIC,
+                logme.name, logme.action, new float[] {logme.position.x, logme.position.y,
+                logme.position.z}, System.DateTime.Now);
+            break;
+            
+        case LogEvent.EventType.Scene:
+            Debug.LogWarning("Not implemented yet!"); //TODO send keyframes
+            break;
+            
+        case LogEvent.EventType.Message:
+            RosbridgeUtilities.GetROSJsonPublishStringMsg(Constants.LOG_ROSTOPIC,
+                                                       logme.state);
+            break;
+        
+        }
+        
+    }
+    
 
 }

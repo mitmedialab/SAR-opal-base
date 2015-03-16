@@ -15,6 +15,12 @@ public class GestureManager : MonoBehaviour
     // light for highlighting objects
     private GameObject highlight = null; 
     
+    // for logging stuff
+    // log message event -- fire when you want to log something
+    // so others who do logging can listen for the messages
+    public delegate void LogEventHandler(object sender, LogEvent logme);
+    public event LogEventHandler logEvent;
+    
     /** Called on start, use to initialize stuff  */
     void Start ()
     {
@@ -126,16 +132,25 @@ public class GestureManager : MonoBehaviour
         // get info about where the hit object was located when the gesture was
         // recognized - i.e., where on the object (in screen dimensions) did
         // the tap occur?
-        if (gesture.GetTargetHitResult (out hit)) {
+        if (gesture.GetTargetHitResult(out hit)) {
             // want the info as a 2D point 
             ITouchHit2D hit2d = (ITouchHit2D)hit; 
-            Debug.Log ("TAP registered on " + gesture.gameObject.name + " at " + hit2d.Point);
+            Debug.Log("TAP registered on " + gesture.gameObject.name + " at " + hit2d.Point);
+            
+            // fire event indicating that we received a message
+            if (this.logEvent != null)
+            {
+                // only send subset of msg that is actual message
+                this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+                 gesture.gameObject.name, "tap", hit2d.Point));
+            }
+            
             // trigger sound on tap
-            Debug.Log ("going to play a sound for " + gesture.gameObject.name);
+            Debug.Log("going to play a sound for " + gesture.gameObject.name);
             if (this.allowTouch) PlaySoundAndPulse(gesture.gameObject);
         } else {
             // this probably won't ever happen, but in case it does, we'll log it
-            Debug.Log ("!! could not register where TAP was located!");
+            Debug.LogWarning("!! could not register where TAP was located!");
         }
     }
 
@@ -146,7 +161,7 @@ public class GestureManager : MonoBehaviour
     {
         Debug.Log ("PRESS");
         // get the gesture that was sent to us, which will tell us 
-        // which object was being dragged
+        // which object was pressed
         PressGesture gesture = sender as PressGesture;
         ITouchHit hit;
         // get info about where the hit object was located when the gesture was
@@ -156,13 +171,21 @@ public class GestureManager : MonoBehaviour
             // want the info as a 2D point 
             ITouchHit2D hit2d = (ITouchHit2D)hit; 
             Debug.Log ("PRESS on " + gesture.gameObject.name + " at " + hit2d.Point);
-
+            
+            // fire event indicating that we received a message
+            if (this.logEvent != null)
+            {
+                // only send subset of msg that is actual message
+                this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+                            gesture.gameObject.name, "press", hit2d.Point));
+            }
+            
             // move highlighting light and set active
             if (this.allowTouch) LightOn (1, hit2d.Point);
 
         } else {
             // this probably won't ever happen, but in case it does, we'll log it
-            Debug.Log ("!! could not register where PRESS was located!");
+            Debug.LogWarning("!! could not register where PRESS was located!");
         }
     }
 
@@ -173,6 +196,30 @@ public class GestureManager : MonoBehaviour
     {
         Debug.Log ("PRESS COMPLETE");
         LightOff();
+        
+        // get the gesture that was sent to us
+        PressGesture gesture = sender as PressGesture;
+        ITouchHit hit;
+        // get info about where the hit object was located when the gesture was
+        // recognized - i.e., where on the object (in screen dimensions) did
+        // the press occur?
+        if (gesture.GetTargetHitResult (out hit)) {
+            // want the info as a 2D point 
+            ITouchHit2D hit2d = (ITouchHit2D)hit; 
+            Debug.Log ("RELEASE of " + gesture.gameObject.name + " at " + hit2d.Point);
+            
+            // fire event indicating that we received a message
+            if (this.logEvent != null)
+            {
+                // only send subset of msg that is actual message
+                this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+                            gesture.gameObject.name, "release", hit2d.Point));
+            }
+            
+        } else {
+            // this probably won't ever happen, but in case it does, we'll log it
+            Debug.LogWarning("!! could not register where RELEASE was located!");
+        }
     }
      
 
@@ -201,10 +248,17 @@ public class GestureManager : MonoBehaviour
             if (this.allowTouch) gesture.gameObject.transform.position = hit2d.Point;
             // move highlighting light and set active
             if (this.allowTouch) LightOn (1, hit2d.Point);
+            // fire event indicating that we received a message
+            if (this.logEvent != null)
+            {
+                // only send subset of msg that is actual message
+                this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+                        gesture.gameObject.name, "pan", hit2d.Point));
+            }
 
         } else {
             // this probably won't ever happen, but in case it does, we'll log it
-            Debug.Log ("!! could not register where PAN was located!");
+            Debug.LogWarning("!! could not register where PAN was located!");
         }
 
     }
@@ -216,6 +270,30 @@ public class GestureManager : MonoBehaviour
     {
         Debug.Log("PAN COMPLETE");
         LightOff();
+        // get the gesture that was sent to us, which will tell us 
+        // which object was being dragged
+        PanGesture gesture = sender as PanGesture;
+        ITouchHit hit;
+        // get info about where the hit object was located when the gesture was
+        // recognized - i.e., where on the object (in screen dimensions) did
+        // the drag occur?
+        if (gesture.GetTargetHitResult (out hit)) {
+            // want the info as a 2D point 
+            ITouchHit2D hit2d = (ITouchHit2D)hit; 
+            Debug.Log ("PAN COMPLETE on " + gesture.gameObject.name + " at " + hit2d.Point);
+            
+            // fire event indicating that we received a message
+            if (this.logEvent != null)
+            {
+                // only send subset of msg that is actual message
+                this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+                            gesture.gameObject.name, "pancomplete", hit2d.Point));
+            }
+            
+        } else {
+            // this probably won't ever happen, but in case it does, we'll log it
+            Debug.LogWarning("!! could not register where PAN COMPLETE was located!");
+        }
     }
     #endregion
     

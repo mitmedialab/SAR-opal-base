@@ -6,7 +6,7 @@ using System.Collections.Generic;
  * properties of the play object, such as initial position and
  * whether the object is draggable
  */
-public class PlayObjectProperties : LoadObjectProperties
+public class PlayObjectProperties : SceneObjectProperties
 {
 	/** the object is draggable (true) or stationary (false) */
 	public bool draggable = true;

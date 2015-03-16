@@ -30,9 +30,39 @@ public static class Constants
     public const int SIDEKICK_DO = 3;
     public const int LOAD_OBJECT = 5;
     
-    // TODO ROS
-    public const string OUR_ROSTOPIC = "/opal_tablet";
-    public const string OUR_ROSMSG_TYPE = "std_msgs/String"; // TODO make OpalLog tablet msg
+    /** Websocket config file path */
+    // if playing in unity on desktop:
+    public const string WEBSOCKET_CONFIG = "websocket_config.txt";
+    public const string CONFIG_PATH_OSX = @"/Resources/";
+    // if playing on tablet:
+    public const string CONFIG_PATH_ANDROID = "mnt/sdcard/edu.mit.media.prg.sar.opal.base/";
+    
+    
+    
+    
+    // ROS-related constants: topics and message types
+    // general string log messages (e.g., "started up", "error", whatever)
+    public const string LOG_ROSTOPIC = "/opal_tablet";
+    public const string LOG_ROSMSG_TYPE = "std_msgs/String";
+    // messages about actions taken on tablet (e.g., tap occurred on object x at xyz)
+    // contains: 
+    //  string object: name
+    //  string action_type: tap
+    //  float[] position: xyz
+    public const string ACTION_ROSTOPIC = "/opal_tablet_action";
+    public const string ACTION_ROSMSG_TYPE = "/sar_opal_msgs/OpalAction";
+    // messages logging the entire current scene
+    // contains:
+    //  string background
+    //  objects[] { name posn state distToGoal hasGoal }
+    public const string SCENE_ROSTOPIC = "/opal_tablet_scene";
+    public const string SCENE_ROSMSG_TYPE = "/sar_opal_msgs/OpalScene";
+    // messages logging relevant metrics (e.g., distances to goals)
+    // contains:
+    //  objects [] { string name, float distanceToGoal }
+    public const string METRIC_ROSTOPIC = "/opal_tablet_metrics";
+    public const string METRIC_ROSMSG_TYPE = "/sar_opal_msgs/OpalMetrics";
+    // commands from elsewhere that we should deal with
     public const string CMD_ROSTOPIC = "/opal_command";
     public const string CMD_ROSMSG_TYPE = "/sar_opal_msgs/OpalCommand";
     

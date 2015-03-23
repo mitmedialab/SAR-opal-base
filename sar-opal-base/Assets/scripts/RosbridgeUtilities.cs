@@ -220,7 +220,6 @@ public static class RosbridgeUtilities
             } catch (Exception ex) {
                 Debug.LogError("Error! Could not get command: " + ex);
             }
-            
         }
             
         // if the properties are missing or there aren't any properties, 
@@ -241,10 +240,18 @@ public static class RosbridgeUtilities
         // if we can't deserialize the json message, return
         if (props == null)
         {   
-            Debug.Log("Could not parse JSON properties! Could just be a string.");
+            Debug.LogWarning("Could not parse JSON properties! Could just be a string.");
             
             // so properties could be just a string (e.g. if command is SIDEKICK_DO)
-            properties = (string)msg["properties"];
+            if (msg["properties"] is String)
+            {
+                properties = (string)msg["properties"];
+            }
+            else
+            {
+                Debug.LogWarning("Could not parse as a string either!");
+                properties = "";
+            }
             
             return;
         }

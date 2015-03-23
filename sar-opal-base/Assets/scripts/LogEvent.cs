@@ -56,6 +56,8 @@ public class LogEvent
     /// <param name="state">State or miscellanous string message</param>
     public LogEvent(EventType type, string state)
     {
+        this.type = type;
+        this.state = state;
     }
     
     /// <summary>
@@ -66,6 +68,10 @@ public class LogEvent
     /// <param name="position">Position.</param>
     public LogEvent(EventType type, string name, string action, Vector3 position)
     {
+        this.type = type;
+        this.name = name;
+        this.action = action;
+        this.position = position;
     }
     
     /// <summary>
@@ -79,6 +85,11 @@ public class LogEvent
     public LogEvent(EventType type, string name, string action, Vector3 position,
     string state)
     {
+        this.type = type;
+        this.name = name;
+        this.action = action;
+        this.position = position;
+        this.state = state;
     }
     
     /// <summary>

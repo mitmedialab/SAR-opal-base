@@ -29,6 +29,10 @@ public static class Constants
     public const int SIDEKICK_SAY = 4;
     public const int SIDEKICK_DO = 3;
     public const int LOAD_OBJECT = 5;
+    public const int CLEAR = 6;
+    public const int MOVE_OBJECT = 7;
+    public const int HIGHLIGHT_OBJECT = 8;
+    public const int REQUEST_KEYFRAME = 9;
     
     /** Websocket config file path */
     // if playing in unity on desktop:

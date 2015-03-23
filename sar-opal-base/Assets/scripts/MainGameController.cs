@@ -29,7 +29,7 @@ public class MainGameController : MonoBehaviour
         PlayObjectProperties pops = new PlayObjectProperties();
         pops.setAll("ball2", Constants.TAG_PLAY_OBJECT, false, "chimes", 
                     new Vector3 (-200, 50, -2), null);
-        this.InstantiatePlayObject (pops);
+        this.InstantiatePlayObject(pops);
         
         // Create a new background programmatically as a test
         BackgroundObjectProperties bops = new BackgroundObjectProperties();
@@ -118,10 +118,10 @@ public class MainGameController : MonoBehaviour
             Application.Quit ();
     }
 
-
-    /**
-     * Instantiate a new game object with the specified properties
-     */
+    /// <summary>
+    /// Instantiate a new game object with the specified properties
+    /// </summary>
+    /// <param name="pops">properties of the play object.</param>
     void InstantiatePlayObject (PlayObjectProperties pops)
     {
         GameObject go = new GameObject ();
@@ -239,43 +239,75 @@ public class MainGameController : MonoBehaviour
      * */
     void HandleClientSocketReceivedMsgEvent (object sender, int cmd, object props)
     {
-        Debug.Log ("!! MSG received from remote: " + cmd);
-        this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(Constants.LOG_ROSTOPIC, "got message"));
+        Debug.Log ("MSG received from remote: " + cmd);
+        this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
+            Constants.LOG_ROSTOPIC, "got message"));
         
         // process first token to determine which message type this is
         // if there is a second token, this is the message argument
         switch (cmd)
         {
-            case Constants.DISABLE_TOUCH:
-                // disable touch events from user
-                this.gestureManager.allowTouch = false; 
-                break;
-                
-            case Constants.ENABLE_TOUCH:
-                // enable touch events from user
-                this.gestureManager.allowTouch = true;
-                break;
-                
-            case Constants.RESET:
-                // reload the current level
-                // e.g., when the robot's turn starts, want all characters back in their
-                // starting configuration for use with automatic playbacks
-                this.ReloadScene();
-                break;
-            case Constants.SIDEKICK_DO:
-                // TODO trigger animation for sidekick character  
-                break;
-                
-            case Constants.SIDEKICK_SAY:
-                // TODO trigger playback of speech for sidekick character
-                break;
-                
-            case Constants.LOAD_OBJECT:
-                // TODO instantiate new playobject with the specified properties
-                // TODO load new background image with the specified properties
-                break;
+        case Constants.DISABLE_TOUCH:
+            // disable touch events from user
+            this.gestureManager.allowTouch = false; 
+            break;
             
-            // TODO what other messages?
+        case Constants.ENABLE_TOUCH:
+            // enable touch events from user
+            this.gestureManager.allowTouch = true;
+            break;
+            
+        case Constants.RESET:
+            // reload the current level
+            // e.g., when the robot's turn starts, want all characters back in their
+            // starting configuration for use with automatic playbacks
+            this.ReloadScene();
+            break;
+        case Constants.SIDEKICK_DO:
+            // trigger animation for sidekick character
+            Sidekick.SidekickDo((string)props);
+            break;
+            
+        case Constants.SIDEKICK_SAY:
+            // trigger playback of speech for sidekick character
+            Sidekick.SidekickSay((string)props);
+            break;
+            
+        case Constants.LOAD_OBJECT:
+            Debug.LogWarning("Action load_object not fully tested yet! Might break.");
+            // load new background image with the specified properties
+            if (props is BackgroundObjectProperties)
+            {
+                this.InstantiateBackground((BackgroundObjectProperties) props);
+            }
+            // or instantiate new playobject with the specified properties
+            else if (props is PlayObjectProperties)
+            {
+                this.InstantiatePlayObject((PlayObjectProperties) props);
+            }
+            break;
+            
+        case Constants.CLEAR:
+            // remove all play objects and background objects from scene, hide highlight
+            DestroyObjectsByTag(new string[] { Constants.TAG_BACKGROUND, 
+                Constants.TAG_PLAY_OBJECT });
+            gestureManager.LightOff();
+            break;
+            
+        case Constants.MOVE_OBJECT:
+            Debug.LogWarning("Action move_object not implemented yet!");
+            // TODO use LeanTween to move object from curr_posn to new_posn
+            break;
+            
+        case Constants.HIGHLIGHT_OBJECT:
+            Debug.LogWarning("Action highlight_object not implemented yet!");
+            // TODO ?? do we need a second highlight object for this? or just move it there?
+            break;
+            
+        case Constants.REQUEST_KEYFRAME:
+            Debug.LogWarning("Action request_keyframe not implemented yet!");
+            // TODO send back keyframe log message ...
+            break;
         }
     }
     
@@ -288,6 +320,7 @@ public class MainGameController : MonoBehaviour
     {
         Debug.Log("Reloading current scene...");
 
+        Debug.LogWarning("Reload not implemented yet!");
         // TODO move all play objects back to their initial positions
         // TODO need to save initial positions for objects for reloading
         
@@ -343,7 +376,7 @@ public class MainGameController : MonoBehaviour
             break;
             
         case LogEvent.EventType.Scene:
-            Debug.LogWarning("Not implemented yet!"); //TODO send keyframes
+            Debug.LogWarning("Log scene event not implemented yet!"); //TODO send keyframes
             break;
             
         case LogEvent.EventType.Message:

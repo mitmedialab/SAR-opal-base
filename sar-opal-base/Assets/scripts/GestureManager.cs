@@ -245,7 +245,8 @@ public class GestureManager : MonoBehaviour
 
             // move this game object with the drag
             // TODO check if on screen?
-            if (this.allowTouch) gesture.gameObject.transform.position = hit2d.Point;
+            if (this.allowTouch) gesture.gameObject.transform.position = 
+                CheckAllowedMoves(hit2d.Point);
             // move highlighting light and set active
             if (this.allowTouch) LightOn (1, hit2d.Point);
             // fire event indicating that we received a message
@@ -298,6 +299,32 @@ public class GestureManager : MonoBehaviour
     #endregion
     
     #region utilities
+    
+    /// <summary>
+    /// Checks that the object is only moving on the screen and not colliding
+    /// with the sidekick.
+    /// </summary>
+    /// <returns>An allowable position to move to</returns>
+    /// <param name="posn">desired position to move to</param>
+    public Vector3 CheckAllowedMoves(Vector3 posn)
+    {
+        // check if on screen
+        if (posn.x > Constants.RIGHT_SIDE)
+            posn.x = Constants.RIGHT_SIDE;
+        else if (posn.x < Constants.LEFT_SIDE)
+            posn.x = Constants.LEFT_SIDE;
+        if (posn.y > Constants.TOP_SIDE)
+            posn.y = Constants.TOP_SIDE;
+        else if (posn.y < Constants.BOTTOM_SIDE)
+            posn.y = Constants.BOTTOM_SIDE;
+        
+        // TODO check that we're not colliding with the sidekick boundaries (?)
+        // or maybe the sidekick is the frontmost layer, so stuff would just 
+        // move behind it?
+        
+        return posn;
+    }
+    
     /**
      * Sets light object active in the specified position and with the specified scale
      */
@@ -354,6 +381,11 @@ public class GestureManager : MonoBehaviour
             // play the audio clip attached to the game object
             if(!go.audio.isPlaying)
                 go.audio.Play();
+                
+                // to do something after audio stops - 
+                // auds.clip.length and then invoke(length) to do something in that time
+                // or "timePlaying >= length" (make a float timeplaying to track)
+                
             return true;   
         } else {
             Debug.Log ("no sound found for " + go.name + "!");

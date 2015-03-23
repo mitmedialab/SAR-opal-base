@@ -33,6 +33,7 @@ public static class Constants
     public const int MOVE_OBJECT = 7;
     public const int HIGHLIGHT_OBJECT = 8;
     public const int REQUEST_KEYFRAME = 9;
+    public const int GOT_TO_GOAL = 10;
     
     /** Websocket config file path */
     // if playing in unity on desktop:
@@ -75,7 +76,12 @@ public static class Constants
 	public const string ROS_TEST = @"{""op"":""publish"",""topic"":""/opal_tablet"",""msg"":{""data"":""Hello World!""}}";
 
 
-	
+	// other stuff
+    public struct MoveObject
+    {
+        public string name;
+        public Vector3 destination;
+    }
 
 
 }

@@ -35,7 +35,7 @@ public static class RosbridgeUtilities
     /// <param name="distance">Distance to object's goal</param>
     /// <param name="timestamp">Time of the action</param>
     public static string GetROSJsonPublishMetricsMsg(string topic, string objectName,
-        float distance, DateTime timestamp)
+        float distance, double timestamp)
     {
         // build a dictionary of things to include in the message
         Dictionary<string,object> rosPublish = new Dictionary<string, object>();
@@ -59,7 +59,7 @@ public static class RosbridgeUtilities
     /// <param name="distance">Position of the object</param>
     /// <param name="timestamp">Time of the action</param>
     public static string GetROSJsonPublishActionMsg(string topic, string objectName,
-                                    string action, float[] position, DateTime timestamp)
+                                    string action, float[] position, double timestamp)
     {
         // build a dictionary of things to include in the message
         Dictionary<string,object> rosPublish = new Dictionary<string, object>();
@@ -84,7 +84,7 @@ public static class RosbridgeUtilities
     /// <param name="objects">array of objects present in scene</param>
     /// <param name="timestamp">Time of the action</param>
     public static string GetROSJsonPublishSceneMsg(string topic, string background,
-        SceneObject[] objects, DateTime timestamp)
+        SceneObject[] objects, double timestamp)
     {
         // build a dictionary of things to include in the message
         Dictionary<string,object> rosPublish = new Dictionary<string, object>();
@@ -252,7 +252,6 @@ public static class RosbridgeUtilities
                 Debug.LogWarning("Could not parse as a string either!");
                 properties = "";
             }
-            
             return;
         }
         // otherwise, we got properties!
@@ -274,11 +273,11 @@ public static class RosbridgeUtilities
                 Debug.LogError("Error! Could not determine if draggable: " + ex);
             }
         
-        try {
-        if (props.ContainsKey("audioFile")) pops.SetAudioFile((string)props["audioFile"]);
-        } catch (Exception ex) {
-            Debug.LogError("Error! Could not get audio file: " + ex);
-        }
+            try {
+            if (props.ContainsKey("audioFile")) pops.SetAudioFile((string)props["audioFile"]);
+            } catch (Exception ex) {
+                Debug.LogError("Error! Could not get audio file: " + ex);
+            }
             
             if (props.ContainsKey("initPosition")) 
             {
@@ -286,7 +285,6 @@ public static class RosbridgeUtilities
                 // an int array .. not as straightforward as it should be!
                 try {
                     int[] posn = ObjectToIntArray(props["initPosition"] as IEnumerable);
-                    Debug.Log("posn: " + posn);
                     pops.SetInitPosition(new Vector3(posn[0], posn[1], posn[2]));
                 } catch (Exception ex) {
                 Debug.LogError("Error! Could not get initial position: " + ex);
@@ -307,7 +305,8 @@ public static class RosbridgeUtilities
                     Debug.LogError("Error! Could not get end position: " + ex);
                 }
             }
-            
+            properties = pops; // return the properties
+            Debug.Log(props);
         }
         // if we are loading a background object, build up its properties instead
         else if (props.ContainsKey("tag") && 
@@ -328,8 +327,28 @@ public static class RosbridgeUtilities
                     Debug.LogError("Error! Could not get initial position: " + ex);
                 }
             }
+            properties = bops; // return the properties
         }
-    
+        
+        // if we are going to move an object to some destination, build a struct
+        else if (props.ContainsKey("destination"))
+        {
+            Constants.MoveObject mo = new Constants.MoveObject();
+            if (props.ContainsKey("name")) mo.name = ((string)props["name"]);
+            
+            // and try to get the destination
+            try {
+                // this is the weird way of converting an object back into
+                // an int array .. not as straightforward as it should be!
+                int[] posn = ObjectToIntArray(props["destination"] as IEnumerable);
+                Debug.Log("posn: " + posn);
+                mo.destination = new Vector3(posn[0], posn[1], posn[2]);
+            } catch (Exception ex) {
+                Debug.LogError("Error! Could not get destination: " + ex);
+            }
+            properties = mo;
+        }
+        
     }
     
     /// <summary>

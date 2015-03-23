@@ -5,13 +5,13 @@ using System.Collections.Generic;
 /**
  * properties of an object to load, such as initial position
  */
-public class SceneObjectProperties 
+public class SceneObjectProperties
 {
     /** name of the image/texture to load */
     protected string objName = "";
     
     /** tag of object */
-    protected string tag = "";
+    protected string mytag = "";
     
     /** initial position in the world */
     protected Vector3 initPosn = new Vector3(0, 0, 0);
@@ -44,13 +44,13 @@ public class SceneObjectProperties
     /** set object tag */
     public void SetTag(string tag)
     {
-        if (tag != null) this.tag = tag;
+        if (tag != null) this.mytag = tag;
     }
     
     /** get object tag */
     public string Tag()
     {
-        return this.tag;
+        return this.mytag;
     }
     
     /** set object initial position - checks that the desired initial

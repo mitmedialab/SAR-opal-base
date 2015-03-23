@@ -94,11 +94,13 @@ public class PlayObjectProperties : SceneObjectProperties
     public new void SetInitPosition(Vector3 posn)
     {
         base.SetInitPosition(posn);
-        // 0 is the plane of the background image
-        // negative numbers are toward the camera, in front of the background
+        // 1 is the plane of the background image
+        // zero and negative numbers are toward the camera, in front of the background
         // so we want to make sure play objects are in front of the background plane
-        if (this.initPosn.z >= 0)
-            this.initPosn.z = -1;
+        if (this.initPosn.z > 0)
+            this.initPosn.z = 0;
     }
+    
+    
 
 }

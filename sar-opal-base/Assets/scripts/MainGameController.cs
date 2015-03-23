@@ -17,19 +17,23 @@ public class MainGameController : MonoBehaviour
     
     // rosbridge websocket client
     private RosbridgeWebSocketClient clientSocket = null;
+    
+    // actions for main thread, because the network messages from the
+    // websocket can come in on another thread
+    readonly static Queue<Action> ExecuteOnMainThread = new Queue<Action>();
 
     /** Called on start, use to initialize stuff  */
     void Start ()
     {
         // find gesture manager
         FindGestureManager(); 
-        this.gestureManager.logEvent += new GestureManager.LogEventHandler(HandleLogEvent);
+        this.gestureManager.logEvent += new LogEventHandler(HandleLogEvent);
        
         // Create a new game object programmatically as a test
-        PlayObjectProperties pops = new PlayObjectProperties();
-        pops.setAll("ball2", Constants.TAG_PLAY_OBJECT, false, "chimes", 
-                    new Vector3 (-200, 50, -2), null);
-        this.InstantiatePlayObject(pops);
+        //PlayObjectProperties pops = new PlayObjectProperties();
+        //pops.setAll("ball2", Constants.TAG_PLAY_OBJECT, false, "chimes", 
+        //            new Vector3 (-200, 50, -2), null);
+        //this.InstantiatePlayObject(pops);
         
         // Create a new background programmatically as a test
         BackgroundObjectProperties bops = new BackgroundObjectProperties();
@@ -77,10 +81,19 @@ public class MainGameController : MonoBehaviour
 			this.clientSocket.receivedMsgEvent += 
 				new ReceivedMessageEventHandler(HandleClientSocketReceivedMsgEvent);
 				
+            // advertise that we will publish opal_tablet messages
 			this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
                 Constants.LOG_ROSTOPIC, Constants.LOG_ROSMSG_TYPE));
+            
+            // advertise that we will publish opal_tablet_action messages
+            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+                Constants.ACTION_ROSTOPIC, Constants.ACTION_ROSMSG_TYPE));
+            
+            // subscribe to opal command messages
             this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonSubscribeMsg(
                 Constants.CMD_ROSTOPIC, Constants.CMD_ROSMSG_TYPE));
+                
+            // public string message to opal_tablet
             this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
                 Constants.LOG_ROSTOPIC, "Opal tablet checking in!"));
 		}
@@ -116,6 +129,14 @@ public class MainGameController : MonoBehaviour
         // if user presses escape or 'back' button on android, exit program
         if (Input.GetKeyDown (KeyCode.Escape))
             Application.Quit ();
+        
+        // dispatch stuff on main thread (usually stuff in response to 
+        // messages received from the websocket on another thread)
+        while (ExecuteOnMainThread.Count > 0)
+        {
+            Debug.Log("Invoking....");
+            ExecuteOnMainThread.Dequeue().Invoke(); 
+        }
     }
 
     /// <summary>
@@ -134,7 +155,7 @@ public class MainGameController : MonoBehaviour
         go.tag = Constants.TAG_PLAY_OBJECT;
 
         // move object to initial position 
-        go.transform.position = pops.InitPosition();//pops.initPosn.x, pops.initPosn.y, pops.initPosn.z);
+        go.transform.position = pops.InitPosition();
 
         // load audio - add an audio source component to the object if there
         // is an audio file to load
@@ -160,7 +181,7 @@ public class MainGameController : MonoBehaviour
                 + Constants.GRAPHICS_FILE_PATH + pops.Name());
         spriteRenderer.sprite = sprite; 
 
-        // TODO should this be a parameter too?
+        // TODO should the scale be a parameter too?
         go.transform.localScale = new Vector3 (100, 100, 100);
 
         // add rigidbody
@@ -181,6 +202,10 @@ public class MainGameController : MonoBehaviour
         
         // add pulsing behavior (draws attention to actionable objects)
         go.AddComponent<GrowShrinkBehavior>();
+        
+        // save the initial position in case we need to reset this object later
+        go.AddComponent<SavedProperties>();
+        go.GetComponent<SavedProperties>().initialPosition = pops.InitPosition();
         
     }
     
@@ -204,7 +229,7 @@ public class MainGameController : MonoBehaviour
         go.tag = Constants.TAG_BACKGROUND;
         
         // move object to initial position 
-        go.transform.position = new Vector3(0,0,0);
+        go.transform.position = bops.InitPosition();
         
         // load sprite/image for object
         SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
@@ -214,7 +239,7 @@ public class MainGameController : MonoBehaviour
                        + Constants.GRAPHICS_FILE_PATH + bops.Name());
         spriteRenderer.sprite = sprite; 
         
-        // TODO should this be a parameter too?
+        // TODO should the scale be a parameter too?
         go.transform.localScale = new Vector3 (100, 100, 100);
         
         
@@ -261,53 +286,97 @@ public class MainGameController : MonoBehaviour
             // reload the current level
             // e.g., when the robot's turn starts, want all characters back in their
             // starting configuration for use with automatic playbacks
-            this.ReloadScene();
+            MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                this.ReloadScene();
+            });
             break;
+            
         case Constants.SIDEKICK_DO:
             // trigger animation for sidekick character
-            Sidekick.SidekickDo((string)props);
+            MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                Sidekick.SidekickDo((string)props);
+            }); 
             break;
             
         case Constants.SIDEKICK_SAY:
             // trigger playback of speech for sidekick character
-            Sidekick.SidekickSay((string)props);
+            MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                Sidekick.SidekickSay((string)props);
+            }); 
             break;
             
         case Constants.LOAD_OBJECT:
-            Debug.LogWarning("Action load_object not fully tested yet! Might break.");
-            // load new background image with the specified properties
-            if (props is BackgroundObjectProperties)
-            {
-                this.InstantiateBackground((BackgroundObjectProperties) props);
+            if (props == null) {
+                Debug.Log ("was told to load an object, but got no properties!");
+                return;
             }
-            // or instantiate new playobject with the specified properties
-            else if (props is PlayObjectProperties)
+            
+            SceneObjectProperties sops = (SceneObjectProperties) props;
+            if (props != null)
             {
-                this.InstantiatePlayObject((PlayObjectProperties) props);
+                // load new background image with the specified properties
+                if (sops.Tag().Equals(Constants.TAG_BACKGROUND))
+                {                Debug.Log("background");
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                        this.InstantiateBackground((BackgroundObjectProperties) sops);
+                    }); 
+                }
+                // or instantiate new playobject with the specified properties
+                else if (sops.Tag().Equals(Constants.TAG_PLAY_OBJECT))
+                {
+                    Debug.Log("play object");
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                        this.InstantiatePlayObject((PlayObjectProperties) sops);
+                    });
+                }
             }
             break;
             
         case Constants.CLEAR:
+            Debug.LogWarning("Action clear not fully implemented yet, may break!");
             // remove all play objects and background objects from scene, hide highlight
-            DestroyObjectsByTag(new string[] { Constants.TAG_BACKGROUND, 
-                Constants.TAG_PLAY_OBJECT });
-            gestureManager.LightOff();
+            MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                this.ClearScene(); // ClearScene works fine, but websocket problem:
+            });
+            // TODO Something pretty weird is going on here - websocket bug?
+            // If we execute the exact same code here as in case Constants.Reload, it 
+            // works there but not here - we get an exception from the websocket. 
+            // Might be a bug in the websocket code: https://github.com/sta/websocket-sharp/issues/41
             break;
             
         case Constants.MOVE_OBJECT:
-            Debug.LogWarning("Action move_object not implemented yet!");
-            // TODO use LeanTween to move object from curr_posn to new_posn
+            Constants.MoveObject mo = (Constants.MoveObject) props;
+            if (props != null)
+            {
+                // use LeanTween to move object from curr_posn to new_posn
+                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    GameObject go = GameObject.Find(mo.name);
+                    if (go != null) LeanTween.move(go, mo.destination, 2.0f).setEase(LeanTweenType.easeOutSine);    
+                });
+            }
             break;
             
         case Constants.HIGHLIGHT_OBJECT:
-            Debug.LogWarning("Action highlight_object not implemented yet!");
-            // TODO ?? do we need a second highlight object for this? or just move it there?
+            Debug.LogWarning("Action highlight_object not fully tested yet, may break!");
+            MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                GameObject go = GameObject.Find((string) props);
+                if (go != null) this.gestureManager.LightOn(go.transform.position);
+            });  
             break;
             
         case Constants.REQUEST_KEYFRAME:
             Debug.LogWarning("Action request_keyframe not implemented yet!");
             // TODO send back keyframe log message ...
+            
             break;
+            
+        case Constants.GOT_TO_GOAL:
+            Debug.LogWarning("Action got_to_goal not implemented yet!");
+            // TODO do something now that object X is at its goal ...
+            
+            break;
+        
+        
         }
     }
     
@@ -319,27 +388,74 @@ public class MainGameController : MonoBehaviour
     void ReloadScene()
     {
         Debug.Log("Reloading current scene...");
-
-        Debug.LogWarning("Reload not implemented yet!");
-        // TODO move all play objects back to their initial positions
-        // TODO need to save initial positions for objects for reloading
         
+        // turn light off if it's not already
+        this.gestureManager.LightOff();
+
+        // move all play objects back to their initial positions
+        ResetAllObjectsWithTag(new string[] {Constants.TAG_PLAY_OBJECT});
+        
+        // TODO is there anything else to reset?
+    }
+    
+    /// <summary>
+    /// Clears the scene, deletes all objects
+    /// </summary>
+    void ClearScene()
+    {
+        Debug.Log("Clearing current scene...");
+        
+        // turn off the light if it's not already
+        this.gestureManager.LightOff();
+        
+        // remove all objects with specified tags
+        this.DestroyObjectsByTag(new string[] {Constants.TAG_BACKGROUND, Constants.TAG_PLAY_OBJECT});
+    }
+    
+    /// <summary>
+    /// Resets all objects with the specified tags back to initial positions
+    /// </summary>
+    /// <param name="tags">tags of object types to reset</param>
+    void ResetAllObjectsWithTag(string[] tags)
+    {
+        // move objects with the specified tags
+        foreach (string tag in tags)
+        {
+            // find all objects with the specified tag
+            GameObject[] objs = GameObject.FindGameObjectsWithTag(tag);
+            if (objs.Length == 0) continue;
+            foreach (GameObject go in objs)
+            {
+                Debug.Log ("moving " + go.name);
+                // if the initial position was saved, move to it
+                SavedProperties spop = go.GetComponent<SavedProperties>();
+                if (ReferenceEquals(spop,null))
+                {
+                    Debug.LogWarning("Tried to reset " + go.name + " but could not find " +
+                                     " any saved properties.");
+                }
+                else
+                {
+                    go.transform.position = spop.initialPosition;  
+                }
+            }
+        }
     }
     
     /// <summary>
     /// Destroy objects with the specified tags
     /// </summary>
-    /// <param name="tags">tags of objects to destory</param>
+    /// <param name="tags">tags of objects to destroy</param>
     void DestroyObjectsByTag(string[] tags)
     {
         // destroy objects with the specified tags
         foreach (string tag in tags)
         {
             GameObject[] objs = GameObject.FindGameObjectsWithTag(tag);
-            if (objs.Length == 0) return;
+            if (objs.Length == 0) continue;
             foreach (GameObject go in objs)
             {
-                Debug.Log ("destroying " + go.name);
+                Debug.Log("destroying " + go.name);
                 Destroy(go);
             }
         }
@@ -370,9 +486,15 @@ public class MainGameController : MonoBehaviour
         switch(logme.type)
         {
         case LogEvent.EventType.Action:
-            RosbridgeUtilities.GetROSJsonPublishActionMsg(Constants.ACTION_ROSTOPIC,
-                logme.name, logme.action, new float[] {logme.position.x, logme.position.y,
-                logme.position.z}, System.DateTime.Now);
+            // note that for some gestures, the 2d Point returned by the gesture
+            // library does not include z position and sets z to 0 by default, so
+            // the z position may not be accurate (but it also doesn't really matter)
+            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishActionMsg(
+                Constants.ACTION_ROSTOPIC, logme.name, logme.action, 
+                (logme.position.HasValue ? new float[] 
+                {logme.position.Value.x, logme.position.Value.y,
+                logme.position.Value.z} : null), System.DateTime.Now.ToUniversalTime().Subtract(
+                new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds));
             break;
             
         case LogEvent.EventType.Scene:
@@ -380,8 +502,8 @@ public class MainGameController : MonoBehaviour
             break;
             
         case LogEvent.EventType.Message:
-            RosbridgeUtilities.GetROSJsonPublishStringMsg(Constants.LOG_ROSTOPIC,
-                                                       logme.state);
+            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
+            Constants.LOG_ROSTOPIC, logme.state));
             break;
         
         }

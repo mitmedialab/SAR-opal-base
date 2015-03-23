@@ -27,28 +27,28 @@ public class LogEvent
     /// <summary>
     /// the type of this log message
     /// </summary>
-    public EventType type;
+    public EventType? type = null;
     
     /// <summary>
     /// name of the relevant game object - e.g., the object on which the
     /// action occurred or the background object
     /// </summary>
-    public string name;
+    public string name = "";
     
     /// <summary>
     /// name of action that occurred
     /// </summary>
-    public string action;
+    public string action = "";
     
     /// <summary>
     /// x,y,z position of object
     /// </summary>
-    public Vector3 position;
+    public Vector3? position = null;
     
     /// <summary>
     /// state of object or miscellanous string message
     /// </summary>
-    public string state;
+    public string state = "";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LogEvent"/> class.
@@ -66,7 +66,7 @@ public class LogEvent
     /// <param name="name">Name.</param>
     /// <param name="action">Action.</param>
     /// <param name="position">Position.</param>
-    public LogEvent(EventType type, string name, string action, Vector3 position)
+    public LogEvent(EventType type, string name, string action, Vector3? position)
     {
         this.type = type;
         this.name = name;
@@ -82,7 +82,7 @@ public class LogEvent
     /// <param name="action">Action.</param>
     /// <param name="position">Position.</param>
     /// <param name="state">State.</param>
-    public LogEvent(EventType type, string name, string action, Vector3 position,
+    public LogEvent(EventType type, string name, string action, Vector3? position,
     string state)
     {
         this.type = type;
@@ -98,11 +98,11 @@ public class LogEvent
     /// <param name="name">Name.</param>
     /// <param name="action">Action.</param>
     /// <param name="position">Position.</param>
-    public void getActionFields(out string name, out string action, out Vector3 position)
+    public void getActionFields(out string name, out string action, out Vector3? position)
     {
         name = this.name;
         action = this.action;
-        position = this.position;
+        position = this.position.HasValue ? this.position : null;
     }
 
 

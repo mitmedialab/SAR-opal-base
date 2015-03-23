@@ -3,6 +3,10 @@ using System;
 using TouchScript.Gestures;
 using TouchScript.Hit;
 
+// log message event -- fire when you want to log something
+// so others who do logging can listen for the messages
+public delegate void LogEventHandler(object sender, LogEvent logme);
+
 /**
  * Manage gesture events and actions taken as a result of
  * gestures (e.g., play sound, show highlight)
@@ -16,10 +20,13 @@ public class GestureManager : MonoBehaviour
     private GameObject highlight = null; 
     
     // for logging stuff
-    // log message event -- fire when you want to log something
-    // so others who do logging can listen for the messages
-    public delegate void LogEventHandler(object sender, LogEvent logme);
     public event LogEventHandler logEvent;
+    
+    // save last press and last pan locations so when we get a 
+    // press released or pan complete we know about where that
+    // action happened
+    private Vector3 lastPressLocation = Vector3.zero;
+    private Vector3 lastPanLocation = Vector3.zero;
     
     /** Called on start, use to initialize stuff  */
     void Start ()
@@ -171,6 +178,7 @@ public class GestureManager : MonoBehaviour
             // want the info as a 2D point 
             ITouchHit2D hit2d = (ITouchHit2D)hit; 
             Debug.Log ("PRESS on " + gesture.gameObject.name + " at " + hit2d.Point);
+            this.lastPressLocation = hit2d.Point;
             
             // fire event indicating that we received a message
             if (this.logEvent != null)
@@ -197,29 +205,14 @@ public class GestureManager : MonoBehaviour
         Debug.Log ("PRESS COMPLETE");
         LightOff();
         
-        // get the gesture that was sent to us
-        PressGesture gesture = sender as PressGesture;
-        ITouchHit hit;
-        // get info about where the hit object was located when the gesture was
-        // recognized - i.e., where on the object (in screen dimensions) did
-        // the press occur?
-        if (gesture.GetTargetHitResult (out hit)) {
-            // want the info as a 2D point 
-            ITouchHit2D hit2d = (ITouchHit2D)hit; 
-            Debug.Log ("RELEASE of " + gesture.gameObject.name + " at " + hit2d.Point);
-            
-            // fire event indicating that we received a message
-            if (this.logEvent != null)
-            {
-                // only send subset of msg that is actual message
-                this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                            gesture.gameObject.name, "release", hit2d.Point));
-            }
-            
-        } else {
-            // this probably won't ever happen, but in case it does, we'll log it
-            Debug.LogWarning("!! could not register where RELEASE was located!");
+        // fire event indicating that we received a message
+        if (this.logEvent != null)
+        {
+            // only send subset of msg that is actual message
+            this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+                        "", "release", this.lastPressLocation));
         }
+          
     }
      
 
@@ -242,17 +235,20 @@ public class GestureManager : MonoBehaviour
             // want the info as a 2D point 
             ITouchHit2D hit2d = (ITouchHit2D)hit; 
             Debug.Log ("PAN on " + gesture.gameObject.name + " at " + hit2d.Point);
-
             // move this game object with the drag
-            // TODO check if on screen?
+            // note that hit2d.Point sets the z position to 0! does not keep
+            // track what the z position actually was! so we adjust for this when
+            // we check the allowed moves
             if (this.allowTouch) gesture.gameObject.transform.position = 
-                CheckAllowedMoves(hit2d.Point);
+                CheckAllowedMoves(hit2d.Point, gesture.gameObject.transform.position.z);
+            this.lastPanLocation = gesture.gameObject.transform.position;
             // move highlighting light and set active
             if (this.allowTouch) LightOn (1, hit2d.Point);
             // fire event indicating that we received a message
             if (this.logEvent != null)
             {
                 // only send subset of msg that is actual message
+                // note that the hit2d.Point may not have the correct z position
                 this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
                         gesture.gameObject.name, "pan", hit2d.Point));
             }
@@ -271,30 +267,14 @@ public class GestureManager : MonoBehaviour
     {
         Debug.Log("PAN COMPLETE");
         LightOff();
-        // get the gesture that was sent to us, which will tell us 
-        // which object was being dragged
-        PanGesture gesture = sender as PanGesture;
-        ITouchHit hit;
-        // get info about where the hit object was located when the gesture was
-        // recognized - i.e., where on the object (in screen dimensions) did
-        // the drag occur?
-        if (gesture.GetTargetHitResult (out hit)) {
-            // want the info as a 2D point 
-            ITouchHit2D hit2d = (ITouchHit2D)hit; 
-            Debug.Log ("PAN COMPLETE on " + gesture.gameObject.name + " at " + hit2d.Point);
-            
-            // fire event indicating that we received a message
-            if (this.logEvent != null)
-            {
-                // only send subset of msg that is actual message
-                this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                            gesture.gameObject.name, "pancomplete", hit2d.Point));
-            }
-            
-        } else {
-            // this probably won't ever happen, but in case it does, we'll log it
-            Debug.LogWarning("!! could not register where PAN COMPLETE was located!");
-        }
+        
+        // fire event indicating that we received a message
+        if (this.logEvent != null)
+        {
+            // only send subset of msg that is actual message
+            this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+                        "", "pancomplete", this.lastPanLocation));
+        }      
     }
     #endregion
     
@@ -306,7 +286,7 @@ public class GestureManager : MonoBehaviour
     /// </summary>
     /// <returns>An allowable position to move to</returns>
     /// <param name="posn">desired position to move to</param>
-    public Vector3 CheckAllowedMoves(Vector3 posn)
+    public Vector3 CheckAllowedMoves(Vector3 posn, float z)
     {
         // check if on screen
         if (posn.x > Constants.RIGHT_SIDE)
@@ -317,6 +297,10 @@ public class GestureManager : MonoBehaviour
             posn.y = Constants.TOP_SIDE;
         else if (posn.y < Constants.BOTTOM_SIDE)
             posn.y = Constants.BOTTOM_SIDE;
+        
+        // background image is at z=0 or +
+        // make sure moved object stays in front of background
+        posn.z = (z <= 0) ?  z : 0;
         
         // TODO check that we're not colliding with the sidekick boundaries (?)
         // or maybe the sidekick is the frontmost layer, so stuff would just 
@@ -366,7 +350,7 @@ public class GestureManager : MonoBehaviour
             Debug.Log ("Tried to turn light off ... but light is null!");
         }
     }
-
+  
     /** 
      * Plays the first sound attached to the object, if one exists 
      */ 

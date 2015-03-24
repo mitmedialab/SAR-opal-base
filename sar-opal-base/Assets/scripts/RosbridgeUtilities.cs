@@ -84,7 +84,7 @@ public static class RosbridgeUtilities
     /// <param name="objects">array of objects present in scene</param>
     /// <param name="timestamp">Time of the action</param>
     public static string GetROSJsonPublishSceneMsg(string topic, string background,
-        SceneObject[] objects, double timestamp)
+        Constants.SceneObject[] objects)
     {
         // build a dictionary of things to include in the message
         Dictionary<string,object> rosPublish = new Dictionary<string, object>();
@@ -92,15 +92,20 @@ public static class RosbridgeUtilities
         rosPublish.Add("topic", topic);
         Dictionary<string,object> rosMessage = new Dictionary<string, object>();
         rosMessage.Add("background", background);
-        rosMessage.Add("timestamp", timestamp);
-
-        /*foreach (SceneObject obj in objects)
+        
+        // make array of SceneObject msgs to add
+        Dictionary<string,object>[] objs = new Dictionary<string, object>[objects.Length];
+        
+        for (int i=0; i<objects.Length; i++)
         {
             Dictionary<string,object> objd = new Dictionary<string, object>();
-            //objd.Add(" //TODO add scene objects to keyframe message!
-        }   */     
+            objd.Add("objectName", objects[i].name);
+            objd.Add("position", objects[i].position);
+            objd.Add("state", objects[i].tag);
+            objs[i] = objd;
+        }     
         
-        rosMessage.Add("objects", objects);
+        rosMessage.Add("objects", objs);
         rosPublish.Add("msg", rosMessage);
         
         return Json.Serialize(rosPublish);
@@ -114,9 +119,9 @@ public static class RosbridgeUtilities
         rosPublish.Add("op", "publish");
         rosPublish.Add("topic", topic);
         Dictionary<string,object> rosMessage = new Dictionary<string, object>();
-        rosMessage.Add("background", background);
-        rosMessage.Add("objects", objects);
-        rosMessage.Add("timestamp", timestamp);
+        rosMessage.Add("objectName", objectName);
+        rosMessage.Add("position", position);
+        rosMessage.Add("tag", tag);
         rosPublish.Add("msg", rosMessage);
         
         return Json.Serialize(rosPublish);

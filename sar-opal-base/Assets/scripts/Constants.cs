@@ -76,11 +76,19 @@ public static class Constants
 	public const string ROS_TEST = @"{""op"":""publish"",""topic"":""/opal_tablet"",""msg"":{""data"":""Hello World!""}}";
 
 
-	// other stuff
+	// object to be moved
     public struct MoveObject
     {
         public string name;
         public Vector3 destination;
+    }
+    
+    // state of an object in the scene
+    public struct SceneObject
+    {
+        public string name;
+        public float[] position;
+        public string tag;
     }
 
 

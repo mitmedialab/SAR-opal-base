@@ -464,16 +464,27 @@ public class MainGameController : MonoBehaviour
     /// <summary>
     /// Logs the state of the current scene and sends as a ROS message
     /// </summary>
-    private void LogCurrentScene()
+    private string GetSceneKeyframe()
     {
         // find background image
-        
+        GameObject backg = GameObject.FindGameObjectWithTag(Constants.TAG_BACKGROUND);
         
         // find all game objects currently in scene
+        GameObject[] gos = GameObject.FindGameObjectsWithTag(Constants.TAG_PLAY_OBJECT);
+        Constants.SceneObject[] sos = new Constants.SceneObject[gos.Length];
+        for (int i = 0; i < gos.Length; i++)
+        {
+            Constants.SceneObject so;
+            so.name = gos[i].name;
+            so.position = new float[] { gos[i].transform.position.x,
+                gos[i].transform.position.y, gos[i].transform.position.z };
+            so.tag = gos[i].tag;
+            sos[i] = so;
+        }
         
-        
-        // update list of current game objects
-        
+        // return the json to publish
+        return RosbridgeUtilities.GetROSJsonPublishSceneMsg(Constants.SCENE_ROSTOPIC,
+            (backg.name == null ? "" : backg.name), sos);
     }
     
     /// <summary>

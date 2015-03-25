@@ -15,11 +15,11 @@ namespace opal
             if (utterance.Equals(""))
             {
                 Debug.LogWarning("Sidekick was told to say an empty string!");
-                return;
+                return false;
             }
                 
              // TODO figure out which audio clip to play
-            Debug.LogWarning("Action sidekick_say not implemented yet!");
+            Debug.LogWarning("Action sidekick_say not fully implemented or tested yet!");
             
             // find our sidekick
             GameObject sidekick = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
@@ -57,11 +57,15 @@ namespace opal
             if (!sidekick.audio.isPlaying)
                 sidekick.audio.Play();
             
+            // TODO the above works! need to send mutliple sounds in a row and see if that
+            // works too - sending chimes several times played each time :D
+            
+            // and then 
             // to do something after audio stops - 
             // auds.clip.length and then invoke(length) to do something in that time
             // or "timePlaying >= length" (make a float timeplaying to track)
             
-            // while playing the open-close beak animation
+            // and also while playing the open-close beak animation
             
            return true;
         }
@@ -79,7 +83,7 @@ namespace opal
             if (action.Equals(""))
             {
                 Debug.LogWarning("Sidekick was told to do an empty string!");
-                return;
+                return false;
             }
         
             return false;

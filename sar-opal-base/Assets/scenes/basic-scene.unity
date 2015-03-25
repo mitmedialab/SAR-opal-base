@@ -167,7 +167,7 @@ GameObject:
   - 95: {fileID: 450361078}
   m_Layer: 0
   m_Name: Toucan
-  m_TagString: Toucan
+  m_TagString: Sidekick
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

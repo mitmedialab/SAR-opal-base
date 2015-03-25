@@ -1,53 +1,89 @@
 using System;
 using UnityEngine;
 
-public static class Sidekick
+namespace opal
 {
-    /** 
-     * Plays the first sound attached to the object, if one exists 
-     */ 
-    public static bool SidekickSay(object props)
-    { 
-        // TODO figure out which audio clip to play
-        Debug.LogWarning("Action sidekick_say not implemented yet!");
-        
-        // and play it
-        
-        // while playing the open-close beak animation
-    
-        // play audio clip if this game object has a clip to play
-        /*AudioSource auds = go.GetComponent<AudioSource>();
-        if (auds != null && auds.clip != null)
-        {
-            Debug.Log ("playing clip for object " + go.name);
+    public static class Sidekick
+    {
+        /// <summary>
+        /// Loads and  the  sound attached to the object, if one exists
+        /// </summary>
+        /// <returns><c>true</c>, if audio is played <c>false</c> otherwise.</returns>
+        /// <param name="utterance">Utterance to say.</param>
+        public static bool SidekickSay (string utterance)
+        { 
+            if (utterance.Equals(""))
+            {
+                Debug.LogWarning("Sidekick was told to say an empty string!");
+                return;
+            }
+                
+             // TODO figure out which audio clip to play
+            Debug.LogWarning("Action sidekick_say not implemented yet!");
             
-            // play the audio clip attached to the game object
-            if(!go.audio.isPlaying)
-                go.audio.Play();
+            // find our sidekick
+            GameObject sidekick = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
+            
+            // if we didn't find the sidekick, we can't play audio!
+            if (sidekick == null)
+            {
+                Debug.LogWarning("Was going to play sidekick sound but could not find sidekick!");
+                return false;
+            }
+            
+            // get the sidekick's audio source
+            AudioSource audioSource = sidekick.GetComponent<AudioSource>();
+            
+            // if we didn't find a source, create once
+            if (audioSource == null)
+            {
+                audioSource = sidekick.AddComponent<AudioSource>();
+            }
+            
+            // then try loading a sound file to play
+            try {
+                // to load a sound file this way, the sound file needs to be in an existing 
+                // Assets/Resources folder or subfolder 
+                audioSource.clip = Resources.Load(Constants.AUDIO_FILE_PATH + 
+                                                  utterance) as AudioClip;
+            } catch(UnityException e) {
+                Debug.Log("ERROR could not load audio: " + utterance + "\n" + e);
+                return false;
+            }
+            audioSource.loop = false;
+            audioSource.playOnAwake = false;
+            
+            // then play sound if it's not playing
+            if (!sidekick.audio.isPlaying)
+                sidekick.audio.Play();
             
             // to do something after audio stops - 
             // auds.clip.length and then invoke(length) to do something in that time
             // or "timePlaying >= length" (make a float timeplaying to track)
             
-            return true;   
-        } else {
-            Debug.Log ("no sound found for " + go.name + "!");
-            return false;
-        }*/
-        return false;
-    }
+            // while playing the open-close beak animation
+            
+           return true;
+        }
     
-    /// <summary>
-    /// Sidekick play an animation
-    /// </summary>
-    /// <returns><c>true</c>, if successful <c>false</c> otherwise.</returns>
-    /// <param name="props">thing to do</param>
-    public static bool SidekickDo(object props)
-    {
-        // TODO play designated animation clip for sidekick
-        Debug.LogWarning("Action sidekick_do not implemented yet!");
+        /// <summary>
+        /// Sidekick play an animation
+        /// </summary>
+        /// <returns><c>true</c>, if successful <c>false</c> otherwise.</returns>
+        /// <param name="props">thing to do</param>
+        public static bool SidekickDo (string action)
+        {
+            // TODO play designated animation clip for sidekick
+            Debug.LogWarning("Action sidekick_do not implemented yet!");
+            
+            if (action.Equals(""))
+            {
+                Debug.LogWarning("Sidekick was told to do an empty string!");
+                return;
+            }
         
-        return false;
+            return false;
+        }
     }
 }
 

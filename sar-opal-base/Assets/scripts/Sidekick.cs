@@ -3,14 +3,77 @@ using UnityEngine;
 
 namespace opal
 {
-    public static class Sidekick
+    public class Sidekick : MonoBehaviour
     {
+        AudioSource audioSource = null;
+        Animator animator = null;
+        bool check = false;
+        
+        /// <summary>
+        /// On starting, do some setup
+        /// </summary>
+        void Awake()
+        {
+            // get the sidekick's audio source once
+            this.audioSource = this.gameObject.GetComponent<AudioSource>();
+            
+            // if we didn't find a source, create once
+            if (this.audioSource == null)
+            {
+                this.audioSource = this.gameObject.AddComponent<AudioSource>();
+            }
+            
+            // TODO load all audio in Resources/Sidekick folder ahead of time?
+            
+            // get the sidekick's animator source once
+            this.animator = this.gameObject.GetComponent<Animator>();
+            
+            // if we didn't find a source, create once
+            if (this.animator == null)
+            {
+                this.animator = this.gameObject.AddComponent<Animator>();
+            }
+            
+            // always start in an idle, no animations state
+            this.animator.SetBool("Speaking", false);
+            this.animator.SetBool("SpeakFly", false);
+            this.animator.SetBool("Flying", false);
+            
+        }
+        
+        // Start
+        void Start ()
+        {
+        }
+        
+        void OnEnable ()
+        {
+        }
+        
+        void OnDisable ()
+        {   
+        }
+        
+        // Update is called once per frame
+        void Update ()
+        {
+            // we started playing audio and we're waiting for it to finish
+            if (this.check && !this.audioSource.isPlaying)
+            {
+                // we're done playing audio, tell sidekick to stop playing
+                // the speaking animation
+                Debug.Log("done speaking");
+                this.check = false;
+                this.animator.SetBool("Speaking",false);
+            }
+        }
+        
         /// <summary>
         /// Loads and  the  sound attached to the object, if one exists
         /// </summary>
         /// <returns><c>true</c>, if audio is played <c>false</c> otherwise.</returns>
         /// <param name="utterance">Utterance to say.</param>
-        public static bool SidekickSay (string utterance)
+        public bool SidekickSay (string utterance)
         { 
             if (utterance.Equals(""))
             {
@@ -18,55 +81,28 @@ namespace opal
                 return false;
             }
                 
-             // TODO figure out which audio clip to play
-            Debug.LogWarning("Action sidekick_say not fully implemented or tested yet!");
-            
-            // find our sidekick
-            GameObject sidekick = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
-            
-            // if we didn't find the sidekick, we can't play audio!
-            if (sidekick == null)
-            {
-                Debug.LogWarning("Was going to play sidekick sound but could not find sidekick!");
-                return false;
-            }
-            
-            // get the sidekick's audio source
-            AudioSource audioSource = sidekick.GetComponent<AudioSource>();
-            
-            // if we didn't find a source, create once
-            if (audioSource == null)
-            {
-                audioSource = sidekick.AddComponent<AudioSource>();
-            }
-            
-            // then try loading a sound file to play
+            // try loading a sound file to play
             try {
                 // to load a sound file this way, the sound file needs to be in an existing 
                 // Assets/Resources folder or subfolder 
-                audioSource.clip = Resources.Load(Constants.AUDIO_FILE_PATH + 
+                this.audioSource.clip = Resources.Load(Constants.AUDIO_FILE_PATH + 
                                                   utterance) as AudioClip;
             } catch(UnityException e) {
-                Debug.Log("ERROR could not load audio: " + utterance + "\n" + e);
+                Debug.LogError("ERROR could not load audio: " + utterance + "\n" + e);
                 return false;
             }
-            audioSource.loop = false;
-            audioSource.playOnAwake = false;
+            this.audioSource.loop = false;
+            this.audioSource.playOnAwake = false;
             
             // then play sound if it's not playing
-            if (!sidekick.audio.isPlaying)
-                sidekick.audio.Play();
-            
-            // TODO the above works! need to send mutliple sounds in a row and see if that
-            // works too - sending chimes several times played each time :D
-            
-            // and then 
-            // to do something after audio stops - 
-            // auds.clip.length and then invoke(length) to do something in that time
-            // or "timePlaying >= length" (make a float timeplaying to track)
-            
-            // and also while playing the open-close beak animation
-            
+            if (!this.gameObject.audio.isPlaying)
+            {
+                // start the speaking animation
+                this.animator.SetBool("Speaking",true);
+                this.gameObject.audio.Play();
+                this.check = true;
+            }
+           
            return true;
         }
     
@@ -75,10 +111,10 @@ namespace opal
         /// </summary>
         /// <returns><c>true</c>, if successful <c>false</c> otherwise.</returns>
         /// <param name="props">thing to do</param>
-        public static bool SidekickDo (string action)
+        public bool SidekickDo (string action)
         {
             // TODO play designated animation clip for sidekick
-            Debug.LogWarning("Action sidekick_do not implemented yet!");
+            Debug.LogWarning("Action sidekick_do not fully tested yet!");
             
             if (action.Equals(""))
             {
@@ -86,7 +122,17 @@ namespace opal
                 return false;
             }
         
-            return false;
+            // now try playing animation
+            try {
+                // start the animation
+                this.animator.SetBool(action,true);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("Could not play animation " + action + ": " + ex);
+                return false;
+            }
+            return true;
         }
     }
 }

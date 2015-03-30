@@ -165,6 +165,7 @@ GameObject:
   - 50: {fileID: 450361075}
   - 58: {fileID: 450361074}
   - 95: {fileID: 450361078}
+  - 114: {fileID: 450361073}
   m_Layer: 0
   m_Name: Toucan
   m_TagString: Sidekick
@@ -172,6 +173,17 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &450361073
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 450361072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 302e34e95607f46b4aee7f72076822ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!58 &450361074
 CircleCollider2D:
   m_ObjectHideFlags: 0

@@ -16,6 +16,9 @@ namespace opal
     {
         // gesture manager
         private GestureManager gestureManager = null;
+        
+        // sidekick
+        private Sidekick sidekickScript = null;
     
         // rosbridge websocket client
         private RosbridgeWebSocketClient clientSocket = null;
@@ -27,20 +30,31 @@ namespace opal
         // for logging stuff
         public event LogEventHandler logEvent;
     
-        /** Called on start, use to initialize stuff  */
+        /// <summary>
+        /// Called on start, use to initialize stuff
+        /// </summary>
         void Start ()
         {
             // find gesture manager
             FindGestureManager(); 
             this.gestureManager.logEvent += new LogEventHandler(HandleLogEvent);
             this.logEvent += new LogEventHandler(HandleLogEvent);
-       
-            // Create a new game object programmatically as a test
-            //PlayObjectProperties pops = new PlayObjectProperties();
-            //pops.setAll("ball2", Constants.TAG_PLAY_OBJECT, false, "chimes", 
-            //            new Vector3 (-200, 50, -2), null);
-            //this.InstantiatePlayObject(pops);
-        
+            
+            // find our sidekick
+            GameObject sidekick = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
+            if(sidekick == null) {
+                Debug.LogError("ERROR: Could not find sidekick!");
+            } else {
+                Debug.Log("Got sidekick");
+            }
+            
+            this.sidekickScript = sidekick.GetComponent<Sidekick>();
+            if(this.sidekickScript == null) {
+                Debug.LogError("ERROR: Could not add sidekick script!");
+            } else {
+                Debug.Log("Got sidekick script");
+            }
+            
             // Create a new background programmatically as a test
             BackgroundObjectProperties bops = new BackgroundObjectProperties();
             bops.setAll("playground", Constants.TAG_BACKGROUND, 
@@ -140,7 +154,13 @@ namespace opal
             // messages received from the websocket on another thread)
             while(ExecuteOnMainThread.Count > 0) {
                 Debug.Log("Invoking actions on main thread....");
-                ExecuteOnMainThread.Dequeue().Invoke(); 
+                try {
+                    ExecuteOnMainThread.Dequeue().Invoke(); 
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError("Error when invoking actions on main thread!" + ex);
+                }
             }
         }
 
@@ -262,7 +282,6 @@ namespace opal
                 Debug.Log("Got gesture manager");
             }
         }
-    
        
         /// <summary>
         /// Received message from remote controller - process and deal with message
@@ -278,6 +297,13 @@ namespace opal
         
             // process first token to determine which message type this is
             // if there is a second token, this is the message argument
+            //
+            // NOTE that you shouldn't reorder the stuff in this switch because
+            // there appears to be a mono compiler bug that causes strange
+            // behavior if, e.g., the "CLEAR" case is last (then nothing clears and
+            // we get an argument invalid exception). I hate to be the one who 
+            // writes the "sometimes weird things happen :)" comment, but here it 
+            // is, weird things happen. TODO Consider swapping switch for if-elses.
             switch(cmd) { 
                 case Constants.REQUEST_KEYFRAME:
                     // fire event indicating we want to log the state of the current scene
@@ -330,15 +356,16 @@ namespace opal
                 case Constants.SIDEKICK_DO:
                     // trigger animation for sidekick character
                     MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                        Sidekick.SidekickDo((string)props);
+                        this.sidekickScript.SidekickDo((string)props);
                     }); 
                     break;
                 
                 case Constants.SIDEKICK_SAY:
                     // trigger playback of speech for sidekick character
                     MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                        Sidekick.SidekickSay((string)props);
-                    }); 
+                    this.sidekickScript.SidekickSay((string)props);
+                    
+                }); 
                     break;
                 
                 case Constants.LOAD_OBJECT:
@@ -380,11 +407,7 @@ namespace opal
                         Debug.LogError(ex);
                     }
                     Debug.Log("clearing scene 4");
-                    // TODO Something pretty weird is going on here - websocket bug?
-                    // If we execute the exact same code here as in case Constants.Reload, it 
-                    // works there but not here - we get an exception from the websocket. 
-                    // Might be a bug in the websocket code: https://github.com/sta/websocket-sharp/issues/41
-                    break;
+                   break;
                 
                 case Constants.MOVE_OBJECT:
                     if(props == null) {

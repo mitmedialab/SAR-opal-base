@@ -240,7 +240,7 @@ namespace opal
             props = Json.Deserialize((string)msg["properties"]) as Dictionary<string, object>;
             // if we can't deserialize the json message, return
             if(props == null) {   
-                Debug.LogWarning("Could not parse JSON properties! Could just be a string.");
+                Debug.Log("Could not parse JSON properties! Could just be a string.");
             
                 // so properties could be just a string (e.g. if command is SIDEKICK_DO)
                 if(msg["properties"] is String) {

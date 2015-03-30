@@ -76,11 +76,6 @@ namespace opal
         public const string SCENE_ROSMSG_TYPE = "/sar_opal_msgs/OpalScene";
         // commands from elsewhere that we should deal with
         public const string CMD_ROSTOPIC = "/opal_command";
-        public const string CMD_ROSMSG_TYPE = "/sar_opal_msgs/OpalCommand";
-        
-        // testing
-        public const string ROS_PUBLISH = @"{""op"":""advertise"",""topic"":""/opal_tablet"",""type"":""std_msgs/String""}";
-        public const string ROS_SUBSCRIBE = @"{""op"":""subscribe"",""topic"":""/opal_command"",""type"":""sar_opal_msgs/OpalCommand""}";
-        public const string ROS_TEST = @"{""op"":""publish"",""topic"":""/opal_tablet"",""msg"":{""data"":""Hello World!""}}";
+        public const string CMD_ROSMSG_TYPE = "/sar_opal_msgs/OpalCommand";        
     }
 }

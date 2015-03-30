@@ -16,6 +16,9 @@ namespace opal
     {
         // gesture manager
         private GestureManager gestureManager = null;
+        
+        // sidekick
+        private Sidekick sidekickScript = null;
     
         // rosbridge websocket client
         private RosbridgeWebSocketClient clientSocket = null;
@@ -27,20 +30,31 @@ namespace opal
         // for logging stuff
         public event LogEventHandler logEvent;
     
-        /** Called on start, use to initialize stuff  */
+        /// <summary>
+        /// Called on start, use to initialize stuff
+        /// </summary>
         void Start ()
         {
             // find gesture manager
             FindGestureManager(); 
             this.gestureManager.logEvent += new LogEventHandler(HandleLogEvent);
             this.logEvent += new LogEventHandler(HandleLogEvent);
-       
-            // Create a new game object programmatically as a test
-            //PlayObjectProperties pops = new PlayObjectProperties();
-            //pops.setAll("ball2", Constants.TAG_PLAY_OBJECT, false, "chimes", 
-            //            new Vector3 (-200, 50, -2), null);
-            //this.InstantiatePlayObject(pops);
-        
+            
+            // find our sidekick
+            GameObject sidekick = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
+            if(sidekick == null) {
+                Debug.LogError("ERROR: Could not find sidekick!");
+            } else {
+                Debug.Log("Got sidekick");
+            }
+            
+            this.sidekickScript = sidekick.GetComponent<Sidekick>();
+            if(this.sidekickScript == null) {
+                Debug.LogError("ERROR: Could not add sidekick script!");
+            } else {
+                Debug.Log("Got sidekick script");
+            }
+            
             // Create a new background programmatically as a test
             BackgroundObjectProperties bops = new BackgroundObjectProperties();
             bops.setAll("playground", Constants.TAG_BACKGROUND, 
@@ -140,7 +154,13 @@ namespace opal
             // messages received from the websocket on another thread)
             while(ExecuteOnMainThread.Count > 0) {
                 Debug.Log("Invoking actions on main thread....");
-                ExecuteOnMainThread.Dequeue().Invoke(); 
+                try {
+                    ExecuteOnMainThread.Dequeue().Invoke(); 
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError("Error when invoking actions on main thread!" + ex);
+                }
             }
         }
 
@@ -262,7 +282,6 @@ namespace opal
                 Debug.Log("Got gesture manager");
             }
         }
-    
        
         /// <summary>
         /// Received message from remote controller - process and deal with message
@@ -274,130 +293,146 @@ namespace opal
         {
             Debug.Log("MSG received from remote: " + cmd);
             this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
-            Constants.LOG_ROSTOPIC, "got message"));
+                Constants.LOG_ROSTOPIC, "got message"));
         
             // process first token to determine which message type this is
             // if there is a second token, this is the message argument
-            switch(cmd) {
-            case Constants.DISABLE_TOUCH:
-                // disable touch events from user
-                this.gestureManager.allowTouch = false; 
-                break;
-            
-            case Constants.ENABLE_TOUCH:
-                // enable touch events from user
-                this.gestureManager.allowTouch = true;
-                break;
-            
-            case Constants.RESET:
-               // reload the current level
-                // e.g., when the robot's turn starts, want all characters back in their
-                // starting configuration for use with automatic playbacks
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                    this.ReloadScene();
-                });
-                break;
-            
-            case Constants.SIDEKICK_DO:
-                // trigger animation for sidekick character
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                    Sidekick.SidekickDo((string)props);
+            //
+            // NOTE that you shouldn't reorder the stuff in this switch because
+            // there appears to be a mono compiler bug that causes strange
+            // behavior if, e.g., the "CLEAR" case is last (then nothing clears and
+            // we get an argument invalid exception). I hate to be the one who 
+            // writes the "sometimes weird things happen :)" comment, but here it 
+            // is, weird things happen. TODO Consider swapping switch for if-elses.
+            switch(cmd) { 
+                case Constants.REQUEST_KEYFRAME:
+                    // fire event indicating we want to log the state of the current scene
+                    if(this.logEvent != null) {
+                        // get keyframe and send it
+                        MainGameController.ExecuteOnMainThread.Enqueue(() => {
+                            string backg = "";
+                            LogEvent.SceneObject[] sos = null;
+                            this.GetSceneKeyframe(out backg, out sos);
+                            this.logEvent(this, new LogEvent(LogEvent.EventType.Scene, backg, sos));
+                        });
+                    }  else {
+                        Debug.LogWarning("Was told to send keyframe but logger " +
+                                         "doesn't appear to exist.");
+                    }
+                    break;
+                
+                case Constants.HIGHLIGHT_OBJECT:
+                    // move the highlight behind the specified game object
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                        GameObject go = GameObject.Find((string)props);
+                        if(go != null) {
+                            this.gestureManager.LightOn(go.transform.position);
+                        } else {
+                            Debug.LogWarning("Was told to highlight " + (string)props + 
+                                             " but could not find the game object!");
+                        }
+                    });  
+                    break;
+                
+                case Constants.DISABLE_TOUCH:
+                    // disable touch events from user
+                    this.gestureManager.allowTouch = false; 
+                    break;
+                
+                case Constants.ENABLE_TOUCH:
+                    // enable touch events from user
+                    this.gestureManager.allowTouch = true;
+                    break;
+                
+                case Constants.RESET:
+                   // reload the current level
+                    // e.g., when the robot's turn starts, want all characters back in their
+                    // starting configuration for use with automatic playbacks
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                        this.ReloadScene();
+                    });
+                    break;
+                
+                case Constants.SIDEKICK_DO:
+                    // trigger animation for sidekick character
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                        this.sidekickScript.SidekickDo((string)props);
+                    }); 
+                    break;
+                
+                case Constants.SIDEKICK_SAY:
+                    // trigger playback of speech for sidekick character
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    this.sidekickScript.SidekickSay((string)props);
+                    
                 }); 
-                break;
-            
-            case Constants.SIDEKICK_SAY:
-                // trigger playback of speech for sidekick character
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                    Sidekick.SidekickSay((string)props);
-                }); 
-                break;
-            
-            case Constants.LOAD_OBJECT:
-                // load the specified game object
-                if(props == null) {
-                    Debug.Log("was told to load an object, but got no properties!");
-                    return;
-                }
-                SceneObjectProperties sops = (SceneObjectProperties)props;
-                if(props != null) {
+                    break;
+                
+                case Constants.LOAD_OBJECT:
+                    // load the specified game object
+                    if(props == null) {
+                        Debug.Log("was told to load an object, but got no properties!");
+                        break;
+                    }
+                    SceneObjectProperties sops = (SceneObjectProperties)props;
+                    
                     // load new background image with the specified properties
                     if(sops.Tag().Equals(Constants.TAG_BACKGROUND)) {
                         Debug.Log("background");
-                        MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                        MainGameController.ExecuteOnMainThread.Enqueue(() => {
                             this.InstantiateBackground((BackgroundObjectProperties)sops);
                         }); 
                     }
-                // or instantiate new playobject with the specified properties
-                else if(sops.Tag().Equals(Constants.TAG_PLAY_OBJECT)) {
+                    // or instantiate new playobject with the specified properties
+                    else if(sops.Tag().Equals(Constants.TAG_PLAY_OBJECT)) {
                         Debug.Log("play object");
                         MainGameController.ExecuteOnMainThread.Enqueue(() => { 
                             this.InstantiatePlayObject((PlayObjectProperties)sops);
                         });
                     }
-                }
-                break;
-            
-            case Constants.CLEAR:
-                // remove all play objects and background objects from scene, hide highlight
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                    this.ClearScene(); // ClearScene works fine, but websocket problem:
-                });
-            // TODO Something pretty weird is going on here - websocket bug?
-            // If we execute the exact same code here as in case Constants.Reload, it 
-            // works there but not here - we get an exception from the websocket. 
-            // Might be a bug in the websocket code: https://github.com/sta/websocket-sharp/issues/41
-                break;
-            
-            case Constants.MOVE_OBJECT:
-                if(props == null) {
-                    Debug.Log("Was told to move an object but did not " +
-                              "get name of which one or position to move to.");
-                    return;
-                }
+                    break;
                 
-                MoveObject mo = (MoveObject)props;
-                // use LeanTween to move object from curr_posn to new_posn
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                    GameObject go = GameObject.Find(mo.name);
-                    if(go != null)
-                        LeanTween.move(go, mo.destination, 2.0f).setEase(
-                    LeanTweenType.easeOutSine);    
-                });
-                break;
-            
-            case Constants.HIGHLIGHT_OBJECT:
-                // move the highlight behind the specified game object
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                    GameObject go = GameObject.Find((string)props);
-                    if(go != null) {
-                        this.gestureManager.LightOn(go.transform.position);
-                    } else {
-                        Debug.LogWarning("Was told to highlight " + (string)props + 
-                            " but could not find the game object!");
+                case Constants.CLEAR:
+                    Debug.Log("clearing scene 1 ");
+                    try {                   
+                        // remove all play objects and background objects from scene, hide highlight
+                        MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                            Debug.Log("clearing scene 2");
+                            this.ClearScene(); 
+                            Debug.Log("clearing scene 3");
+                        });
                     }
-                });  
-                break;
-            
-            case Constants.REQUEST_KEYFRAME:
-                // fire event indicating we want to log the state of the current scene
-                if(this.logEvent != null) {
-                    // get keyframe and send it
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => {
-                        string backg = "";
-                        LogEvent.SceneObject[] sos = null;
-                        this.GetSceneKeyframe(out backg, out sos);
-                        this.logEvent(this, new LogEvent(LogEvent.EventType.Scene, backg, sos));
+                    catch (Exception ex)
+                    {
+                        Debug.LogError(ex);
+                    }
+                    Debug.Log("clearing scene 4");
+                   break;
+                
+                case Constants.MOVE_OBJECT:
+                    if(props == null) {
+                        Debug.Log("Was told to move an object but did not " +
+                                  "get name of which one or position to move to.");
+                        return;
+                    }
+                    MoveObject mo = (MoveObject)props;
+                    // use LeanTween to move object from curr_posn to new_posn
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                        GameObject go = GameObject.Find(mo.name);
+                        if(go != null)
+                            LeanTween.move(go, mo.destination, 2.0f).setEase(
+                                LeanTweenType.easeOutSine);    
                     });
-                }  else {
-                    Debug.LogWarning("Was told to send keyframe but logger " +
-                                     "doesn't appear to exist.");
-                }
-                break;
-            
-            case Constants.GOT_TO_GOAL:
-                Debug.LogWarning("Action got_to_goal not implemented yet!");
-                // TODO do something now that object X is at its goal ...?
-                break;
+                    break;
+                
+                case Constants.GOT_TO_GOAL:
+                    Debug.LogWarning("Action got_to_goal not implemented yet!");
+                    // TODO do something now that object X is at its goal ...?
+                    break;
+                    
+                default:
+                    Debug.LogWarning("Got a message that doesn't match any we expect!");
+                    break;
             }
         }
     

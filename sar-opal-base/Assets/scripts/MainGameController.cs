@@ -31,9 +31,9 @@ namespace opal
         public event LogEventHandler logEvent;
     
         /// <summary>
-        /// Called on start, use to initialize stuff
+        /// Called first, use to initialize stuff
         /// </summary>
-        void Start ()
+        void Awake()
         {
             // find gesture manager
             FindGestureManager(); 
@@ -48,13 +48,24 @@ namespace opal
                 Debug.Log("Got sidekick");
             }
             
-            this.sidekickScript = sidekick.GetComponent<Sidekick>();
+            this.sidekickScript = (Sidekick)sidekick.GetComponent<Sidekick>();
             if(this.sidekickScript == null) {
-                Debug.LogError("ERROR: Could not add sidekick script!");
+                Debug.LogError("ERROR: Could not get sidekick script!");
+                //this.sidekickScript = sidekick.AddComponent<Sidekick>();
+                //if (this.sidekickScript == null) {
+                //Debug.LogError("ERROR: Tried to add sidekick script but failed!");
+                //} else { Debug.Log("Got sidekick script!"); }
             } else {
                 Debug.Log("Got sidekick script");
             }
             
+        }
+            
+        /// <summary>
+        /// Called on start, use to initialize stuff
+        /// </summary>
+        void Start()
+        {
             // Create a new background programmatically as a test
             BackgroundObjectProperties bops = new BackgroundObjectProperties();
             bops.setAll("playground", Constants.TAG_BACKGROUND, 
@@ -364,8 +375,7 @@ namespace opal
                     // trigger playback of speech for sidekick character
                     MainGameController.ExecuteOnMainThread.Enqueue(() => { 
                     this.sidekickScript.SidekickSay((string)props);
-                    
-                }); 
+                    }); 
                     break;
                 
                 case Constants.LOAD_OBJECT:
@@ -452,7 +462,6 @@ namespace opal
             // move all play objects back to their initial positions
             ResetAllObjectsWithTag(new string[] {Constants.TAG_PLAY_OBJECT});
         
-            // TODO is there anything else to reset?
         }
     
         /// <summary>
@@ -565,7 +574,6 @@ namespace opal
                 break;
             
             case LogEvent.EventType.Scene:
-                Debug.LogWarning("Log scene event not fully tested yet!"); //TODO test send keyframes
                 // send keyframe message
                 this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishSceneMsg(
                 Constants.SCENE_ROSTOPIC, logme.name, logme.sceneObjects));

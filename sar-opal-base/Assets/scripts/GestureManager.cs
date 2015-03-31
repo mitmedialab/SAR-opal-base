@@ -230,7 +230,6 @@ namespace opal
           
         }
      
-
         /// <summary>
         /// Handle all pan/drag events - log them, trigger actions in response
         /// </summary>

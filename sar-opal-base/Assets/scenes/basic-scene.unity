@@ -162,10 +162,10 @@ GameObject:
   m_Component:
   - 4: {fileID: 450361077}
   - 212: {fileID: 450361076}
+  - 114: {fileID: 450361073}
   - 50: {fileID: 450361075}
   - 58: {fileID: 450361074}
   - 95: {fileID: 450361078}
-  - 114: {fileID: 450361073}
   m_Layer: 0
   m_Name: Toucan
   m_TagString: Sidekick
@@ -239,7 +239,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 450361072}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -390, y: -138, z: 0}
+  m_LocalPosition: {x: -390, y: -138, z: -3}
   m_LocalScale: {x: 80, y: 80, z: 80}
   m_Children: []
   m_Father: {fileID: 0}

@@ -7,7 +7,10 @@ namespace opal
     {
         AudioSource audioSource = null;
         Animator animator = null;
-        bool check = false;
+        bool checkAudio = false;
+        bool checkAnim = false;
+        string currAnim = Constants.ANIM_DEFAULT;
+        bool playingAnim = false;
         
         /// <summary>
         /// On starting, do some setup
@@ -34,16 +37,17 @@ namespace opal
                 this.animator = this.gameObject.AddComponent<Animator>();
             }
             
-            // always start in an idle, no animations state
-            this.animator.SetBool("Speaking", false);
-            this.animator.SetBool("SpeakFly", false);
-            this.animator.SetBool("Flying", false);
-            
         }
         
         // Start
         void Start ()
         {
+            // always start in an idle, no animations state
+            foreach (string flag in Constants.ANIM_FLAGS.Values)
+            {
+                this.animator.SetBool(flag, false);
+                Debug.Log("flag " + flag + " is ... " + this.animator.GetBool(flag));
+            }
         }
         
         void OnEnable ()
@@ -58,13 +62,27 @@ namespace opal
         void Update ()
         {
             // we started playing audio and we're waiting for it to finish
-            if (this.check && !this.audioSource.isPlaying)
+            if (this.checkAudio && !this.audioSource.isPlaying)
             {
                 // we're done playing audio, tell sidekick to stop playing
                 // the speaking animation
                 Debug.Log("done speaking");
-                this.check = false;
-                this.animator.SetBool("Speaking",false);
+                this.checkAudio = false;
+                this.animator.SetBool(Constants.ANIM_FLAGS[Constants.ANIM_SPEAK],false);
+            }
+            
+            // we started playing an animation and we're waiting for it to finish
+            if (this.checkAnim && this.animator.GetCurrentAnimatorStateInfo(0).IsName(this.currAnim))
+            {
+                this.playingAnim = true;
+            }
+            else if (this.checkAnim && this.playingAnim)
+            {
+                Debug.Log("done playing animation " + this.currAnim);
+                this.playingAnim = false;
+                this.checkAnim = false;
+                this.animator.SetBool(Constants.ANIM_FLAGS[this.currAnim], false);
+                this.currAnim = Constants.ANIM_DEFAULT;
             }
         }
         
@@ -98,9 +116,17 @@ namespace opal
             if (!this.gameObject.audio.isPlaying)
             {
                 // start the speaking animation
-                this.animator.SetBool("Speaking",true);
+                Debug.Log("flag is ... " 
+                    + this.animator.GetBool(Constants.ANIM_FLAGS[Constants.ANIM_SPEAK]));
+                
+                this.animator.SetBool(Constants.ANIM_FLAGS[Constants.ANIM_SPEAK],true);
+                
+                Debug.Log("going to speak ... " 
+                    + this.animator.GetBool(Constants.ANIM_FLAGS[Constants.ANIM_SPEAK]));
+                
+                // play audio
                 this.gameObject.audio.Play();
-                this.check = true;
+                this.checkAudio = true;
             }
            
            return true;
@@ -113,9 +139,6 @@ namespace opal
         /// <param name="props">thing to do</param>
         public bool SidekickDo (string action)
         {
-            // TODO play designated animation clip for sidekick
-            Debug.LogWarning("Action sidekick_do not fully tested yet!");
-            
             if (action.Equals(""))
             {
                 Debug.LogWarning("Sidekick was told to do an empty string!");
@@ -125,7 +148,13 @@ namespace opal
             // now try playing animation
             try {
                 // start the animation
-                this.animator.SetBool(action,true);
+                Debug.Log("flag is ... " + this.animator.GetBool(Constants.ANIM_FLAGS[action]));
+                this.animator.SetBool(Constants.ANIM_FLAGS[action],true);
+                this.currAnim = action;
+                this.checkAnim = true;
+                Debug.Log("going to do " + action + " ... " 
+                    + this.animator.GetBool(Constants.ANIM_FLAGS[action]));
+                
             }
             catch (Exception ex)
             {

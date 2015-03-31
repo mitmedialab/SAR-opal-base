@@ -49,6 +49,21 @@ namespace opal
         public const int REQUEST_KEYFRAME = 9;
         public const int GOT_TO_GOAL = 10;
     
+        /** sidekick animations */
+        // name of each animation, from unity editor
+        // we can receive rosmsgs with name of animation to play
+        public const string ANIM_DEFAULT = "Default";
+        public const string ANIM_SPEAK = "BeakOpenClose";
+        public const string ANIM_FLAP = "FlapWings";
+        public const string ANIM_FLAP_BEAKOPEN = "FlapBeakOpen";
+        // flags for playing each animation (animator parameters)
+        public static readonly Dictionary<string, string> ANIM_FLAGS = new Dictionary<string, string>
+        {
+            { ANIM_SPEAK, "Speak" },
+            { ANIM_FLAP, "Fly" },
+            { ANIM_FLAP_BEAKOPEN, "FlyBeakOpen"}
+        };
+        
         /** Websocket config file path */
         // if playing in unity on desktop:
         public const string WEBSOCKET_CONFIG = "websocket_config.txt";
@@ -57,7 +72,7 @@ namespace opal
         public const string CONFIG_PATH_ANDROID = "mnt/sdcard/edu.mit.media.prg.sar.opal.base/";
     
     
-        // ROS-related constants: topics and message types
+        /** ROS-related constants: topics and message types */
         // general string log messages (e.g., "started up", "error", whatever)
         public const string LOG_ROSTOPIC = "/opal_tablet";
         public const string LOG_ROSMSG_TYPE = "std_msgs/String";

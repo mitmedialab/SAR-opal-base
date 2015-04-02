@@ -94,15 +94,18 @@ namespace opal
             Dictionary<string,object> rosMessage = new Dictionary<string, object>();
             rosMessage.Add("background", background);
         
-            // make array of SceneObject msgs to add
-            Dictionary<string,object>[] objs = new Dictionary<string, object>[objects.Length];
-        
-            for(int i=0; i<objects.Length; i++) {
+            // make array of JSON strings from the SceneObjects to add
+            string[] objs = new string[objects.Length];
+            for(int i=0; i<objects.Length; i++) 
+            {
                 Dictionary<string,object> objd = new Dictionary<string, object>();
                 objd.Add("name", objects[i].name);
                 objd.Add("position", objects[i].position);
-                objd.Add("state", objects[i].tag);
-                objs[i] = objd;
+                objd.Add("tag", objects[i].tag);
+                objd.Add("scale",objects[i].scale);
+                objd.Add("draggable", objects[i].draggable);
+                objd.Add("audioFile", objects[i].audio);
+                objs[i] = Json.Serialize(objd);
             }     
         
             rosMessage.Add("objects", objs);
@@ -180,8 +183,9 @@ namespace opal
             // messages might look like:
             // {"topic": "/opal_command", "msg": {"command": 5, "properties": 
             // "{\"draggable\": \"true\", \"initPosition\": {\"y\": \"300\", \"x\":
-            //  \"-300\", \"z\": \"0\"}, \"name\": \"ball2\", \"endPositions\": 
-            // \"null\", \"audioFile\": \"chimes\"}"}, "op": "publish"}
+            //  \"-300\", \"z\": \"0\"}, \"name\": \"ball2\", \"scale\": 
+            // "{\"y\": \"100\", \"x\": \"100\", \"z\": \"100\"}", \"audioFile\": 
+            // \"chimes\"}"}, "op": "publish"}
             //
             // or:
             // "topic": "/opal_command", "msg": {"command": 2, 
@@ -278,19 +282,31 @@ namespace opal
                     Debug.LogError("Error! Could not get audio file: " + ex);
                 }
             
-                if(props.ContainsKey("initPosition")) {
+                if(props.ContainsKey("position")) {
                     // this is the weird way of converting an object back into
                     // an int array .. not as straightforward as it should be!
                     try {
-                        int[] posn = ObjectToIntArray(props["initPosition"] as IEnumerable);
+                        int[] posn = ObjectToIntArray(props["position"] as IEnumerable);
                         pops.SetInitPosition(new Vector3(posn[0], posn[1], posn[2]));
+                    } catch(Exception ex) {
+                        Debug.LogError("Error! Could not get initial position: " + ex);
+                    }
+                }
+                
+                if(props.ContainsKey("scale")) {
+                    // same weird way of converting an object back to int array
+                    try {
+                        int[] posn = ObjectToIntArray(props["scale"] as IEnumerable);
+                        pops.SetScale(new Vector3(posn[0], posn[1], posn[2]));
                     } catch(Exception ex) {
                         Debug.LogError("Error! Could not get initial position: " + ex);
                     }
                 }
             
                 // get end positions
-                if(props.ContainsKey("endPositions")) {
+                // NOTE: We are not using the end position property!
+                // Leaving code here, commented out, in case we add it back...
+                /*if(props.ContainsKey("endPositions")) {
                     try {
                         IEnumerable en = props["endPositions"] as IEnumerable;
                         foreach(IEnumerable element in en) {
@@ -300,7 +316,7 @@ namespace opal
                     } catch(Exception ex) {
                         Debug.LogError("Error! Could not get end position: " + ex);
                     }
-                }
+                }*/
                 properties = pops; // return the properties
                 Debug.Log(props);
             }

@@ -544,11 +544,18 @@ namespace opal
             // array of stuff that's not just play objects - which may be the case
             // later! so we're keeping it as a field anyway
             for(int i = 0; i < gos.Length; i++) {
-                LogEvent.SceneObject so;
+                LogEvent.SceneObject so = new LogEvent.SceneObject();
                 so.name = gos[i].name;
                 so.position = new float[] { gos[i].transform.position.x,
-                gos[i].transform.position.y, gos[i].transform.position.z };
+                    gos[i].transform.position.y, gos[i].transform.position.z };
                 so.tag = gos[i].tag;
+                so.scale = new float[] { gos[i].transform.localScale.x,
+                    gos[i].transform.localScale.y, gos[i].transform.localScale.z };
+                // is this object draggable?
+                so.draggable = (gos[i].GetComponent<PanGesture>() != null);
+                // get audio clip name
+                AudioSource auds = gos[i].GetComponent<AudioSource>();
+                if(auds != null && auds.clip != null) { so.audio = auds.clip.name; }
                 sceneObjects[i] = so;
             }
         }

@@ -20,13 +20,7 @@ namespace opal
     
         // for logging stuff
         public event LogEventHandler logEvent;
-    
-        // save last press and last pan locations so when we get a 
-        // press released or pan complete we know about where that
-        // action happened
-        private Vector3 lastPressLocation = Vector3.zero;
-        private Vector3 lastPanLocation = Vector3.zero;
-    
+        
         /// <summary>
         /// Called on start, use to initialize stuff
         /// </summary>
@@ -111,6 +105,7 @@ namespace opal
                     pg = go.AddComponent<PanGesture>();
                 }
                 if(pg != null) {
+                    pg.CombineTouchesInterval = 0.1f;
                     pg.Panned += pannedHandler;
                     pg.PanCompleted += panCompleteHandler;
                     Debug.Log(go.name + " subscribed to pan events");
@@ -142,7 +137,6 @@ namespace opal
         /// <param name="e">E.</param>
         private void tappedHandler (object sender, EventArgs e)
         {
-            Debug.Log("TAP");
             // get the gesture that was sent to us
             // this gesture will tell us what object was touched
             TapGesture gesture = sender as TapGesture;
@@ -180,7 +174,6 @@ namespace opal
         /// <param name="e">E.</param>
         private void pressedHandler (object sender, EventArgs e)
         {
-            Debug.Log("PRESS");
             // get the gesture that was sent to us, which will tell us 
             // which object was pressed
             PressGesture gesture = sender as PressGesture;
@@ -192,11 +185,10 @@ namespace opal
                 // want the info as a 2D point 
                 ITouchHit2D hit2d = (ITouchHit2D)hit; 
                 Debug.Log("PRESS on " + gesture.gameObject.name + " at " + hit2d.Point);
-                this.lastPressLocation = hit2d.Point;
             
-                // fire event indicating that we received a message
+                // fire event to logger to log this action
                 if(this.logEvent != null) {
-                    // only send subset of msg that is actual message
+                    // log the press
                     this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
                             gesture.gameObject.name, "press", hit2d.Point));
                 }
@@ -225,7 +217,7 @@ namespace opal
             if(this.logEvent != null) {
                 // only send subset of msg that is actual message
                 this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                        "", "release", this.lastPressLocation));
+                        "", "release", null));
             }
           
         }
@@ -237,7 +229,6 @@ namespace opal
         /// <param name="e">E.</param>
         private void pannedHandler (object sender, EventArgs e)
         {
-            Debug.Log("PAN");
             // TODO consider subscribing to PAN BEGIN and playing object sound then?
         
             // get the gesture that was sent to us, which will tell us 
@@ -258,7 +249,6 @@ namespace opal
                 if(this.allowTouch)
                     gesture.gameObject.transform.position = 
                 CheckAllowedMoves(hit2d.Point, gesture.gameObject.transform.position.z);
-                this.lastPanLocation = gesture.gameObject.transform.position;
                 // move highlighting light and set active
                 if(this.allowTouch)
                     LightOn(1, hit2d.Point);
@@ -291,7 +281,7 @@ namespace opal
             if(this.logEvent != null) {
                 // only send relevant data
                 this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                        "", "pancomplete", this.lastPanLocation));
+                        "", "pancomplete", null));
             }      
         }
     #endregion

@@ -163,7 +163,6 @@ GameObject:
   - 4: {fileID: 450361077}
   - 212: {fileID: 450361076}
   - 114: {fileID: 450361073}
-  - 50: {fileID: 450361075}
   - 58: {fileID: 450361074}
   - 95: {fileID: 450361078}
   m_Layer: 0
@@ -195,21 +194,6 @@ CircleCollider2D:
   m_IsTrigger: 0
   m_Radius: .579999983
   m_Center: {x: 0, y: 0}
---- !u!50 &450361075
-Rigidbody2D:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 450361072}
-  m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: .0500000007
-  m_GravityScale: 0
-  m_FixedAngle: 0
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
 --- !u!212 &450361076
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -239,7 +223,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 450361072}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -390, y: -138, z: -3}
+  m_LocalPosition: {x: -385, y: -128, z: -3}
   m_LocalScale: {x: 80, y: 80, z: 80}
   m_Children: []
   m_Father: {fileID: 0}
@@ -515,7 +499,7 @@ CircleCollider2D:
   m_GameObject: {fileID: 1814297109}
   m_Enabled: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Radius: .579999983
   m_Center: {x: 0, y: 0}
 --- !u!50 &1814297111
@@ -529,7 +513,7 @@ Rigidbody2D:
   m_AngularDrag: .0500000007
   m_GravityScale: 0
   m_FixedAngle: 0
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
@@ -602,7 +586,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   advancedProps: 0
   combineTouches: 0
-  combineTouchesInterval: .300000012
+  combineTouchesInterval: .100000001
   useSendMessage: 0
   sendStateChangeMessages: 0
   sendMessageTarget: {fileID: 0}
@@ -767,6 +751,7 @@ GameObject:
   - 114: {fileID: 2051130761}
   - 114: {fileID: 2051130762}
   - 114: {fileID: 2051130763}
+  - 114: {fileID: 2051130764}
   m_Layer: 0
   m_Name: Dragon
   m_TagString: PlayObject
@@ -838,7 +823,7 @@ CircleCollider2D:
   m_GameObject: {fileID: 2051130752}
   m_Enabled: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Radius: .689999998
   m_Center: {x: 0, y: 0}
 --- !u!50 &2051130757
@@ -849,10 +834,10 @@ Rigidbody2D:
   m_GameObject: {fileID: 2051130752}
   m_Mass: 1
   m_LinearDrag: 0
-  m_AngularDrag: .0500000007
+  m_AngularDrag: 0
   m_GravityScale: 0
   m_FixedAngle: 0
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
@@ -1002,3 +987,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   initialPosition: {x: 187, y: 5, z: 0}
+--- !u!114 &2051130764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2051130752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fef3eee304ac49b5b209d729934ac1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

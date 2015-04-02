@@ -59,6 +59,10 @@ namespace opal
                 Debug.Log("Got sidekick script");
             }
             
+            // subscribe to all log events from existing play objects 
+            // with collision managers
+            this.SubscribeToLogEvents(new string[] { Constants.TAG_PLAY_OBJECT });
+            
         }
             
         /// <summary>
@@ -67,6 +71,7 @@ namespace opal
         void Start()
         {
             // Create a new background programmatically as a test
+            // TODO remove this background image later!
             BackgroundObjectProperties bops = new BackgroundObjectProperties();
             bops.setAll("playground", Constants.TAG_BACKGROUND, 
                     new Vector3(0, 0, 2));
@@ -176,6 +181,34 @@ namespace opal
         }
 
         /// <summary>
+        /// Subscribes to log events.
+        /// </summary>
+        protected void SubscribeToLogEvents(string[] tags)
+        {
+            // subscribe to log events for all playobjects in scene
+            foreach(string tag in tags) {
+                GameObject[] gos = GameObject.FindGameObjectsWithTag(tag);
+                if(gos.Length == 0)
+                    continue;
+                foreach(GameObject go in gos) 
+                {
+                    // add collision manager so we get trigger enter/exit events
+                    CollisionManager cm = go.GetComponent<CollisionManager>();
+                    if (cm != null)
+                    {
+                        // subscribe to log events from the collision manager
+                        cm.logEvent += new LogEventHandler(HandleLogEvent);
+                    }
+                    // if there is no collision manager, then we don't care about
+                    // subscribing to events from it - this is really just to make
+                    // sure we subscribe to log events from objects created with 
+                    // the graphical unity editor that had collision managers
+                    // manually added
+                }
+            }
+        }
+
+        /// <summary>
         /// Instantiate a new game object with the specified properties
         /// </summary>
         /// <param name="pops">properties of the play object.</param>
@@ -188,7 +221,7 @@ namespace opal
             Debug.Log("Creating new play object: " + pops.Name());
 
             // set tag
-            go.tag = Constants.TAG_PLAY_OBJECT;
+            go.tag = pops.Tag();
 
             // move object to initial position 
             go.transform.position = pops.InitPosition();
@@ -217,15 +250,31 @@ namespace opal
                     + Constants.GRAPHICS_FILE_PATH + pops.Name());
             spriteRenderer.sprite = sprite; 
 
-            // TODO should the scale be a parameter too?
-            go.transform.localScale = new Vector3(100, 100, 100);
+            // set the scale/size of the sprite/image
+            go.transform.localScale = pops.Scale();
 
-            // add rigidbody
-            Rigidbody2D rb2d = go.AddComponent<Rigidbody2D>();
-            rb2d.gravityScale = 0; // don't want gravity, otherwise objects will fall
+            if (pops.draggable)
+            {
+                // add rigidbody if this is a draggable object
+                Rigidbody2D rb2d = go.AddComponent<Rigidbody2D>();
+                // remove object from physics engine's control, because we don't want
+                // the object to move with gravity, forces, etc - we do the moving
+                rb2d.isKinematic = true; 
+                // don't want gravity, otherwise objects will fall
+                // though with the isKinematic flag set this may not matter
+                rb2d.gravityScale = 0; 
+                
+                // add collision manager so we get trigger enter/exit events
+                CollisionManager cm = go.AddComponent<CollisionManager>();
+                // subscribe to log events from the collision manager
+                cm.logEvent += new LogEventHandler(HandleLogEvent);
+            }
+            // if the object is not draggable, then we don't need a rigidbody because
+            // it is a static object (won't move even if there are collisions)
 
             // add polygon collider
-            go.AddComponent<CircleCollider2D>();
+            CircleCollider2D cc = go.AddComponent<CircleCollider2D>();
+            cc.isTrigger = true; // set as a trigger so enter/exit events fire
 
             // add and subscribe to gestures
             if(this.gestureManager == null) {
@@ -240,9 +289,8 @@ namespace opal
             go.AddComponent<GrowShrinkBehavior>();
         
             // save the initial position in case we need to reset this object later
-            go.AddComponent<SavedProperties>();
-            go.GetComponent<SavedProperties>().initialPosition = pops.InitPosition();
-        
+            SavedProperties sp = go.AddComponent<SavedProperties>();
+            sp.initialPosition = pops.InitPosition();        
         }
     
         /// <summary>
@@ -574,10 +622,13 @@ namespace opal
                 // library does not include z position and sets z to 0 by default, so
                 // the z position may not be accurate (but it also doesn't really matter)
                 this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishActionMsg(
-                Constants.ACTION_ROSTOPIC, logme.name, logme.action, 
+                Constants.ACTION_ROSTOPIC, logme.name, logme.nameTwo, logme.action, 
                 (logme.position.HasValue ? new float[] 
                 {logme.position.Value.x, logme.position.Value.y,
-                logme.position.Value.z} : null)));
+                logme.position.Value.z} : new float[] {}),
+                    (logme.positionTwo.HasValue ? new float[] 
+                    {logme.positionTwo.Value.x, logme.position.Value.y,
+                    logme.positionTwo.Value.z} : new float[] {})));
                 break;
             
             case LogEvent.EventType.Scene:

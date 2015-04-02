@@ -25,6 +25,7 @@ namespace opal
             Action,
             Scene,
             Message
+            
     }
         ;
 
@@ -38,6 +39,12 @@ namespace opal
         /// action occurred or the background object
         /// </summary>
         public string name = "";
+        
+        /// <summary>
+        /// name of the relevant game object - e.g., the object on which the
+        /// action occurred or the background object
+        /// </summary>
+        public string nameTwo = "";
     
         /// <summary>
         /// name of action that occurred
@@ -48,6 +55,11 @@ namespace opal
         /// x,y,z position of object
         /// </summary>
         public Vector3? position = null;
+        
+        /// <summary>
+        /// x,y,z position of object
+        /// </summary>
+        public Vector3? positionTwo = null;
     
         /// <summary>
         /// state of object or miscellanous string message
@@ -125,6 +137,27 @@ namespace opal
             this.action = action;
             this.position = position;
             this.state = state;
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="opal.LogEvent"/> class.
+        /// </summary>
+        /// <param name="type">Type.</param>
+        /// <param name="name">Name of first object involved in the action.</param>
+        /// <param name="nameTwo">Name of second object</param>
+        /// <param name="action">Action.</param>
+        /// <param name="position">Position of first object.</param>
+        /// <param name="positionTwo">Position of second object</param>
+        /// <param name="state">State.</param>
+        public LogEvent(EventType type, string name, string nameTwo, string action, 
+            Vector3? position, Vector3? positionTwo)
+        {
+            this.type = type;
+            this.name = name;
+            this.action = action;
+            this.position = position;
+            this.positionTwo = positionTwo;
+            this.nameTwo = nameTwo;
         }
     
         /// <summary>

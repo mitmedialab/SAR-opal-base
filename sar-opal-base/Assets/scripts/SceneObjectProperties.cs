@@ -16,7 +16,7 @@ namespace opal
         protected string mytag = "";
     
         /** initial position in the world */
-        protected Vector3 initPosn = new Vector3(0, 0, 0);
+        protected Vector3 initPosn = Vector3.zero;
     
         /** constructor */
         public SceneObjectProperties()

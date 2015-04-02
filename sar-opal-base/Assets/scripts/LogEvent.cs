@@ -62,6 +62,9 @@ namespace opal
             public string name;
             public float[] position;
             public string tag;
+            public bool draggable;
+            public string audio;
+            public float[] scale;
         }
     
         public SceneObject[] sceneObjects = null;

@@ -17,8 +17,8 @@ namespace opal
         /** sound file to play on tap */
         private string audioFile = null;
 
-        /** list of desired end positions */
-        private List<Vector3> endPosns = null;
+        /** scale of object */
+        private Vector3 scale =  new Vector3(1,1,1);
 
         /** constructor */
         public PlayObjectProperties()
@@ -28,51 +28,42 @@ namespace opal
         /** constructor */
         public PlayObjectProperties(string name, string tag, bool draggable, 
                                 string audioFile, Vector3 initPosn, 
-                                List<Vector3> endPosns)
+                                Vector3 scale)
         {
             this.SetName(name);
             this.SetInitPosition(initPosn);
             this.draggable = draggable;
             this.audioFile = audioFile;
-            this.endPosns = endPosns;
+            this.scale = scale;
         }
 
         /** set all properties - name of object, whether it is a draggable
      object, audio file to attach or null if none, initial position,
      end positions or null if none (stationary object or doesn't matter) */
         public void setAll (string name, string tag, bool draggable, 
-                       string audioFile, Vector3 initPosn, List<Vector3> endPosns)
+                       string audioFile, Vector3 initPosn, Vector3 scale)
         {
             this.SetName(name);       
             this.SetInitPosition(initPosn);
             this.draggable = draggable;
             this.audioFile = audioFile;
-            this.endPosns = endPosns;
+            this.scale = scale;
         }
     
-        /** set object end position - checks that the desired
-     * position is within the screen */
-        public void AddEndPosition (Vector3 posn)
+         /// <summary>
+         /// Set scale of object
+         /// </summary>
+         /// <param name="scale">Scale.</param>
+        public void SetScale (Vector3 scale)
         {
-            // check if position is on the screen
-            if(endPosns == null) 
-                endPosns = new List<Vector3>();
-            this.endPosns.Add(base.CheckOnScreen(posn));
+            // TODO check if scale is reasonable?
+            this.scale = scale;
         }
    
-        /** set object end positions - checks that the desired
-     * positions are within the screen */
-        public void SetEndPositions (List<Vector3> posns)
-        {
-            foreach(Vector3 posn in posns) {
-                this.AddEndPosition(posn);
-            }
-        }
-    
         /** get end positions */
-        public List<Vector3> EndPositions ()
+        public Vector3 Scale ()
         {
-            return this.endPosns;
+            return this.scale;
         }
 
         /** set audio file */

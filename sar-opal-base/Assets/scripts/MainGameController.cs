@@ -369,10 +369,9 @@ namespace opal
                     if(this.logEvent != null) {
                         // get keyframe and send it
                         MainGameController.ExecuteOnMainThread.Enqueue(() => {
-                            string backg = "";
                             LogEvent.SceneObject[] sos = null;
-                            this.GetSceneKeyframe(out backg, out sos);
-                            this.logEvent(this, new LogEvent(LogEvent.EventType.Scene, backg, sos));
+                            this.GetSceneKeyframe(out sos);
+                            this.logEvent(this, new LogEvent(LogEvent.EventType.Scene, sos));
                         });
                     }  else {
                         Debug.LogWarning("Was told to send keyframe but logger " +
@@ -576,16 +575,31 @@ namespace opal
         /// <summary>
         /// Logs the state of the current scene and sends as a ROS message
         /// </summary>
-        private void GetSceneKeyframe (out string background, 
-                                    out LogEvent.SceneObject[] sceneObjects)
+        private void GetSceneKeyframe (out LogEvent.SceneObject[] sceneObjects)
         {
             // find background image name
             GameObject backg = GameObject.FindGameObjectWithTag(Constants.TAG_BACKGROUND);
-            background = (backg != null) ? backg.name : "";
-        
+            
             // find all game objects currently in scene
             GameObject[] gos = GameObject.FindGameObjectsWithTag(Constants.TAG_PLAY_OBJECT);
-            sceneObjects = new LogEvent.SceneObject[gos.Length];
+            
+            // make array of scene objects plus one for the background
+            sceneObjects = new LogEvent.SceneObject[gos.Length + ((backg != null) ? 1 : 0)];
+            // add background image if it exists
+            if (backg != null)
+            {
+                LogEvent.SceneObject bo = new LogEvent.SceneObject();
+                bo.name = backg.name;
+                bo.tag = backg.tag;
+                bo.position = new float[] { backg.transform.position.x,
+                    backg.transform.position.y, backg.transform.position.z };
+                bo.scale = new float[] { backg.transform.localScale.x,
+                    backg.transform.localScale.y, backg.transform.localScale.z };
+                bo.draggable = false;
+                bo.audio = "";
+                sceneObjects[sceneObjects.Length-1] = bo;
+            }
+            
             // for each game object, get the relevant properties for the keyframe
             // i.e., name, tag, and position
             // though strictly speaking tag isn't necessary unless we're building an
@@ -634,7 +648,7 @@ namespace opal
             case LogEvent.EventType.Scene:
                 // send keyframe message
                 this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishSceneMsg(
-                Constants.SCENE_ROSTOPIC, logme.name, logme.sceneObjects));
+                Constants.SCENE_ROSTOPIC, logme.sceneObjects));
                 break;
             
             case LogEvent.EventType.Message:

@@ -86,16 +86,14 @@ namespace opal
         /// <param name="background">Name of current background image</param>
         /// <param name="objects">array of objects present in scene</param>
         /// <param name="timestamp">Time of the action</param>
-        public static string GetROSJsonPublishSceneMsg (string topic, string background,
-        LogEvent.SceneObject[] objects)
+        public static string GetROSJsonPublishSceneMsg (string topic, LogEvent.SceneObject[] objects)
         {
             // build a dictionary of things to include in the message
             Dictionary<string,object> rosPublish = new Dictionary<string, object>();
             rosPublish.Add("op", "publish");
             rosPublish.Add("topic", topic);
             Dictionary<string,object> rosMessage = new Dictionary<string, object>();
-            rosMessage.Add("background", background);
-        
+            
             // make array of JSON strings from the SceneObjects to add
             string[] objs = new string[objects.Length];
             for(int i=0; i<objects.Length; i++) 

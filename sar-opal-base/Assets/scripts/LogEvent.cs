@@ -99,10 +99,9 @@ namespace opal
         /// <param name="type">event type</param>
         /// <param name="background">Name of current background image or "" if none</param>
         /// <param name="sceneObjects">Array of current objects in scene</param>
-        public LogEvent(EventType type, string background, SceneObject[] sceneObjects)
+        public LogEvent(EventType type, SceneObject[] sceneObjects)
         {
             this.type = type;
-            this.name = background;
             this.sceneObjects = sceneObjects;
         }
     

@@ -90,7 +90,7 @@ namespace opal
         public const string SCENE_ROSTOPIC = "/opal_tablet_scene";
         public const string SCENE_ROSMSG_TYPE = "/sar_opal_msgs/OpalScene";
         // commands from elsewhere that we should deal with
-        public const string CMD_ROSTOPIC = "/opal_command";
+        public const string CMD_ROSTOPIC = "/opal_tablet_command";
         public const string CMD_ROSMSG_TYPE = "/sar_opal_msgs/OpalCommand";        
     }
 }

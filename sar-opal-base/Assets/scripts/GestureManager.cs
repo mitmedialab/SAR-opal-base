@@ -157,9 +157,8 @@ namespace opal
                 }
             
                 // trigger sound on tap
-                Debug.Log("going to play a sound for " + gesture.gameObject.name);
-                if(this.allowTouch)
-                    PlaySoundAndPulse(gesture.gameObject);
+                //Debug.Log("going to play a sound for " + gesture.gameObject.name);
+                //if(this.allowTouch) PlaySoundAndPulse(gesture.gameObject);
             } else {
                 // this probably won't ever happen, but in case it does, we'll log it
                 Debug.LogWarning("!! could not register where TAP was located!");
@@ -196,6 +195,11 @@ namespace opal
                 // move highlighting light and set active
                 if(this.allowTouch)
                     LightOn(1, hit2d.Point);
+                    
+                // trigger sound on press
+                Debug.Log("going to play a sound for " + gesture.gameObject.name);
+                if(this.allowTouch) 
+                    PlaySoundAndPulse(gesture.gameObject);
 
             } else {
                 // this probably won't ever happen, but in case it does, we'll log it
@@ -378,10 +382,6 @@ namespace opal
                 if(!go.audio.isPlaying)
                     go.audio.Play();
                 
-                // to do something after audio stops - 
-                // auds.clip.length and then invoke(length) to do something in that time
-                // or "timePlaying >= length" (make a float timeplaying to track)
-                
                 return true;   
             } else {
                 Debug.Log("no sound found for " + go.name + "!");
@@ -397,9 +397,10 @@ namespace opal
         private void PlaySoundAndPulse (GameObject go)
         {
             if(go != null) {
-                // play a sound, if it exists, also pulse
-                if(PlaySound(go))
-                    go.GetComponent<GrowShrinkBehavior>().ScaleUpOnce();
+                // play a sound, if it exists and is not already playing
+                // and also pulse size
+                if(PlaySound(go) && (go.audio != null) && !go.audio.isPlaying)
+                    StartCoroutine(go.GetComponent<GrowShrinkBehavior>().ScaleUpOnce());
             }
         }
     

@@ -23,6 +23,8 @@ namespace opal
     {
         private string SERVER = "";
         private string PORT_NUM = null;
+        // create a timer to use when trying to reconnect the websocket
+        System.Timers.Timer timer = new System.Timers.Timer(1000); // in ms
 
         public event ReceivedMessageEventHandler receivedMsgEvent;
 
@@ -40,6 +42,9 @@ namespace opal
             // TODO do some kind of validation of IP address and port?
             this.SERVER = rosIP;    
             this.PORT_NUM = portNum;
+            
+            // subscribe to timer (used for reconnections)
+            this.timer.Elapsed += OnTimeElapsed;
         }
     
         /// <summary>
@@ -79,8 +84,13 @@ namespace opal
                 this.clientSocket = new WebSocket(("ws://" + SERVER +
                     (PORT_NUM == null ? "" : ":" + PORT_NUM)));
             
-                // so if the IP address is one on the current network, throws error properly
-                // but if it doesn't exist, hangs
+                // If the specified address does not exist on the network,
+                // there is a 90s timeout before it'll give up trying to connect
+                // (hardcoded in the library) -- manifests as app hanging
+                // BUT if you use CONNECTASYNC then it doesn't hang!
+                //
+                // If address does exist but you've forgotten to start 
+                // rosbridge_server, the connection will be refused.
           
                 // OnOpen event occurs when the websocket connection is established
                 this.clientSocket.OnOpen += HandleOnOpen;
@@ -96,12 +106,33 @@ namespace opal
             
                 Debug.Log("connecting to websocket...");
                 // connect to the server
-                this.clientSocket.Connect();
+                this.clientSocket.Connect(); // TODO connectasync?
             } catch(Exception e) {
-                Debug.Log("Error starting websocket: " + e);
+                Debug.LogError("Error starting websocket: " + e);
             }
         }
 
+
+        /// <summary>
+        /// Tries to reconnect web socket for communication through rosbridge
+        /// </summary>
+        public void Reconnect()
+        {
+            if(this.SERVER == "")
+                return;
+            
+            // create new websocket that listens and sends to the
+            // specified server on the specified port
+            try {
+                Debug.Log("trying to connect to websocket...");
+                // connect to the server
+                this.clientSocket.Connect();
+            } catch(Exception e) {
+                Debug.LogError("Error starting websocket: " + e);
+                this.timer.Enabled = true;
+                this.timer.AutoReset = true;
+            }
+        }
 
         /// <summary>
         /// public request to close the socket
@@ -129,7 +160,9 @@ namespace opal
             if(this.clientSocket.IsAlive) {
                 return this.SendToServer(msg);
             } else {
-                Debug.Log("Can't send message - client socket dead!");
+                Debug.LogWarning("Can't send message - client socket dead!"
+                    + "\nWill try to reconnect to socket...");
+                this.timer.Enabled = true;
                 return false;
             }
         }
@@ -149,7 +182,7 @@ namespace opal
                 this.clientSocket.Send(msg); 
                 return true; // success!
             } catch(Exception e) {
-                Debug.Log("ERROR: failed to send " + e.ToString());
+                Debug.LogError("ERROR: failed to send " + e.ToString());
                 return false; // fail :(
             }
         }
@@ -210,7 +243,19 @@ namespace opal
         /// <param name="e">E.</param>
         void HandleOnClose (object sender, CloseEventArgs e)
         {
-            Debug.Log("Websocket closed");
+            Debug.Log("Websocket closed with status " + e.Reason + " " + e.Code);
+            this.timer.Enabled = true;
+        }
+        
+        /// <summary>
+        /// called when the timer has elapsed
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">E.</param>
+        void OnTimeElapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            this.timer.Enabled = false;
+            this.Reconnect();
         }
     }
 }

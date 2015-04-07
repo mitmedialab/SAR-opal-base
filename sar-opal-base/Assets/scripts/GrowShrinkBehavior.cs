@@ -16,6 +16,8 @@ namespace opal
         public float scaleUpOnce = 1.3f; // scale object one by this much
         public float scaleTime = 0.8f; // time to complete single scaling animation
     
+        public bool scaling = false;
+    
         // Start
         void Start ()
         {
@@ -42,14 +44,22 @@ namespace opal
         }
     
         /**
-     * scale up once
-     **/
-        public void ScaleUpOnce ()
+         * scale up once
+         **/
+        public IEnumerator ScaleUpOnce ()
         {
-            LeanTween.scale(gameObject, new Vector3(gameObject.transform.localScale.x * 
-                this.scaleUpOnce, gameObject.transform.localScale.y * this.scaleUpOnce, 
-            gameObject.transform.localScale.z * this.scaleUpOnce), this.scaleTime)
-            .setEase(LeanTweenType.easeOutSine).setRepeat(2).setLoopPingPong();
+            if (!this.scaling)
+            {
+                this.scaling = true;
+            
+                LeanTween.scale(gameObject, new Vector3(gameObject.transform.localScale.x * 
+                    this.scaleUpOnce, gameObject.transform.localScale.y * this.scaleUpOnce, 
+                gameObject.transform.localScale.z * this.scaleUpOnce), this.scaleTime)
+                .setEase(LeanTweenType.easeOutSine).setRepeat(2).setLoopPingPong();
+                
+                yield return new WaitForSeconds(this.scaleTime * 2);
+                this.scaling = false;
+            }
         }
     
 

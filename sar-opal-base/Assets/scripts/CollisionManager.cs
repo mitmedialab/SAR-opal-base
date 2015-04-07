@@ -24,7 +24,7 @@ namespace opal
 		 /// <param name="other">Other.</param>
 	    void OnTriggerEnter2D (Collider2D other)
 	    {
-            Debug.LogWarning("TRIGGER " + other.name + " entered " + this.gameObject.name);
+            Debug.Log("TRIGGER " + other.name + " entered " + this.gameObject.name);
             // fire event indicating a collision occurred
             if(this.logEvent != null) {
                 // send action log event
@@ -40,7 +40,7 @@ namespace opal
         /// <param name="other">Other.</param>
         void OnTriggerExit2D (Collider2D other)
         {
-            Debug.LogWarning("TRIGGER " + other.name + " exited " + this.gameObject.name);
+            Debug.Log("TRIGGER " + other.name + " exited " + this.gameObject.name);
             // fire event indicating a collision occurred
             if(this.logEvent != null) {
                 // send action log event

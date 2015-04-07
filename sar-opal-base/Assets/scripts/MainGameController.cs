@@ -274,6 +274,7 @@ namespace opal
 
             // add polygon collider
             CircleCollider2D cc = go.AddComponent<CircleCollider2D>();
+            cc.radius = .5f;
             cc.isTrigger = true; // set as a trigger so enter/exit events fire
 
             // add and subscribe to gestures

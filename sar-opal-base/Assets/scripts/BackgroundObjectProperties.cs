@@ -21,7 +21,9 @@ namespace opal
             // negative numbers are toward the camera, in front of the background
             // so we want to make sure play objects are in front of the background plane
             if(this.initPosn.z <= 0)
-                this.initPosn.z = 1;
+                this.initPosn = new Vector3(this.initPosn.x, this.initPosn.y, 1);
+            
+            
         }
     }
 }

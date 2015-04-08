@@ -649,6 +649,7 @@ MonoBehaviour:
   scaleUpBy: 1.10000002
   scaleUpOnce: 1.29999995
   scaleTime: .800000012
+  scaling: 0
 --- !u!114 &1814297119
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -975,6 +976,7 @@ MonoBehaviour:
   scaleUpBy: 1.10000002
   scaleUpOnce: 1.29999995
   scaleTime: .800000012
+  scaling: 0
 --- !u!114 &2051130763
 MonoBehaviour:
   m_ObjectHideFlags: 0

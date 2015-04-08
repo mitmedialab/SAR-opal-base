@@ -99,9 +99,9 @@ namespace opal
                 // load file
                 if(!RosbridgeUtilities.DecodeWebsocketJSONConfig(path, out server, out port)) {
                     Debug.LogWarning("Could not read websocket config file! Trying "
-                        + "hardcoded IP 18.85.39.32 and port 9090");
+                        + "hardcoded IP 18.85.39.35 and port 9090");
                     this.clientSocket = new RosbridgeWebSocketClient(
-                    "18.85.39.32",// server, // can pass hostname or IP address
+                    "18.85.39.35",// server, // can pass hostname or IP address
                     "9090"); //port);   
                 } else {
                     this.clientSocket = new RosbridgeWebSocketClient(

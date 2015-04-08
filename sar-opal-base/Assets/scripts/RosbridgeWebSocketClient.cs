@@ -24,7 +24,7 @@ namespace opal
         private string SERVER = "";
         private string PORT_NUM = null;
         // create a timer to use when trying to reconnect the websocket
-        System.Timers.Timer timer = new System.Timers.Timer(1000); // in ms
+        private System.Timers.Timer timer = new System.Timers.Timer(1000); // in ms
 
         public event ReceivedMessageEventHandler receivedMsgEvent;
 
@@ -39,12 +39,22 @@ namespace opal
         /// <param name="portNum">Port number or null if none</param>
         public RosbridgeWebSocketClient(string rosIP, string portNum)
         {
-            // TODO do some kind of validation of IP address and port?
+            System.Net.IPAddress ip;
+            UInt16 num;
+            
+            // TODO test this
+            if (!System.Net.IPAddress.TryParse(rosIP, out ip))
+                throw new ArgumentException("IP address is not valid!", "rosIP");
+            
+            if (!UInt16.TryParse(portNum, out num))
+                throw new ArgumentException("Port number is not a port!", "portNum");
+            
             this.SERVER = rosIP;    
             this.PORT_NUM = portNum;
             
             // subscribe to timer (used for reconnections)
             this.timer.Elapsed += OnTimeElapsed;
+            this.timer.AutoReset = true;
         }
     
         /// <summary>
@@ -74,9 +84,6 @@ namespace opal
         /// </summary>
         public void SetupSocket ()
         {
-            if(this.SERVER == "")
-                return;
-    
             // create new websocket that listens and sends to the
             // specified server on the specified port
             try {
@@ -118,11 +125,6 @@ namespace opal
         /// </summary>
         public void Reconnect()
         {
-            if(this.SERVER == "")
-                return;
-            
-            // create new websocket that listens and sends to the
-            // specified server on the specified port
             try {
                 Debug.Log("trying to connect to websocket...");
                 // connect to the server
@@ -130,7 +132,6 @@ namespace opal
             } catch(Exception e) {
                 Debug.LogError("Error starting websocket: " + e);
                 this.timer.Enabled = true;
-                this.timer.AutoReset = true;
             }
         }
 
@@ -237,13 +238,17 @@ namespace opal
     
         /// <summary>
         /// Handle OnClose events, which occur when the websocket connection
-        /// has been closed
+        /// has been closed. Also, this gets called when there is an exception 
+        /// reconnecting, which is weird.
         /// </summary>
         /// <param name="sender">Sender.</param>
         /// <param name="e">E.</param>
         void HandleOnClose (object sender, CloseEventArgs e)
         {
-            Debug.Log("Websocket closed with status " + e.Reason + " " + e.Code);
+           Debug.Log("Websocket closed with status " + e.Reason + " " + e.Code);
+            
+            // turn on timer so we try reconnecting later
+            // probably sets timer enabled twice - here and in reconnect
             this.timer.Enabled = true;
         }
         

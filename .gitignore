@@ -32,3 +32,4 @@ ehthumbs.db
 # ignore packaged app also #
 # ======================== #
 *.apk
+sar-opal-base/Assets/Resources/websocket_config.txt

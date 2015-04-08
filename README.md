@@ -5,8 +5,14 @@ A generalized Unity game template designed for use in a child-robot interaction 
 This tablet app was built and tested with Unity 4.6.2 and MonoDevelop 4.0.1.
 
 ## Configuration
-On startup, the tablet app will try to connect to the IP address or host name specified in the websocket_config file (located in Assets/Resources/).
-If the specified address does not exist on the network, there is a 90s timeout before it'll give up trying (hardcoded in the library, so one could patch the library to change the timeout length if one so desires). This will manifest as the application hanging, unresponsive, for the duration of the timeout.
+On startup, the tablet app will try to connect to the IP address or host name specified in the websocket_config file. There is an example file located in Assets/Resources/. 
+
+When running the app on OS X from the Unity editor, the app will check for "Assets/Resources/websocket_config.txt".
+
+When running the game on Android (e.g., on a tablet), the app will first check for "mnt/sdcard/edu.mit.media.prg.sar.opal.base/websocket_config.txt". This is because once the app is packaged up for Android, you can't change stuff in the package, so we needed a location for the websocket config file that could be easily edited after the app is installed. If that file doesn't exist, or connecting fails with the values listed in that file, the app will try the file packaged in "Assets/Resources/websocket_config.txt". 
+
+Note that if the specified address does not exist on the network, there is a 90s timeout before it'll give up trying (hardcoded in the library, so one could patch the library to change the timeout length if one so desires). This will manifest as the application hanging, unresponsive, for the duration of the timeout.
+
 If the address does exist but if you've forgotten to start rosbridge_server, the connection will be refused.
 
 ## Submodules

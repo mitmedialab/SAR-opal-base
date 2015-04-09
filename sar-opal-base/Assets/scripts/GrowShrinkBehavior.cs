@@ -26,10 +26,7 @@ namespace opal
         /** On enable, start pulsing */
         void OnEnable ()
         {
-            LeanTween.scale(gameObject, new Vector3(gameObject.transform.localScale.x * 
-                this.scaleUpBy, gameObject.transform.localScale.y * this.scaleUpBy, 
-            gameObject.transform.localScale.z * this.scaleUpBy), Random.Range(.6f, 1.5f))
-            .setEase(LeanTweenType.easeOutSine).setLoopPingPong();
+            
         }
     
         /** On disable, stop pulsing, cancel all tweening */
@@ -41,6 +38,18 @@ namespace opal
         // Update is called once per frame
         void Update ()
         {
+        }
+        
+        /// <summary>
+        /// Initiates the grow-shrink pulsing that can be used to indicate
+        /// that an object can be interacted with
+        /// </summary>
+        public void StartPulsing()
+        {
+            LeanTween.scale(gameObject, new Vector3(gameObject.transform.localScale.x * 
+                                                    this.scaleUpBy, gameObject.transform.localScale.y * this.scaleUpBy, 
+                                                    gameObject.transform.localScale.z * this.scaleUpBy), Random.Range(.6f, 1.5f))
+                .setEase(LeanTweenType.easeOutSine).setLoopPingPong();
         }
     
         /**

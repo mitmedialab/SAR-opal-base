@@ -288,6 +288,9 @@ namespace opal
         
             // add pulsing behavior (draws attention to actionable objects)
             go.AddComponent<GrowShrinkBehavior>();
+            // Removing this because it messes with collision detection when
+            // objects are close to each other (continuously colliding/uncolliding)
+            // go.GetComponent<GrowShrinkBehavior>().StartPulsing();
         
             // save the initial position in case we need to reset this object later
             SavedProperties sp = go.AddComponent<SavedProperties>();
@@ -314,7 +317,17 @@ namespace opal
             go.tag = Constants.TAG_BACKGROUND;
         
             // move object to initial position 
-            go.transform.position = bops.InitPosition();
+            Debug.LogWarning("background init position will be: " + bops.InitPosition().x
+                             + ", " + bops.InitPosition().y +  ", " + bops.InitPosition().z);
+                             
+            if(bops.InitPosition().z <= 0)
+                go.transform.position = new Vector3(bops.InitPosition().x, bops.InitPosition().y, 2);
+            else                
+               go.transform.position = bops.InitPosition();
+               
+            Debug.LogWarning("background position now is: " + go.transform.position.x
+                             + ", " + go.transform.position.y +  ", " + go.transform.position.z);
+            
         
             // load sprite/image for object
             SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
@@ -425,6 +438,20 @@ namespace opal
                     this.sidekickScript.SidekickSay((string)props);
                     }); 
                     break;
+            
+                case Constants.CLEAR:
+                    Debug.Log("clearing scene");
+                    try {                   
+                        // remove all play objects and background objects from scene, hide highlight
+                        MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                            this.ClearScene(); 
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError(ex);
+                    }
+                break;
                 
                 case Constants.LOAD_OBJECT:
                     // load the specified game object
@@ -449,23 +476,6 @@ namespace opal
                         });
                     }
                     break;
-                
-                case Constants.CLEAR:
-                    Debug.Log("clearing scene 1 ");
-                    try {                   
-                        // remove all play objects and background objects from scene, hide highlight
-                        MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                            Debug.Log("clearing scene 2");
-                            this.ClearScene(); 
-                            Debug.Log("clearing scene 3");
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogError(ex);
-                    }
-                    Debug.Log("clearing scene 4");
-                   break;
                 
                 case Constants.MOVE_OBJECT:
                     if(props == null) {

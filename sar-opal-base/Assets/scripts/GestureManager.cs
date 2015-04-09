@@ -233,8 +233,6 @@ namespace opal
         /// <param name="e">E.</param>
         private void pannedHandler (object sender, EventArgs e)
         {
-            // TODO consider subscribing to PAN BEGIN and playing object sound then?
-        
             // get the gesture that was sent to us, which will tell us 
             // which object was being dragged
             PanGesture gesture = sender as PanGesture;
@@ -266,7 +264,7 @@ namespace opal
 
             } else {
                 // this probably won't ever happen, but in case it does, we'll log it
-                Debug.LogWarning("!! could not register where PAN was located!");
+                Debug.LogWarning("could not register where PAN was located!");
             }
 
         }

@@ -91,7 +91,7 @@ PlayerSettings:
   uIStatusBarHidden: 1
   uIExitOnSuspend: 0
   uIStatusBarStyle: 0
-  iPhoneSplashScreen: {fileID: 2800000, guid: 0045e18aa0c3044f4a1b2e211fe4e734, type: 3}
+  iPhoneSplashScreen: {fileID: 2800000, guid: a02f0c7becaea41c3a8843247214a1b4, type: 3}
   iPhoneHighResSplashScreen: {fileID: 0}
   iPhoneTallHighResSplashScreen: {fileID: 0}
   iPhone47inSplashScreen: {fileID: 0}

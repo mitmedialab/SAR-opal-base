@@ -9,6 +9,7 @@ TagManager:
   - Light
   - Background
   - Sidekick
+  - SidekickLight
   - 
   Builtin Layer 0: Default
   Builtin Layer 1: TransparentFX

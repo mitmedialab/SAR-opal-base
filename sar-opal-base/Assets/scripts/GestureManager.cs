@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using TouchScript.Gestures;
 using TouchScript.Gestures.Simple;
+using TouchScript.Behaviors;
 using TouchScript.Hit;
 
 namespace opal
@@ -129,6 +130,12 @@ namespace opal
             if(rg != null) {
                 rg.Released += releasedHandler;
                 Debug.Log(go.name + " subscribed to release events");
+            }
+            
+            // make sure we do have a transformer
+            Transformer2D t2d = go.GetComponent<Transformer2D>();
+            if (t2d == null) {
+                go.AddComponent<Transformer2D>();
             }
         }
 
@@ -448,7 +455,7 @@ namespace opal
                 // play a sound, if it exists and is not already playing
                 // and also pulse size
                 if(PlaySound(go) && (go.audio != null) && !go.audio.isPlaying)
-                    StartCoroutine(go.GetComponent<GrowShrinkBehavior>().ScaleUpOnce());
+                    go.GetComponent<GrowShrinkBehavior>().ScaleUpOnce();
             }
         }
     

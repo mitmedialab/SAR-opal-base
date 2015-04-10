@@ -87,11 +87,11 @@ namespace opal
         public new void SetInitPosition (Vector3 posn)
         {
             base.SetInitPosition(posn);
-            // 1 is the plane of the background image
+            // 2 is the plane of the background image
             // zero and negative numbers are toward the camera, in front of the background
             // so we want to make sure play objects are in front of the background plane
-            if(this.initPosn.z > 0)
-                this.initPosn.z = 0;
+            if(this.initPosn.z > 1)
+                this.initPosn.z = 1;
         }
     
     

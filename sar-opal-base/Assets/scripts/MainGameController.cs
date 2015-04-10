@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using TouchScript.Gestures;
 using TouchScript.Hit;
+using TouchScript.Behaviors;
 
 namespace opal
 {
@@ -253,6 +254,22 @@ namespace opal
             // set the scale/size of the sprite/image
             go.transform.localScale = pops.Scale();
 
+            // add and subscribe to gestures
+            if(this.gestureManager == null) {
+                Debug.Log("ERROR no gesture manager");
+                FindGestureManager();
+            }
+            
+            try {
+                // add gestures and register to get event notifications
+                this.gestureManager.AddAndSubscribeToGestures(go, pops.draggable);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Tried to subscribe to gestures but failed! " + e);
+            }
+            
+
             if (pops.draggable)
             {
                 // add rigidbody if this is a draggable object
@@ -270,7 +287,7 @@ namespace opal
                 cm.logEvent += new LogEventHandler(HandleLogEvent);
                 
                 // and add transformer so it automatically moves on drag
-                go.AddComponent<TouchScript.Behaviors.Transformer2D>();
+                go.AddComponent<Transformer2D>();
             }
             // if the object is not draggable, then we don't need a rigidbody because
             // it is a static object (won't move even if there are collisions)
@@ -293,21 +310,7 @@ namespace opal
             PolygonCollider2D pc = go.AddComponent<PolygonCollider2D>();
             pc.isTrigger = true;
 
-            // add and subscribe to gestures
-            if(this.gestureManager == null) {
-                Debug.Log("ERROR no gesture manager");
-                FindGestureManager();
-            }
-        
-            try {
-                // add gestures and register to get event notifications
-                this.gestureManager.AddAndSubscribeToGestures(go, pops.draggable);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("Tried to subscribe to gestures but failed! " + e);
-            }
-        
+           
             // add pulsing behavior (draws attention to actionable objects)
             go.AddComponent<GrowShrinkBehavior>();
             // Removing this because it messes with collision detection when
@@ -339,19 +342,12 @@ namespace opal
             go.tag = Constants.TAG_BACKGROUND;
         
             // move object to initial position 
-            Debug.LogWarning("background init position will be: " + bops.InitPosition().x
-                             + ", " + bops.InitPosition().y +  ", " + bops.InitPosition().z);
-                             
             if(bops.InitPosition().z <= 0)
                 go.transform.position = new Vector3(bops.InitPosition().x, bops.InitPosition().y, 2);
             else                
                go.transform.position = bops.InitPosition();
-               
-            Debug.LogWarning("background position now is: " + go.transform.position.x
-                             + ", " + go.transform.position.y +  ", " + go.transform.position.z);
-            
-        
-            // load sprite/image for object
+
+                        // load sprite/image for object
             SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
             Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + bops.Name());
             if(sprite == null)

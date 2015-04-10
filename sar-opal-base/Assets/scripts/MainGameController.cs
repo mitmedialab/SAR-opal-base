@@ -268,14 +268,30 @@ namespace opal
                 CollisionManager cm = go.AddComponent<CollisionManager>();
                 // subscribe to log events from the collision manager
                 cm.logEvent += new LogEventHandler(HandleLogEvent);
+                
+                // and add transformer so it automatically moves on drag
+                go.AddComponent<TouchScript.Behaviors.Transformer2D>();
             }
             // if the object is not draggable, then we don't need a rigidbody because
             // it is a static object (won't move even if there are collisions)
 
-            // add polygon collider
-            CircleCollider2D cc = go.AddComponent<CircleCollider2D>();
-            cc.radius = .5f;
-            cc.isTrigger = true; // set as a trigger so enter/exit events fire
+            // add circle collider - used in detecting touches and dragging.
+            // if the collider on the object is too small, touches won't 
+            // collide very often or very well, and movement (e.g. drags)
+            // will be choppy and weird. don't set as trigger so that this 
+            // collider doesn't trigger enter/exit events (because it is bigger
+            // than the object and we'd get too many collisions)
+            // !! this is now obselete because we're using the transformer that
+            // came with TouchScript which works great even with a small collider
+            // - so clearly something in how we were dragging stuff before was just
+            // wrong, and we can now not bother with the circle collider
+            //CircleCollider2D cc = go.AddComponent<CircleCollider2D>();
+            //cc.radius = .7f;
+            
+            // add polygon collider that matches shape of object and set as a 
+            // trigger so enter/exit events fire when this collider is hit
+            PolygonCollider2D pc = go.AddComponent<PolygonCollider2D>();
+            pc.isTrigger = true;
 
             // add and subscribe to gestures
             if(this.gestureManager == null) {
@@ -283,8 +299,14 @@ namespace opal
                 FindGestureManager();
             }
         
-            // add gestures and register to get event notifications
-            this.gestureManager.AddAndSubscribeToGestures(go, pops.draggable);
+            try {
+                // add gestures and register to get event notifications
+                this.gestureManager.AddAndSubscribeToGestures(go, pops.draggable);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Tried to subscribe to gestures but failed! " + e);
+            }
         
             // add pulsing behavior (draws attention to actionable objects)
             go.AddComponent<GrowShrinkBehavior>();

@@ -223,6 +223,9 @@ namespace opal
 
             // set tag
             go.tag = pops.Tag();
+            
+            // set layer
+            go.layer = (pops.draggable ? Constants.LAYER_MOVEABLES : Constants.LAYER_STATICS);
 
             // move object to initial position 
             go.transform.position = pops.InitPosition();
@@ -340,6 +343,9 @@ namespace opal
         
             // set tag
             go.tag = Constants.TAG_BACKGROUND;
+            
+            // set layer
+            go.layer = Constants.LAYER_STATICS;
         
             // move object to initial position 
             if(bops.InitPosition().z <= 0)

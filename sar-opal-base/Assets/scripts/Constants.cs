@@ -30,6 +30,11 @@ namespace opal
         public const string TAG_BACKGROUND = "Background";
         public const string TAG_SIDEKICK = "Sidekick";
     
+    
+        // layers
+        public const int LAYER_MOVEABLES = 10;
+        public const int LAYER_STATICS = 8;
+    
         // edges of screen - used to make sure objects aren't dragged off the screen
         // screen is 1280x768, minus the menu bar
         public const int LEFT_SIDE = -630; // -640

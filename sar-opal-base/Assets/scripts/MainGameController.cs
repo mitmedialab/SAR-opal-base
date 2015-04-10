@@ -431,11 +431,19 @@ namespace opal
                 case Constants.DISABLE_TOUCH:
                     // disable touch events from user
                     this.gestureManager.allowTouch = false; 
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
+                        Constants.TAG_PLAY_OBJECT }, false);
+                    });
                     break;
                 
                 case Constants.ENABLE_TOUCH:
                     // enable touch events from user
                     this.gestureManager.allowTouch = true;
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
+                        Constants.TAG_PLAY_OBJECT }, true);
+                    });
                     break;
                 
                 case Constants.RESET:
@@ -604,6 +612,29 @@ namespace opal
                 }
             }
         }
+        
+        /// <summary>
+        /// Destroy objects with the specified tags
+        /// </summary>
+        /// <param name="tags">tags of objects to destroy</param>
+        /// <param name="enabled">enable touch or disable touch</param>
+        void SetTouch (string[] tags, bool enabled)
+        {
+            // destroy objects with the specified tags
+            foreach(string tag in tags) {
+                GameObject[] objs = GameObject.FindGameObjectsWithTag(tag);
+                if(objs.Length == 0)
+                    continue;
+                foreach(GameObject go in objs) {
+                    Debug.Log("touch " + (enabled ? "enabled" : "disabled") + " for " + go.name);
+                    if (go.GetComponent<TouchScript.Behaviors.Transformer2D>() != null)
+                    {
+                        go.GetComponent<TouchScript.Behaviors.Transformer2D>().enabled = enabled;
+                    }
+                }
+            }
+        }
+        
     
         /// <summary>
         /// Logs the state of the current scene and sends as a ROS message

@@ -268,14 +268,30 @@ namespace opal
                 CollisionManager cm = go.AddComponent<CollisionManager>();
                 // subscribe to log events from the collision manager
                 cm.logEvent += new LogEventHandler(HandleLogEvent);
+                
+                // and add transformer so it automatically moves on drag
+                go.AddComponent<TouchScript.Behaviors.Transformer2D>();
             }
             // if the object is not draggable, then we don't need a rigidbody because
             // it is a static object (won't move even if there are collisions)
 
-            // add polygon collider
-            CircleCollider2D cc = go.AddComponent<CircleCollider2D>();
-            cc.radius = .5f;
-            cc.isTrigger = true; // set as a trigger so enter/exit events fire
+            // add circle collider - used in detecting touches and dragging.
+            // if the collider on the object is too small, touches won't 
+            // collide very often or very well, and movement (e.g. drags)
+            // will be choppy and weird. don't set as trigger so that this 
+            // collider doesn't trigger enter/exit events (because it is bigger
+            // than the object and we'd get too many collisions)
+            // !! this is now obselete because we're using the transformer that
+            // came with TouchScript which works great even with a small collider
+            // - so clearly something in how we were dragging stuff before was just
+            // wrong, and we can now not bother with the circle collider
+            //CircleCollider2D cc = go.AddComponent<CircleCollider2D>();
+            //cc.radius = .7f;
+            
+            // add polygon collider that matches shape of object and set as a 
+            // trigger so enter/exit events fire when this collider is hit
+            PolygonCollider2D pc = go.AddComponent<PolygonCollider2D>();
+            pc.isTrigger = true;
 
             // add and subscribe to gestures
             if(this.gestureManager == null) {
@@ -283,11 +299,20 @@ namespace opal
                 FindGestureManager();
             }
         
-            // add gestures and register to get event notifications
-            this.gestureManager.AddAndSubscribeToGestures(go, pops.draggable);
+            try {
+                // add gestures and register to get event notifications
+                this.gestureManager.AddAndSubscribeToGestures(go, pops.draggable);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Tried to subscribe to gestures but failed! " + e);
+            }
         
             // add pulsing behavior (draws attention to actionable objects)
             go.AddComponent<GrowShrinkBehavior>();
+            // Removing this because it messes with collision detection when
+            // objects are close to each other (continuously colliding/uncolliding)
+            // go.GetComponent<GrowShrinkBehavior>().StartPulsing();
         
             // save the initial position in case we need to reset this object later
             SavedProperties sp = go.AddComponent<SavedProperties>();
@@ -314,7 +339,17 @@ namespace opal
             go.tag = Constants.TAG_BACKGROUND;
         
             // move object to initial position 
-            go.transform.position = bops.InitPosition();
+            Debug.LogWarning("background init position will be: " + bops.InitPosition().x
+                             + ", " + bops.InitPosition().y +  ", " + bops.InitPosition().z);
+                             
+            if(bops.InitPosition().z <= 0)
+                go.transform.position = new Vector3(bops.InitPosition().x, bops.InitPosition().y, 2);
+            else                
+               go.transform.position = bops.InitPosition();
+               
+            Debug.LogWarning("background position now is: " + go.transform.position.x
+                             + ", " + go.transform.position.y +  ", " + go.transform.position.z);
+            
         
             // load sprite/image for object
             SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
@@ -396,11 +431,19 @@ namespace opal
                 case Constants.DISABLE_TOUCH:
                     // disable touch events from user
                     this.gestureManager.allowTouch = false; 
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
+                        Constants.TAG_PLAY_OBJECT }, false);
+                    });
                     break;
                 
                 case Constants.ENABLE_TOUCH:
                     // enable touch events from user
                     this.gestureManager.allowTouch = true;
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
+                        Constants.TAG_PLAY_OBJECT }, true);
+                    });
                     break;
                 
                 case Constants.RESET:
@@ -425,6 +468,20 @@ namespace opal
                     this.sidekickScript.SidekickSay((string)props);
                     }); 
                     break;
+            
+                case Constants.CLEAR:
+                    Debug.Log("clearing scene");
+                    try {                   
+                        // remove all play objects and background objects from scene, hide highlight
+                        MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                            this.ClearScene(); 
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError(ex);
+                    }
+                break;
                 
                 case Constants.LOAD_OBJECT:
                     // load the specified game object
@@ -449,23 +506,6 @@ namespace opal
                         });
                     }
                     break;
-                
-                case Constants.CLEAR:
-                    Debug.Log("clearing scene 1 ");
-                    try {                   
-                        // remove all play objects and background objects from scene, hide highlight
-                        MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                            Debug.Log("clearing scene 2");
-                            this.ClearScene(); 
-                            Debug.Log("clearing scene 3");
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogError(ex);
-                    }
-                    Debug.Log("clearing scene 4");
-                   break;
                 
                 case Constants.MOVE_OBJECT:
                     if(props == null) {
@@ -572,6 +612,29 @@ namespace opal
                 }
             }
         }
+        
+        /// <summary>
+        /// Destroy objects with the specified tags
+        /// </summary>
+        /// <param name="tags">tags of objects to destroy</param>
+        /// <param name="enabled">enable touch or disable touch</param>
+        void SetTouch (string[] tags, bool enabled)
+        {
+            // destroy objects with the specified tags
+            foreach(string tag in tags) {
+                GameObject[] objs = GameObject.FindGameObjectsWithTag(tag);
+                if(objs.Length == 0)
+                    continue;
+                foreach(GameObject go in objs) {
+                    Debug.Log("touch " + (enabled ? "enabled" : "disabled") + " for " + go.name);
+                    if (go.GetComponent<TouchScript.Behaviors.Transformer2D>() != null)
+                    {
+                        go.GetComponent<TouchScript.Behaviors.Transformer2D>().enabled = enabled;
+                    }
+                }
+            }
+        }
+        
     
         /// <summary>
         /// Logs the state of the current scene and sends as a ROS message

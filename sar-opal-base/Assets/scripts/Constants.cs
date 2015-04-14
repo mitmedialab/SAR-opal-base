@@ -29,7 +29,28 @@ namespace opal
         public const string TAG_GESTURE_MAN = "GestureManager";
         public const string TAG_BACKGROUND = "Background";
         public const string TAG_SIDEKICK = "Sidekick";
+        public const string TAG_BACK = "Back";
     
+        // DEMO - scene numbers (by index -- see list of scenes in build settings)
+        public const int SCENE_DEMO_INTRO = 0;
+        public const int SCENE_1_PACK = 1;
+        public const int SCENE_2_ZOO = 2;
+        public const int SCENE_3_PICNIC = 3;
+        public const int SCENE_4_PARK = 4;
+        public const int SCENE_5_ROOM = 5;
+        public const int SCENE_6_BATH = 6;
+        public const int SCENE_7_PARTY = 7;
+        public const int SCENE_8_BYE = 8;
+        
+        // DEMO - names for scenes
+        public const string NAME_1_PACK = "Session1";
+        public const string NAME_2_ZOO = "Session2";
+        public const string NAME_3_PICNIC = "Session3";
+        public const string NAME_4_PARK = "Session4";
+        public const string NAME_5_ROOM = "Session5";
+        public const string NAME_6_BATH = "Session6";
+        public const string NAME_7_PARTY = "Session7";
+        public const string NAME_8_BYE = "Session8";
     
         // layers
         public const int LAYER_MOVEABLES = 10;

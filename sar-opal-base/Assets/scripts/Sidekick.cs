@@ -46,7 +46,6 @@ namespace opal
             foreach (string flag in Constants.ANIM_FLAGS.Values)
             {
                 this.animator.SetBool(flag, false);
-                Debug.Log("flag " + flag + " is ... " + this.animator.GetBool(flag));
             }
         }
         

@@ -31,6 +31,9 @@ namespace opal
         // for logging stuff
         public event LogEventHandler logEvent;
     
+        // DEMO  VERSION
+        private bool demo = true;
+    
         /// <summary>
         /// Called first, use to initialize stuff
         /// </summary>
@@ -40,6 +43,9 @@ namespace opal
             FindGestureManager(); 
             this.gestureManager.logEvent += new LogEventHandler(HandleLogEvent);
             this.logEvent += new LogEventHandler(HandleLogEvent);
+            
+            // if demo, tell everyone else
+            this.gestureManager.demo = this.demo;
             
             // find our sidekick
             GameObject sidekick = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
@@ -73,14 +79,14 @@ namespace opal
         {
             // Create a new background programmatically as a test
             // TODO remove this background image later!
-            BackgroundObjectProperties bops = new BackgroundObjectProperties();
-            bops.setAll("playground", Constants.TAG_BACKGROUND, 
-                    new Vector3(0, 0, 2));
-            this.InstantiateBackground(bops);
+            //BackgroundObjectProperties bops = new BackgroundObjectProperties();
+            //bops.setAll("playground", Constants.TAG_BACKGROUND, 
+            //        new Vector3(0, 0, 2));
+            //this.InstantiateBackground(bops);
         
             // set up rosbridge websocket client
             // note: does not attempt to reconnect if connection fails
-            if(this.clientSocket == null) {
+            if(this.clientSocket == null && !this.demo) {
                 // load websocket config from file
                 string server = "";
                 string port = "";
@@ -696,6 +702,8 @@ namespace opal
         /// <param name="logme">event to log</param>
         void HandleLogEvent (object sender, LogEvent logme)
         {
+            if (this.demo) return;
+        
             switch(logme.type) {
             case LogEvent.EventType.Action:
                 // note that for some gestures, the 2d Point returned by the gesture

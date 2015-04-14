@@ -91,6 +91,10 @@ namespace opal
             { ANIM_FLAP_BEAKOPEN, "FlyBeakOpen"}
         };
         
+        // DEMO sidekick speech
+        public static string[] DEMO_SIDEKICK_SPEECH = new string[] { "ImAToucan", 
+            "ImFromSpain", "AdiosSeeYouNext", ""};
+        
         /** Websocket config file path */
         // if playing in unity on desktop:
         public const string WEBSOCKET_CONFIG = "websocket_config.txt";

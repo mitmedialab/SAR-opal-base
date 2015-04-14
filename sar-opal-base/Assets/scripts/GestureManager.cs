@@ -25,6 +25,7 @@ namespace opal
         
         // DEMO VERSION
         public bool demo = false;
+        private int demospeech = 0;
         
         /// <summary>
         /// Called on start, use to initialize stuff
@@ -56,6 +57,19 @@ namespace opal
             {
                 GameObject arrow = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
                 if (arrow != null) AddAndSubscribeToGestures(arrow, false);
+                
+                // also subscribe for the sidekick
+                GameObject sk = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
+                // add a tap gesture component if one doesn't exist
+                TapGesture tapg = sk.GetComponent<TapGesture>();
+                if(tapg == null) {
+                    tapg = sk.AddComponent<TapGesture>();
+                }
+                // checking for null anyway in case adding the component didn't work
+                if(tapg != null) {
+                    tapg.Tapped += tappedHandler; // subscribe to tap events
+                    Debug.Log(sk.name + " subscribed to tap events");
+                }
             }
         } 
     
@@ -88,6 +102,20 @@ namespace opal
                 if(rg != null) {
                     rg.Released -= releasedHandler;
                     Debug.Log(go.name + " unsubscribed from release events");
+                }
+            }
+            
+            if (this.demo)
+            {
+                // also unsubscribe for the sidekick
+                GameObject gob = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
+                if (gob != null)
+                {
+                    TapGesture tapg = gob.GetComponent<TapGesture>();
+                    if(tapg != null) {
+                        tapg.Tapped -= tappedHandler;
+                        Debug.Log(gob.name + " unsubscribed from tap events");
+                    }
                 }
             }
         }
@@ -185,7 +213,15 @@ namespace opal
                 else if (this.demo && gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK))
                 {   
                     // tell the sidekick to animate
-                    gesture.gameObject.GetComponent<Sidekick>().SidekickDo(Constants.ANIM_FLAP);
+                    if (Constants.DEMO_SIDEKICK_SPEECH[this.demospeech].Equals(""))
+                    {
+                        gesture.gameObject.GetComponent<Sidekick>().SidekickDo(Constants.ANIM_FLAP);
+                    }
+                    else {
+                        gesture.gameObject.GetComponent<Sidekick>().SidekickSay(
+                            Constants.DEMO_SIDEKICK_SPEECH[this.demospeech]);
+                    }
+                    this.demospeech = (this.demospeech + 1) % Constants.DEMO_SIDEKICK_SPEECH.Length;
                     
                 }
             

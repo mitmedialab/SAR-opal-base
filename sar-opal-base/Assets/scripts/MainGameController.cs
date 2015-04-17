@@ -32,7 +32,7 @@ namespace opal
         public event LogEventHandler logEvent;
     
         // DEMO  VERSION
-        private bool demo = true;
+        private bool demo = false;
     
         /// <summary>
         /// Called first, use to initialize stuff

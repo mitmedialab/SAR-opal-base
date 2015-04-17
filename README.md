@@ -42,6 +42,13 @@ Note that if you try to build this project, the Newtonsoft.Json dll appears to b
 ## Miscellaneous Notes
 - When adding new audio to the project, make sure each audio clip is set as a 2D sound. This will ensure it plays without the default volume rolloff that 3D sounds have (and thus, is audible when played). Note that the Force2DAudio script in Assets/Editor will automatically set any audio files that Unity imports from the Assets folder as 2D sounds, so you probably won't have to worry about this.
 
+## Demo Version
+To build and deploy the demo version, do the following:
+- In Unity > Build Settings > Scenes in build, check all the demo scenes and uncheck basic-scene.
+- In Unity > Build Settings > Player Settings, change the deployed name of the app to be SAR Opal Demo and the bundle identifier to be "demo" instead of "base.
+- In the MainGameController, set the flag "demo" to true.
+- Build and deploy. 
+
 
 
 

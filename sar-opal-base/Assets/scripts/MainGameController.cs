@@ -133,6 +133,10 @@ namespace opal
                 this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
                     Constants.SCENE_ROSTOPIC, Constants.SCENE_ROSMSG_TYPE));
                 
+                // advertise that we will publish opal_tablet_audio messages
+                this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+                    Constants.AUDIO_ROSTOPIC, Constants.AUDIO_ROSMSG_TYPE));
+                
                 // subscribe to opal command messages
                 this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonSubscribeMsg(
                 Constants.CMD_ROSTOPIC, Constants.CMD_ROSMSG_TYPE));

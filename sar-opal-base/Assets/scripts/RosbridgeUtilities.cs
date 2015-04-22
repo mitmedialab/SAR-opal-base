@@ -41,7 +41,7 @@ namespace opal
             rosPublish.Add("op","publish");
             rosPublish.Add("topic", topic);
             Dictionary<string,object> rosMessage = new Dictionary<string, object>();
-            rosMessage.Add("donePlaying", message);
+            rosMessage.Add("data", message);
             rosPublish.Add("msg", rosMessage);
             
             return Json.Serialize(rosPublish);

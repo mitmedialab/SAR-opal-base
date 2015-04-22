@@ -127,6 +127,6 @@ namespace opal
         // contains:
         //   bool done playing
         public const string AUDIO_ROSTOPIC = "/opal_tablet_audio";
-        public const string AUDIO_ROSMSG_TYPE = "/sar_opal_msgs/OpalAudio";     
+        public const string AUDIO_ROSMSG_TYPE = "/std_msgs/Bool";     
     }
 }

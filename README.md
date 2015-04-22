@@ -16,13 +16,13 @@ Note that if the specified address does not exist on the network, there is a 90s
 If the address does exist but if you've forgotten to start rosbridge\_server, the connection will be refused.
 
 ## SAR Opal messages
-The game subscribes to the ROS topic "opal\_tablet\_command" to receive messages of type "[/sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs "/sar\_opal\_msgs")/OpalCommand".
+The game subscribes to the ROS topic "opal\_tablet\_command" to receive messages of type "/[sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs "/sar\_opal\_msgs")/OpalCommand".
 
 The game publishes /std\_msgs/String messages to the ROS topic "opal\_tablet".
 
-The game publishes "[/sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs "/sar\_opal\_msgs")/OpalAction" to the ROS topic "opal\_tablet\_action". See [/sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs "/sar\_opal\_msgs") for more info.
+The game publishes "/[sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs "/sar\_opal\_msgs")/OpalAction" to the ROS topic "opal\_tablet\_action". See [/sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs "/sar\_opal\_msgs") for more info.
 
-The game publishes "[/sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs "/sar\_opal\_msgs")/OpalScene" to the ROS topic "opal\_tablet\_scene". Usually this message will only be published after receiving a "request keyframe" command - see [/sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs "/sar\_opal\_msgs") for more info. 
+The game publishes "/[sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs "/sar\_opal\_msgs")/OpalScene" to the ROS topic "opal\_tablet\_scene". Usually this message will only be published after receiving a "request keyframe" command - see [/sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs "/sar\_opal\_msgs") for more info. 
 
 The game publishes "/std\_msgs/Bool" to the ROS topic "opal\_tablet\_audio", to indicate whether the sidekick character is done playing back an audio file.
 
@@ -42,12 +42,12 @@ Note that the MainCamera in the Unity scene needs a CameraLayer2D component atta
 If you pull in the submodule, you can get the examples, prefabs, etc. The necessary .cs file is in the SAR-opal-base Assets/Plugins folder already.
 
 ### websocket-sharp
-[Websocket-sharp] (https://github.com/sta/websocket-sharp "websocket-sharp git") is a .Net implementation of websockets, and is used to communicate with the ROS rosbridge_server.
+[Websocket-sharp] (https://github.com/sta/websocket-sharp "websocket-sharp git") is a .Net implementation of websockets, and is used to communicate with the ROS rosbridge\_server.
 
 Note that if you try to build this project, the Newtonsoft.Json dll appears to be missing, so I copied over the prebuilt dll from bin/Debug.
 
 ### MiniJSON
-[MiniJSON] (https://gist.github.com/darktable/1411710 "miniJSON") is a pretty basic C# JSON encoder and decoder. It can serialize and deserialize JSON strings, which are sent to and received from the ROS rosbridge_server. I've used the code mostly as-is, with one or two of the bug fixes listed in the comments on the github gist page added in.
+[MiniJSON] (https://gist.github.com/darktable/1411710 "miniJSON") is a pretty basic C# JSON encoder and decoder. It can serialize and deserialize JSON strings, which are sent to and received from the ROS rosbridge\_server. I've used the code mostly as-is, with one or two of the bug fixes listed in the comments on the github gist page added in.
 
 
 ## Miscellaneous Notes
@@ -55,8 +55,8 @@ Note that if you try to build this project, the Newtonsoft.Json dll appears to b
 
 ## Demo Version
 To build and deploy the demo version, do the following:
-- In Unity > Build Settings > Scenes in build, check all the demo scenes and uncheck basic-scene.
-- In Unity > Build Settings > Player Settings, change the deployed name of the app to be SAR Opal Demo and the bundle identifier to be "demo" instead of "base.
+- In Unity > Build Settings > Scenes in build, check all the demo scenes and uncheck basic-scene and all other non-demo scenes.
+- In Unity > Build Settings > Player Settings, change the deployed name of the app to be SAR Opal Demo and the bundle identifier to be "demo" instead of "base".
 - In the MainGameController, set the flag "demo" to true.
 - Build and deploy. 
 

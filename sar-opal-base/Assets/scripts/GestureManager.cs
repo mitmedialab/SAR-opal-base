@@ -23,6 +23,10 @@ namespace opal
         // for logging stuff
         public event LogEventHandler logEvent;
         
+        // DEMO VERSION
+        public bool demo = false;
+        private int demospeech = 0;
+        
         /// <summary>
         /// Called on start, use to initialize stuff
         /// </summary>
@@ -47,6 +51,25 @@ namespace opal
             GameObject[] gos = GameObject.FindGameObjectsWithTag(Constants.TAG_PLAY_OBJECT);
             foreach(GameObject go in gos) {
                 AddAndSubscribeToGestures(go, true);
+            }
+            
+            if (this.demo)
+            {
+                GameObject arrow = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
+                if (arrow != null) AddAndSubscribeToGestures(arrow, false);
+                
+                // also subscribe for the sidekick
+                GameObject sk = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
+                // add a tap gesture component if one doesn't exist
+                TapGesture tapg = sk.GetComponent<TapGesture>();
+                if(tapg == null) {
+                    tapg = sk.AddComponent<TapGesture>();
+                }
+                // checking for null anyway in case adding the component didn't work
+                if(tapg != null) {
+                    tapg.Tapped += tappedHandler; // subscribe to tap events
+                    Debug.Log(sk.name + " subscribed to tap events");
+                }
             }
         } 
     
@@ -79,6 +102,20 @@ namespace opal
                 if(rg != null) {
                     rg.Released -= releasedHandler;
                     Debug.Log(go.name + " unsubscribed from release events");
+                }
+            }
+            
+            if (this.demo)
+            {
+                // also unsubscribe for the sidekick
+                GameObject gob = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
+                if (gob != null)
+                {
+                    TapGesture tapg = gob.GetComponent<TapGesture>();
+                    if(tapg != null) {
+                        tapg.Tapped -= tappedHandler;
+                        Debug.Log(gob.name + " unsubscribed from tap events");
+                    }
                 }
             }
         }
@@ -163,7 +200,29 @@ namespace opal
                 if(this.logEvent != null) {
                     // only send subset of msg that is actual message
                     this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                 gesture.gameObject.name, "tap", hit2d.Point));
+                    gesture.gameObject.name, "tap", hit2d.Point));
+                }
+                
+                // if this is the demo app, and if the tap was on the back arrow,
+                // go back to the demo intro scene
+                if(this.demo && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
+                {
+                    Application.LoadLevel(Constants.SCENE_DEMO_INTRO);
+                }
+                // play sidekick animation if it is touched
+                else if (this.demo && gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK))
+                {   
+                    // tell the sidekick to animate
+                    if (Constants.DEMO_SIDEKICK_SPEECH[this.demospeech].Equals(""))
+                    {
+                        gesture.gameObject.GetComponent<Sidekick>().SidekickDo(Constants.ANIM_FLAP);
+                    }
+                    else {
+                        gesture.gameObject.GetComponent<Sidekick>().SidekickSay(
+                            Constants.DEMO_SIDEKICK_SPEECH[this.demospeech]);
+                    }
+                    this.demospeech = (this.demospeech + 1) % Constants.DEMO_SIDEKICK_SPEECH.Length;
+                    
                 }
             
                 // trigger sound on tap

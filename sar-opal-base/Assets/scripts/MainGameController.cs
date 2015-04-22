@@ -20,7 +20,7 @@ namespace opal
         
         // sidekick
         private Sidekick sidekickScript = null;
-    
+        
         // rosbridge websocket client
         private RosbridgeWebSocketClient clientSocket = null;
     
@@ -31,6 +31,9 @@ namespace opal
         // for logging stuff
         public event LogEventHandler logEvent;
     
+        // DEMO  VERSION
+        private bool demo = false;
+    
         /// <summary>
         /// Called first, use to initialize stuff
         /// </summary>
@@ -40,6 +43,9 @@ namespace opal
             FindGestureManager(); 
             this.gestureManager.logEvent += new LogEventHandler(HandleLogEvent);
             this.logEvent += new LogEventHandler(HandleLogEvent);
+            
+            // if demo, tell everyone else
+            this.gestureManager.demo = this.demo;
             
             // find our sidekick
             GameObject sidekick = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
@@ -58,6 +64,7 @@ namespace opal
                 //} else { Debug.Log("Got sidekick script!"); }
             } else {
                 Debug.Log("Got sidekick script");
+                this.sidekickScript.donePlayingEvent += new DonePlayingEventHandler(HandleDonePlayingAudioEvent);
             }
             
             // subscribe to all log events from existing play objects 
@@ -73,14 +80,14 @@ namespace opal
         {
             // Create a new background programmatically as a test
             // TODO remove this background image later!
-            BackgroundObjectProperties bops = new BackgroundObjectProperties();
-            bops.setAll("playground", Constants.TAG_BACKGROUND, 
-                    new Vector3(0, 0, 2));
-            this.InstantiateBackground(bops);
+            //BackgroundObjectProperties bops = new BackgroundObjectProperties();
+            //bops.setAll("playground", Constants.TAG_BACKGROUND, 
+            //        new Vector3(0, 0, 2));
+            //this.InstantiateBackground(bops);
         
             // set up rosbridge websocket client
             // note: does not attempt to reconnect if connection fails
-            if(this.clientSocket == null) {
+            if(this.clientSocket == null && !this.demo) {
                 // load websocket config from file
                 string server = "";
                 string port = "";
@@ -126,6 +133,10 @@ namespace opal
                 this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
                     Constants.SCENE_ROSTOPIC, Constants.SCENE_ROSMSG_TYPE));
                 
+                // advertise that we will publish opal_tablet_audio messages
+                this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+                    Constants.AUDIO_ROSTOPIC, Constants.AUDIO_ROSMSG_TYPE));
+                
                 // subscribe to opal command messages
                 this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonSubscribeMsg(
                 Constants.CMD_ROSTOPIC, Constants.CMD_ROSMSG_TYPE));
@@ -146,6 +157,16 @@ namespace opal
         /** On disable, disable some stuff */
         private void OnDestroy ()
         {
+            // unsubscribe from log events
+            this.gestureManager.logEvent -= new LogEventHandler(HandleLogEvent);
+            this.logEvent -= new LogEventHandler(HandleLogEvent);
+            
+            // unsubscribe from sidekick audio events
+            if (this.sidekickScript != null)
+            {
+                this.sidekickScript.donePlayingEvent -= new DonePlayingEventHandler(HandleDonePlayingAudioEvent);
+            }
+        
             // close websocket
             if(this.clientSocket != null) {
                 this.clientSocket.CloseSocket();
@@ -153,6 +174,8 @@ namespace opal
                 // unsubscribe from received message events
                 this.clientSocket.receivedMsgEvent -= HandleClientSocketReceivedMsgEvent;
             }
+            
+            
         
             Debug.Log("destroyed main game controller");
         }
@@ -696,6 +719,8 @@ namespace opal
         /// <param name="logme">event to log</param>
         void HandleLogEvent (object sender, LogEvent logme)
         {
+            if (this.demo) return;
+        
             switch(logme.type) {
             case LogEvent.EventType.Action:
                 // note that for some gestures, the 2d Point returned by the gesture
@@ -722,11 +747,18 @@ namespace opal
                 this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
             Constants.LOG_ROSTOPIC, logme.state));
                 break;
-        
             }
-        
         }
     
+        /// <summary>
+        /// Called when sidekick audio is done playing
+        /// </summary>
+        void HandleDonePlayingAudioEvent(object sender)
+        {
+            // send a "done playing audio" message
+            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishAudioMsg(
+                Constants.AUDIO_ROSTOPIC, true));
+        }
 
     }
 }

@@ -5,15 +5,26 @@ A generalized Unity game template designed for use in a child-robot interaction 
 This tablet app was built and tested with Unity 4.6.2 and MonoDevelop 4.0.1.
 
 ## Configuration
-On startup, the tablet app will try to connect to the IP address or host name specified in the websocket_config file. There is an example file located in Assets/Resources/. 
+On startup, the tablet app will try to connect to the IP address or host name specified in the websocket\_config file. There is an example file located in Assets/Resources/. This IP address should be the address of the machine running roscore and the rosbride\_server (start the server with the command "roslaunch rosbridge\_server rosbridge\_websocket.launch").
 
-When running the app on OS X from the Unity editor, the app will check for "Assets/Resources/websocket_config.txt".
+When running the app on OS X from the Unity editor, the app will check for "Assets/Resources/websocket\_config.txt".
 
-When running the game on Android (e.g., on a tablet), the app will first check for "mnt/sdcard/edu.mit.media.prg.sar.opal.base/websocket_config.txt". This is because once the app is packaged up for Android, you can't change stuff in the package, so we needed a location for the websocket config file that could be easily edited after the app is installed. If that file doesn't exist, or connecting fails with the values listed in that file, the app will try the file packaged in "Assets/Resources/websocket_config.txt". 
+When running the game on Android (e.g., on a tablet), the app will first check for "mnt/sdcard/edu.mit.media.prg.sar.opal.base/websocket\_config.txt". This is because once the app is packaged up for Android, you can't change stuff in the package, so we needed a location for the websocket config file that could be easily edited after the app is installed. If that file doesn't exist, or connecting fails with the values listed in that file, the app will try the file packaged in "Assets/Resources/websocket\_config.txt". 
 
 Note that if the specified address does not exist on the network, there is a 90s timeout before it'll give up trying (hardcoded in the library, so one could patch the library to change the timeout length if one so desires). This will manifest as the application hanging, unresponsive, for the duration of the timeout.
 
-If the address does exist but if you've forgotten to start rosbridge_server, the connection will be refused.
+If the address does exist but if you've forgotten to start rosbridge\_server, the connection will be refused.
+
+## SAR Opal messages
+The game subscribes to the ROS topic "opal\_tablet\_command" to receive messages of type "[/sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs "/sar\_opal\_msgs")/OpalCommand".
+
+The game publishes /std\_msgs/String messages to the ROS topic "opal\_tablet".
+
+The game publishes "[/sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs "/sar\_opal\_msgs")/OpalAction" to the ROS topic "opal\_tablet\_action". See [/sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs "/sar\_opal\_msgs") for more info.
+
+The game publishes "[/sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs "/sar\_opal\_msgs")/OpalScene" to the ROS topic "opal\_tablet\_scene". Usually this message will only be published after receiving a "request keyframe" command - see [/sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs "/sar\_opal\_msgs") for more info. 
+
+The game publishes "/std\_msgs/Bool" to the ROS topic "opal\_tablet\_audio", to indicate whether the sidekick character is done playing back an audio file.
 
 ## Submodules
 You don't need to pull in these submodules for the main project to run (the necessary scripts or dlls have been copied into the Assets/Plugins folder), but if you want their source, extra examples, prefabs, etc, then you can.

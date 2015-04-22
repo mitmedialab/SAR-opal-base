@@ -20,7 +20,7 @@ namespace opal
         
         // sidekick
         private Sidekick sidekickScript = null;
-    
+        
         // rosbridge websocket client
         private RosbridgeWebSocketClient clientSocket = null;
     
@@ -64,6 +64,7 @@ namespace opal
                 //} else { Debug.Log("Got sidekick script!"); }
             } else {
                 Debug.Log("Got sidekick script");
+                this.sidekickScript.donePlayingEvent += new DonePlayingEventHandler(HandleDonePlayingAudioEvent);
             }
             
             // subscribe to all log events from existing play objects 
@@ -152,6 +153,16 @@ namespace opal
         /** On disable, disable some stuff */
         private void OnDestroy ()
         {
+            // unsubscribe from log events
+            this.gestureManager.logEvent -= new LogEventHandler(HandleLogEvent);
+            this.logEvent -= new LogEventHandler(HandleLogEvent);
+            
+            // unsubscribe from sidekick audio events
+            if (this.sidekickScript != null)
+            {
+                this.sidekickScript.donePlayingEvent -= new DonePlayingEventHandler(HandleDonePlayingAudioEvent);
+            }
+        
             // close websocket
             if(this.clientSocket != null) {
                 this.clientSocket.CloseSocket();
@@ -159,6 +170,8 @@ namespace opal
                 // unsubscribe from received message events
                 this.clientSocket.receivedMsgEvent -= HandleClientSocketReceivedMsgEvent;
             }
+            
+            
         
             Debug.Log("destroyed main game controller");
         }
@@ -730,11 +743,18 @@ namespace opal
                 this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
             Constants.LOG_ROSTOPIC, logme.state));
                 break;
-        
             }
-        
         }
     
+        /// <summary>
+        /// Called when sidekick audio is done playing
+        /// </summary>
+        void HandleDonePlayingAudioEvent(object sender)
+        {
+            // send a "done playing audio" message
+            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishAudioMsg(
+                Constants.AUDIO_ROSTOPIC, true));
+        }
 
     }
 }

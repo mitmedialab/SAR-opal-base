@@ -27,6 +27,26 @@ namespace opal
         
             return Json.Serialize(rosPublish);
         }
+        
+        /// <summary>
+        /// Builds a JSON audio message to publish over rosbridge
+        /// </summary>
+        /// <returns>The ROS json publish audio message.</returns>
+        /// <param name="topic">ROS topic to publish on.</param>
+        /// <param name="message">If set to <c>true</c> audio is done playing.</param>
+        public static string GetROSJsonPublishAudioMsg(string topic, bool message)
+        {
+            // build dictionary of things to include in message
+            Dictionary<string,object> rosPublish = new Dictionary<string, object>();
+            rosPublish.Add("op","publish");
+            rosPublish.Add("topic", topic);
+            Dictionary<string,object> rosMessage = new Dictionary<string, object>();
+            rosMessage.Add("donePlaying", message);
+            rosPublish.Add("msg", rosMessage);
+            
+            return Json.Serialize(rosPublish);
+            
+        }
     
         /// <summary>
         /// Builds a JSON metrics log message to publish over rosbridge

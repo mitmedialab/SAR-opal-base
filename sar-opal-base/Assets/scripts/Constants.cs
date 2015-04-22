@@ -122,6 +122,11 @@ namespace opal
         public const string SCENE_ROSMSG_TYPE = "/sar_opal_msgs/OpalScene";
         // commands from elsewhere that we should deal with
         public const string CMD_ROSTOPIC = "/opal_tablet_command";
-        public const string CMD_ROSMSG_TYPE = "/sar_opal_msgs/OpalCommand";        
+        public const string CMD_ROSMSG_TYPE = "/sar_opal_msgs/OpalCommand";   
+        // messages to tell the game node when we're done playing audio
+        // contains:
+        //   bool done playing
+        public const string AUDIO_ROSTOPIC = "/opal_tablet_audio";
+        public const string AUDIO_ROSMSG_TYPE = "/std_msgs/Bool";     
     }
 }

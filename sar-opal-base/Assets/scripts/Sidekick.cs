@@ -3,6 +3,11 @@ using UnityEngine;
 
 namespace opal
 {
+
+    // done playing sidekick audio event -- fire when we're done playing
+    // an audio file so others can know when we're done
+    public delegate void DonePlayingEventHandler(object sender);
+    
     public class Sidekick : MonoBehaviour
     {
         AudioSource audioSource = null;
@@ -11,6 +16,9 @@ namespace opal
         bool checkAnim = false;
         string currAnim = Constants.ANIM_DEFAULT;
         bool playingAnim = false;
+        
+        public event DonePlayingEventHandler donePlayingEvent;
+        
         
         /// <summary>
         /// On starting, do some setup
@@ -68,6 +76,10 @@ namespace opal
                 Debug.Log("done speaking");
                 this.checkAudio = false;
                 this.animator.SetBool(Constants.ANIM_FLAGS[Constants.ANIM_SPEAK],false);
+                // fire event to say we're done playing audio
+                if(this.donePlayingEvent != null) {
+                    this.donePlayingEvent(this);
+                }
             }
             
             // we started playing an animation and we're waiting for it to finish

@@ -53,6 +53,8 @@ Note that if you try to build this project, the Newtonsoft.Json dll appears to b
 ## Miscellaneous Notes
 - When adding new audio to the project, make sure each audio clip is set as a 2D sound. This will ensure it plays without the default volume rolloff that 3D sounds have (and thus, is audible when played). Note that the Force2DAudio script in Assets/Editor will automatically set any audio files that Unity imports from the Assets folder as 2D sounds, so you probably won't have to worry about this.
 
+- When adding new images to the project, make sure to set each image as 'Advanced' and check the 'read/write' box in the Unity editor. If you don't do this, when images are programatically loaded as PlayObjects, the polygon colliders won't be generated to properly fit the image's shape/outline. When deploying the app, you'll probably get the error "Sprite outline generation failed - could not read texture pixel data. Did you forget to make the texture readable?" whenever you dynamically add a polygon collider to an object. Something about textures/images not being readable by scripts by default, the polygon collider needing to read the texture to figure out the outline to make the collider the right shape, but not being able to, and thus the collider ending up the wrong shape and making collisions happen weird... 
+
 ## Demo Version
 To build and deploy the demo version, do the following:
 - In Unity > Build Settings > Scenes in build, check all the demo scenes and uncheck basic-scene and all other non-demo scenes.

@@ -356,7 +356,7 @@ namespace opal
             if(gesture.GetTargetHitResult(out hit)) {
                 // want the info as a 2D point 
                 ITouchHit2D hit2d = (ITouchHit2D)hit; 
-                Debug.Log("PAN on " + gesture.gameObject.name + " at " + hit2d.Point);
+                //TODO testing not having this Debug.Log("PAN on " + gesture.gameObject.name + " at " + hit2d.Point);
                 // move this game object with the drag
                 // note that hit2d.Point sets the z position to 0! does not keep
                 // track what the z position actually was! so we adjust for this when
@@ -373,8 +373,8 @@ namespace opal
                 if(this.logEvent != null) {
                     // only send subset of msg that is actual message
                     // note that the hit2d.Point may not have the correct z position
-                    this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                        gesture.gameObject.name, "pan", hit2d.Point));
+                    //TODO testing without pan this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+                    //    gesture.gameObject.name, "pan", hit2d.Point));
                 }
 
             } else {

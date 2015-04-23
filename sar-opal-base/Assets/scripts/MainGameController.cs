@@ -306,6 +306,8 @@ namespace opal
                 // don't want gravity, otherwise objects will fall
                 // though with the isKinematic flag set this may not matter
                 rb2d.gravityScale = 0; 
+                // set collision detection to 'continuous' instead of discrete
+                rb2d.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
                 
                 // add collision manager so we get trigger enter/exit events
                 CollisionManager cm = go.AddComponent<CollisionManager>();
@@ -313,7 +315,8 @@ namespace opal
                 cm.logEvent += new LogEventHandler(HandleLogEvent);
                 
                 // and add transformer so it automatically moves on drag
-                go.AddComponent<Transformer2D>();
+                Transformer2D t2d = go.AddComponent<Transformer2D>();
+                t2d.Speed = 30;
             }
             // if the object is not draggable, then we don't need a rigidbody because
             // it is a static object (won't move even if there are collisions)

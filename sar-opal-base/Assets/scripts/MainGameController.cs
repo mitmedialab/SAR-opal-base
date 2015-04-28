@@ -280,22 +280,6 @@ namespace opal
             // set the scale/size of the sprite/image
             go.transform.localScale = pops.Scale();
 
-            // add and subscribe to gestures
-            if(this.gestureManager == null) {
-                Debug.Log("ERROR no gesture manager");
-                FindGestureManager();
-            }
-            
-            try {
-                // add gestures and register to get event notifications
-                this.gestureManager.AddAndSubscribeToGestures(go, pops.draggable);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("Tried to subscribe to gestures but failed! " + e);
-            }
-            
-
             if (pops.draggable)
             {
                 // add rigidbody if this is a draggable object
@@ -315,8 +299,14 @@ namespace opal
                 cm.logEvent += new LogEventHandler(HandleLogEvent);
                 
                 // and add transformer so it automatically moves on drag
-                Transformer2D t2d = go.AddComponent<Transformer2D>();
-                t2d.Speed = 30;
+                // note that the AddAndSubscribeToGestures function also
+                // checks to add a transformer if there isn't one if the 
+                // object is supposed to be draggable
+                Transformer2D t2d = go.GetComponent<Transformer2D>();
+                if (t2d == null) {
+                    t2d = go.AddComponent<Transformer2D>();
+                    t2d.Speed = 30;
+                }
             }
             // if the object is not draggable, then we don't need a rigidbody because
             // it is a static object (won't move even if there are collisions)
@@ -339,6 +329,20 @@ namespace opal
             PolygonCollider2D pc = go.AddComponent<PolygonCollider2D>();
             pc.isTrigger = true;
 
+            // add and subscribe to gestures
+            if(this.gestureManager == null) {
+                Debug.Log("ERROR no gesture manager");
+                FindGestureManager();
+            }
+            
+            try {
+                // add gestures and register to get event notifications
+                this.gestureManager.AddAndSubscribeToGestures(go, pops.draggable);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Tried to subscribe to gestures but failed! " + e);
+            }
            
             // add pulsing behavior (draws attention to actionable objects)
             go.AddComponent<GrowShrinkBehavior>();
@@ -648,16 +652,16 @@ namespace opal
         /// <param name="enabled">enable touch or disable touch</param>
         void SetTouch (string[] tags, bool enabled)
         {
-            // destroy objects with the specified tags
+            // change touch for objects with the specified tags
             foreach(string tag in tags) {
                 GameObject[] objs = GameObject.FindGameObjectsWithTag(tag);
                 if(objs.Length == 0)
                     continue;
                 foreach(GameObject go in objs) {
-                    Debug.Log("touch " + (enabled ? "enabled" : "disabled") + " for " + go.name);
-                    if (go.GetComponent<TouchScript.Behaviors.Transformer2D>() != null)
+                    if (go.GetComponent<Transformer2D>() != null)
                     {
-                        go.GetComponent<TouchScript.Behaviors.Transformer2D>().enabled = enabled;
+                        Debug.Log("touch " + (enabled ? "enabled" : "disabled") + " for " + go.name);
+                        go.GetComponent<Transformer2D>().enabled = enabled;
                     }
                 }
             }

@@ -151,6 +151,13 @@ namespace opal
                     pg.PanCompleted += panCompleteHandler;
                     Debug.Log(go.name + " subscribed to pan events");
                 }
+                
+                // make sure we do have a transformer if we're draggable
+                Transformer2D t2d = go.GetComponent<Transformer2D>();
+                if (t2d == null) {
+                    t2d = go.AddComponent<Transformer2D>();
+                    t2d.Speed = 30;
+                }
             }
             PressGesture prg = go.GetComponent<PressGesture>();
             if(prg == null) {
@@ -169,11 +176,7 @@ namespace opal
                 Debug.Log(go.name + " subscribed to release events");
             }
             
-            // make sure we do have a transformer
-            Transformer2D t2d = go.GetComponent<Transformer2D>();
-            if (t2d == null) {
-                go.AddComponent<Transformer2D>();
-            }
+            
         }
 
         #region gesture handlers

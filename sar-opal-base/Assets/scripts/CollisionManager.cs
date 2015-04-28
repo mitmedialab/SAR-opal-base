@@ -24,7 +24,7 @@ namespace opal
 		 /// <param name="other">Other.</param>
 	    void OnTriggerEnter2D (Collider2D other)
 	    {
-            Debug.Log("COLLISION BEGIN" + other.name + " entered " + this.gameObject.name);
+            Debug.Log("COLLISION BEGIN " + other.name + " entered " + this.gameObject.name);
             // fire event indicating a collision occurred
             if(this.logEvent != null) {
                 // send action log event

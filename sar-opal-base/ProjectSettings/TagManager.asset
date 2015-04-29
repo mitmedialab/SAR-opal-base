@@ -11,6 +11,8 @@ TagManager:
   - Sidekick
   - SidekickLight
   - Back
+  - Fader
+  - FaderAll
   - 
   Builtin Layer 0: Default
   Builtin Layer 1: TransparentFX

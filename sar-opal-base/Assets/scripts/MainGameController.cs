@@ -30,6 +30,9 @@ namespace opal
     
         // for logging stuff
         public event LogEventHandler logEvent;
+        
+        // fader for fading out the screen
+        private GameObject fader = null; 
     
         // DEMO  VERSION
         private bool demo = false;
@@ -58,13 +61,22 @@ namespace opal
             this.sidekickScript = (Sidekick)sidekick.GetComponent<Sidekick>();
             if(this.sidekickScript == null) {
                 Debug.LogError("ERROR: Could not get sidekick script!");
-                //this.sidekickScript = sidekick.AddComponent<Sidekick>();
-                //if (this.sidekickScript == null) {
-                //Debug.LogError("ERROR: Tried to add sidekick script but failed!");
-                //} else { Debug.Log("Got sidekick script!"); }
             } else {
                 Debug.Log("Got sidekick script");
                 this.sidekickScript.donePlayingEvent += new DonePlayingEventHandler(HandleDonePlayingAudioEvent);
+            }
+            
+            // set up fader
+            // NOTE right now we're just using one fader that fades out all but the
+            // toucan - but in the unity editor there's an unused 'fader_all' that
+            // can fade out everything including the toucan, just switch this tag
+            // to "TAG_FADER_ALL" to use that fader instead!
+            this.fader = GameObject.FindGameObjectWithTag(Constants.TAG_FADER);
+            if(this.fader != null) {
+                this.fader.SetActive(false);
+                Debug.Log("Got fader: " + this.fader.name);
+            } else {
+                Debug.LogError("ERROR: No fader found");
             }
             
             // subscribe to all log events from existing play objects 
@@ -464,8 +476,10 @@ namespace opal
                     // disable touch events from user
                     this.gestureManager.allowTouch = false; 
                     MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                    this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
-                        Constants.TAG_PLAY_OBJECT }, false);
+                        this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
+                            Constants.TAG_PLAY_OBJECT }, false);
+                        // and fade the screen
+                        this.fader.SetActive(true);
                     });
                     break;
                 
@@ -473,8 +487,10 @@ namespace opal
                     // enable touch events from user
                     this.gestureManager.allowTouch = true;
                     MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                    this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
-                        Constants.TAG_PLAY_OBJECT }, true);
+                        this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
+                            Constants.TAG_PLAY_OBJECT }, true);
+                        // and unfade the screen
+                        this.fader.SetActive(false);
                     });
                     break;
                 
@@ -539,6 +555,7 @@ namespace opal
                     }
                     break;
                 
+            
                 case Constants.MOVE_OBJECT:
                     if(props == null) {
                         Debug.Log("Was told to move an object but did not " +
@@ -555,11 +572,20 @@ namespace opal
                     });
                     break;
                 
-                case Constants.GOT_TO_GOAL:
-                    Debug.LogWarning("Action got_to_goal not implemented yet!");
-                    // TODO do something now that object X is at its goal ...?
+                case Constants.FADE_SCREEN:
+                    Debug.LogWarning("Action fade screen not tested yet!");
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                        this.fader.SetActive(true);
+                    });
                     break;
                     
+                case Constants.UNFADE_SCREEN:
+                    Debug.LogWarning("Action unfade screen not tested yet!");
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                        this.fader.SetActive(false);
+                    });
+                    break;
+                
                 default:
                     Debug.LogWarning("Got a message that doesn't match any we expect!");
                     break;

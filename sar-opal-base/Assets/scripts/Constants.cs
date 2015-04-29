@@ -30,6 +30,8 @@ namespace opal
         public const string TAG_BACKGROUND = "Background";
         public const string TAG_SIDEKICK = "Sidekick";
         public const string TAG_BACK = "Back";
+        public const string TAG_FADER = "Fader";
+        public const string TAG_FADER_ALL = "FaderAll";
     
         // DEMO - scene numbers (by index -- see list of scenes in build settings)
         public const int SCENE_DEMO_INTRO = 0;
@@ -74,7 +76,8 @@ namespace opal
         public const int MOVE_OBJECT = 7;
         public const int HIGHLIGHT_OBJECT = 8;
         public const int REQUEST_KEYFRAME = 9;
-        public const int GOT_TO_GOAL = 10;
+        public const int FADE_SCREEN = 10;
+        public const int UNFADE_SCREEN = 11;
     
         /** sidekick animations */
         // name of each animation, from unity editor

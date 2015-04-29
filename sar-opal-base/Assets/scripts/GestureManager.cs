@@ -38,7 +38,7 @@ namespace opal
                 this.highlight.SetActive(false);
                 Debug.Log("Got light: " + this.highlight.name);
             } else {
-                Debug.Log("ERROR: No light found");
+                Debug.LogError("ERROR: No light found");
             }
         }
 

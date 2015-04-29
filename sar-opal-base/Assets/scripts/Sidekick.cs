@@ -19,6 +19,9 @@ namespace opal
         
         public event DonePlayingEventHandler donePlayingEvent;
         
+        // fader for fading out the screen
+        private GameObject fader = null; 
+        
         
         /// <summary>
         /// On starting, do some setup
@@ -44,6 +47,16 @@ namespace opal
             {
                 this.animator = this.gameObject.AddComponent<Animator>();
             }
+            
+            
+            // set up fader
+            /*this.fader = GameObject.FindGameObjectWithTag(Constants.TAG_FADER);
+            if(this.fader != null) {
+                this.fader.SetActive(false);
+                Debug.Log("Got fader: " + this.fader.name);
+            } else {
+                Debug.LogError("ERROR: No fader found");
+            }*/
             
         }
         
@@ -75,6 +88,9 @@ namespace opal
                 // the speaking animation
                 Debug.Log("done speaking");
                 this.checkAudio = false;
+                // NOTE right now we're just fading screen when touch is diabled
+                // but we could easily just fade screen when toucan speaks, here
+                //this.fader.SetActive(false);
                 this.animator.SetBool(Constants.ANIM_FLAGS[Constants.ANIM_SPEAK],false);
                 // fire event to say we're done playing audio
                 if(this.donePlayingEvent != null) {
@@ -127,17 +143,20 @@ namespace opal
             if (!this.gameObject.audio.isPlaying)
             {
                 // start the speaking animation
-                Debug.Log("flag is ... " 
-                    + this.animator.GetBool(Constants.ANIM_FLAGS[Constants.ANIM_SPEAK]));
+                //Debug.Log("flag is ... " 
+                //    + this.animator.GetBool(Constants.ANIM_FLAGS[Constants.ANIM_SPEAK]));
                 
                 this.animator.SetBool(Constants.ANIM_FLAGS[Constants.ANIM_SPEAK],true);
                 
-                Debug.Log("going to speak ... " 
-                    + this.animator.GetBool(Constants.ANIM_FLAGS[Constants.ANIM_SPEAK]));
+                //Debug.Log("going to speak ... " 
+                //    + this.animator.GetBool(Constants.ANIM_FLAGS[Constants.ANIM_SPEAK]));
                 
                 // play audio
                 this.gameObject.audio.Play();
                 this.checkAudio = true;
+                // NOTE right now we're just fading screen when touch is diabled
+                // but we could easily just fade screen when toucan speaks, here
+                //this.fader.SetActive(true);
             }
            
            return true;

@@ -56,6 +56,7 @@ namespace opal
                 Debug.LogError("ERROR: Could not find sidekick!");
             } else {
                 Debug.Log("Got sidekick");
+                this.gestureManager.AddAndSubscribeToGestures(sidekick, false);
             }
             
             this.sidekickScript = (Sidekick)sidekick.GetComponent<Sidekick>();

@@ -105,8 +105,8 @@ namespace opal
                 }
             }
             
-            if (this.demo)
-            {
+            //if (this.demo)
+            //{
                 // also unsubscribe for the sidekick
                 GameObject gob = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
                 if (gob != null)
@@ -116,8 +116,19 @@ namespace opal
                         tapg.Tapped -= tappedHandler;
                         Debug.Log(gob.name + " unsubscribed from tap events");
                     }
+                    
+                    PressGesture prg = gob.GetComponent<PressGesture>();
+                    if(prg != null) {
+                        prg.Pressed -= pressedHandler;
+                        Debug.Log(gob.name + " unsubscribed from press events");
+                    }
+                    ReleaseGesture rg = gob.GetComponent<ReleaseGesture>();
+                    if(rg != null) {
+                        rg.Released -= releasedHandler;
+                        Debug.Log(gob.name + " unsubscribed from release events");
+                    }
                 }
-            }
+            //}
         }
 
         /// <summary>
@@ -269,9 +280,11 @@ namespace opal
                     LightOn(1, hit2d.Point);
                     
                 // trigger sound on press
-                Debug.Log("going to play a sound for " + gesture.gameObject.name);
-                if(this.allowTouch) 
+                if(this.allowTouch && !gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK)) 
+                {
+                    Debug.Log("going to play a sound for " + gesture.gameObject.name);
                     PlaySoundAndPulse(gesture.gameObject);
+                }
 
             } else {
                 // this probably won't ever happen, but in case it does, we'll log it

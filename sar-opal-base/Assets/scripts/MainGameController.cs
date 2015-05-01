@@ -391,12 +391,24 @@ namespace opal
             go.layer = Constants.LAYER_STATICS;
         
             // move object to initial position 
-            if(bops.InitPosition().z <= 0)
-                go.transform.position = new Vector3(bops.InitPosition().x, bops.InitPosition().y, 2);
-            else                
-               go.transform.position = bops.InitPosition();
+            // if background, set at z=2
+            // if foreground (in front of toucan), set at z=-4
+            if (bops.Tag().Equals(Constants.TAG_BACKGROUND))
+            {
+                if(bops.InitPosition().z <= 0)
+                    go.transform.position = new Vector3(bops.InitPosition().x, bops.InitPosition().y, 2);
+                else                
+                   go.transform.position = bops.InitPosition();
+            }
+            else if (bops.Tag().Equals(Constants.TAG_FOREGROUND))
+            {
+                if(bops.InitPosition().z >= -3)
+                    go.transform.position = new Vector3(bops.InitPosition().x, bops.InitPosition().y, -4);
+                else                
+                    go.transform.position = bops.InitPosition();
+            }
 
-                        // load sprite/image for object
+            // load sprite/image for object
             SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
             Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + bops.Name());
             if(sprite == null)
@@ -406,8 +418,6 @@ namespace opal
         
             // TODO should the scale be a parameter too?
             go.transform.localScale = new Vector3(100, 100, 100);
-        
-        
         }
     
         /** Find the gesture manager */ 

@@ -342,17 +342,18 @@ namespace opal
             }
         // if we are loading a background object, build up its properties instead
         else if(props.ContainsKey("tag") && 
-                ((string)props["tag"]).Equals(Constants.TAG_BACKGROUND)) {
+                (((string)props["tag"]).Equals(Constants.TAG_BACKGROUND) ||
+                ((string)props["tag"]).Equals(Constants.TAG_FOREGROUND))) {
                 BackgroundObjectProperties bops = new BackgroundObjectProperties();
                 bops.SetTag((string)props["tag"]);
                 if(props.ContainsKey("name"))
                     bops.SetName((string)props["name"]);
-                if(props.ContainsKey("initPosition")) {
+                if(props.ContainsKey("position")) {
                     try {
                         // this is the weird way of converting an object back into
                         // an int array .. not as straightforward as it should be!
-                        int[] posn = ObjectToIntArray(props["initPosition"] as IEnumerable);
-                        Debug.Log("posn: " + posn);
+                        int[] posn = ObjectToIntArray(props["position"] as IEnumerable);
+                        //Debug.Log("posn: " + posn);
                         bops.SetInitPosition(new Vector3(posn[0], posn[1], posn[2]));
                     } catch(Exception ex) {
                         Debug.LogError("Error! Could not get initial position: " + ex);

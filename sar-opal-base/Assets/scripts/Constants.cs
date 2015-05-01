@@ -28,6 +28,7 @@ namespace opal
         public const string TAG_LIGHT = "Light";
         public const string TAG_GESTURE_MAN = "GestureManager";
         public const string TAG_BACKGROUND = "Background";
+        public const string TAG_FOREGROUND = "Foreground";
         public const string TAG_SIDEKICK = "Sidekick";
         public const string TAG_BACK = "Back";
         public const string TAG_FADER = "Fader";

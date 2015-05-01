@@ -551,7 +551,8 @@ namespace opal
                     SceneObjectProperties sops = (SceneObjectProperties)props;
                     
                     // load new background image with the specified properties
-                    if(sops.Tag().Equals(Constants.TAG_BACKGROUND)) {
+                    if(sops.Tag().Equals(Constants.TAG_BACKGROUND) ||
+                        sops.Tag().Equals(Constants.TAG_FOREGROUND)) {
                         Debug.Log("background");
                         MainGameController.ExecuteOnMainThread.Enqueue(() => {
                             this.InstantiateBackground((BackgroundObjectProperties)sops);

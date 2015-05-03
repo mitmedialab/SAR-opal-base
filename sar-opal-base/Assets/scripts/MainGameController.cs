@@ -91,13 +91,6 @@ namespace opal
         /// </summary>
         void Start()
         {
-            // Create a new background programmatically as a test
-            // TODO remove this background image later!
-            //BackgroundObjectProperties bops = new BackgroundObjectProperties();
-            //bops.setAll("playground", Constants.TAG_BACKGROUND, 
-            //        new Vector3(0, 0, 2));
-            //this.InstantiateBackground(bops);
-        
             // set up rosbridge websocket client
             // note: does not attempt to reconnect if connection fails
             if(this.clientSocket == null && !this.demo) {
@@ -319,6 +312,7 @@ namespace opal
                 if (t2d == null) {
                     t2d = go.AddComponent<Transformer2D>();
                     t2d.Speed = 30;
+                    t2d.enabled = true;
                 }
             }
             // if the object is not draggable, then we don't need a rigidbody because
@@ -365,7 +359,21 @@ namespace opal
         
             // save the initial position in case we need to reset this object later
             SavedProperties sp = go.AddComponent<SavedProperties>();
-            sp.initialPosition = pops.InitPosition();        
+            sp.initialPosition = pops.InitPosition();   
+            
+            // HACK to get drag to work right after object is loaded
+            // for some reason if we disable then enable the Transformer2D 
+            // component, drag will work. if we don't, then the Transformer2D 
+            // component will be enabled but dragging will do nothing. not 
+            // sure why...
+            if (go.GetComponent<Transformer2D>() != null)
+            {
+                go.GetComponent<Transformer2D>().enabled = false;
+            }
+            if (go.GetComponent<Transformer2D>() != null)
+            {
+                go.GetComponent<Transformer2D>().enabled = true;
+            }
         }
     
         /// <summary>

@@ -277,7 +277,13 @@ namespace opal
             
                 // move highlighting light and set active
                 if(this.allowTouch)
-                    LightOn(1, hit2d.Point);
+                {
+                    // send the light the z position of the pressed object because
+                    // the 'hit2d' point doesn't have the right z position (is always
+                    // just zero)
+                    LightOn(1, new Vector3(hit2d.Point.x, hit2d.Point.y, 
+                        gesture.gameObject.transform.position.z));
+                }
                     
                 // trigger sound on press
                 if(this.allowTouch && !gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK)) 
@@ -337,7 +343,11 @@ namespace opal
                 if(this.allowTouch)
                 {
                    // the transformer2D component moves object on pan events
-                   LightOn(1, hit2d.Point);
+                    // send the light the z position of the panned object because
+                    // the 'hit2d' point doesn't have the right z position (is always
+                    // just zero)
+                    LightOn(1, new Vector3(hit2d.Point.x, hit2d.Point.y, 
+                                           gesture.gameObject.transform.position.z));
                 }
                 // fire event indicating that we received a message
                 if(this.logEvent != null) {
@@ -372,7 +382,7 @@ namespace opal
             if(gesture.GetTargetHitResult(out hit)) {
                 // want the info as a 2D point 
                 ITouchHit2D hit2d = (ITouchHit2D)hit; 
-                //TODO testing not having this Debug.Log("PAN on " + gesture.gameObject.name + " at " + hit2d.Point);
+                Debug.Log("PAN on " + gesture.gameObject.name + " at " + hit2d.Point);
                 // move this game object with the drag
                 // note that hit2d.Point sets the z position to 0! does not keep
                 // track what the z position actually was! so we adjust for this when
@@ -383,14 +393,19 @@ namespace opal
                    // gesture.gameObject.transform.position = 
                      //   CheckAllowedMoves(hit2d.Point, gesture.gameObject.transform.position.z);
                     // move highlighting light and set active
-                        LightOn(1, hit2d.Point);
+                    
+                    // send the light the z position of the panned object because
+                    // the 'hit2d' point doesn't have the right z position (is always
+                    // just zero)
+                    LightOn(1, new Vector3(hit2d.Point.x, hit2d.Point.y, 
+                                           gesture.gameObject.transform.position.z));
                 // fire event indicating that we received a message
                 }
                 if(this.logEvent != null) {
                     // only send subset of msg that is actual message
                     // note that the hit2d.Point may not have the correct z position
-                    //TODO testing without pan this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                    //    gesture.gameObject.name, "pan", hit2d.Point));
+                    this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+                        gesture.gameObject.name, "pan", hit2d.Point));
                 }
 
             } else {

@@ -61,10 +61,10 @@ namespace opal
     
         // edges of screen - used to make sure objects aren't dragged off the screen
         // screen is 1280x768, minus the menu bar
-        public const int LEFT_SIDE = -630; // -640
-        public const int RIGHT_SIDE = 630; //640
-        public const int TOP_SIDE = 370; //390
-        public const int BOTTOM_SIDE = -370; //-390
+        public const int LEFT_SIDE = -620; // -640
+        public const int RIGHT_SIDE = 620; //640
+        public const int TOP_SIDE = 360; //384
+        public const int BOTTOM_SIDE = -330; //-384
 
         /** messages we can receive */
         public const int DISABLE_TOUCH = 1;

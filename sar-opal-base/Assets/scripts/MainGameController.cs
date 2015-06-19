@@ -35,7 +35,7 @@ namespace opal
         private GameObject fader = null; 
     
         // DEMO  VERSION
-        private bool demo = false;
+        private bool demo = true;
     
         /// <summary>
         /// Called first, use to initialize stuff

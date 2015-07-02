@@ -62,6 +62,13 @@ To build and deploy the demo version, do the following:
 - In the MainGameController, set the flag "demo" to true.
 - Build and deploy. 
 
+## TODO
+- Move 'highlight' object with transformer2D, currently does not follow drag path very well
+- Log all log messages locally to tablet
+- Objects can leave the viewable screen on drag, changes margins (this is because we used TouchScript's Transformer2D for drag, which doesn't have the margins for where not to go)
+- Consider using SimplePan to get the position to log, not Pan
+- Use an if-else instead of switch (see MainGameController for the weird switch problem)
+- Add some way of easily seeing which objects in the scene are draggable or able to be interacted with; used to do the grow-shrink pulse motion, but that caused havoc with the collision detection
 
 
 

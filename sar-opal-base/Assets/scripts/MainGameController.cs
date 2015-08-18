@@ -35,13 +35,40 @@ namespace opal
         private GameObject fader = null; 
     
         // DEMO  VERSION
-        private bool demo = true;
+        private bool demo = false;
+        
+        // config
+        private GameConfig gameConfig;
     
         /// <summary>
         /// Called first, use to initialize stuff
         /// </summary>
         void Awake()
         {
+            Debug.Log("--- RUNNING IN DEMO MODE ---");
+        
+            string path = "";
+            
+            // find the config file
+            #if UNITY_ANDROID
+            path = Constants.CONFIG_PATH_ANDROID + Constants.WEBSOCKET_CONFIG;
+            Debug.Log("trying android path: " + path);
+            #endif
+            
+            #if UNITY_EDITOR
+            path = Application.dataPath + Constants.CONFIG_PATH_OSX + Constants.WEBSOCKET_CONFIG;
+            Debug.Log("trying os x path: " + path);
+            #endif
+            
+            // read config file
+            if(!Utilities.ParseConfig(path, out gameConfig)) {
+                Debug.LogWarning("Could not read config file! Will try default "
+                    + "values of toucan=true, server IP=18.85.38.90, port=9090.");
+            }
+            else {
+                Debug.Log("Got game config!");
+            }
+                    
             // find gesture manager
             FindGestureManager(); 
             this.gestureManager.logEvent += new LogEventHandler(HandleLogEvent);
@@ -56,16 +83,30 @@ namespace opal
                 Debug.LogError("ERROR: Could not find sidekick!");
             } else {
                 Debug.Log("Got sidekick");
-                this.gestureManager.AddAndSubscribeToGestures(sidekick, false);
+                if(this.gameConfig.sidekick) {
+                    // add sidekick's gestures
+                    this.gestureManager.AddAndSubscribeToGestures(sidekick, false);
+                    
+                    // get sidekick's script
+                    this.sidekickScript = (Sidekick)sidekick.GetComponent<Sidekick>();
+                    if(this.sidekickScript == null) {
+                        Debug.LogError("ERROR: Could not get sidekick script!");
+                    } else {
+                        Debug.Log("Got sidekick script");
+                        this.sidekickScript.donePlayingEvent += new DonePlayingEventHandler(HandleDonePlayingAudioEvent);
+                    }
+                }
+                else {
+                    // we don't have a sidekick in this game, set as inactive
+                    Debug.Log("Don't need sidekick... disabling");
+                    sidekick.SetActive(false);
+                    
+                    // try to disable the sidekick's highlight as well
+                    GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK_LIGHT).SetActive(false);
+                }
             }
             
-            this.sidekickScript = (Sidekick)sidekick.GetComponent<Sidekick>();
-            if(this.sidekickScript == null) {
-                Debug.LogError("ERROR: Could not get sidekick script!");
-            } else {
-                Debug.Log("Got sidekick script");
-                this.sidekickScript.donePlayingEvent += new DonePlayingEventHandler(HandleDonePlayingAudioEvent);
-            }
+            
             
             // set up fader
             // NOTE right now we're just using one fader that fades out all but the
@@ -94,33 +135,17 @@ namespace opal
             // set up rosbridge websocket client
             // note: does not attempt to reconnect if connection fails
             if(this.clientSocket == null && !this.demo) {
-                // load websocket config from file
-                string server = "";
-                string port = "";
-                string path = "";
-            
-                // find the websocket config file
-                #if UNITY_ANDROID
-                path = Constants.CONFIG_PATH_ANDROID + Constants.WEBSOCKET_CONFIG;
-                Debug.Log("trying android path: " + path);
-                #endif
-            
-                #if UNITY_EDITOR
-                path = Application.dataPath + Constants.CONFIG_PATH_OSX + Constants.WEBSOCKET_CONFIG;
-                Debug.Log("osx 1 path: " + path);
-                #endif
-        
                 // load file
-                if(!RosbridgeUtilities.DecodeWebsocketJSONConfig(path, out server, out port)) {
-                    Debug.LogWarning("Could not read websocket config file! Trying "
-                        + "hardcoded IP 18.85.39.35 and port 9090");
+                if (this.gameConfig.server.Equals("") || this.gameConfig.port.Equals("")) {
+                    Debug.LogWarning("Do not have websocket configuration... trying "
+                        + "hardcoded IP 18.85.38.35 and port 9090");
                     this.clientSocket = new RosbridgeWebSocketClient(
-                    "18.85.39.35",// server, // can pass hostname or IP address
+                    "18.85.38.35",// server, // can pass hostname or IP address
                     "9090"); //port);   
                 } else {
                     this.clientSocket = new RosbridgeWebSocketClient(
-                    server, // can pass hostname or IP address
-                    port);  
+                    this.gameConfig.server, // can pass hostname or IP address
+                    this.gameConfig.port);  
                 }
             
                 this.clientSocket.SetupSocket();
@@ -523,17 +548,21 @@ namespace opal
                     break;
                 
                 case Constants.SIDEKICK_DO:
-                    // trigger animation for sidekick character
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                        this.sidekickScript.SidekickDo((string)props);
-                    }); 
+                    if(this.gameConfig.sidekick) {
+                        // trigger animation for sidekick character
+                        MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                            this.sidekickScript.SidekickDo((string)props);
+                        }); 
+                    }
                     break;
                 
                 case Constants.SIDEKICK_SAY:
-                    // trigger playback of speech for sidekick character
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                    this.sidekickScript.SidekickSay((string)props);
-                    }); 
+                    if(this.gameConfig.sidekick) {
+                        // trigger playback of speech for sidekick character
+                        MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                        this.sidekickScript.SidekickSay((string)props);
+                        }); 
+                    }
                     break;
             
                 case Constants.CLEAR:

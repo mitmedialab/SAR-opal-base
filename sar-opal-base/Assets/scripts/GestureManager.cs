@@ -59,6 +59,7 @@ namespace opal
                 if (arrow != null) AddAndSubscribeToGestures(arrow, false);
                 
                 // also subscribe for the sidekick
+                
                 GameObject sk = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
                 // add a tap gesture component if one doesn't exist
                 TapGesture tapg = sk.GetComponent<TapGesture>();

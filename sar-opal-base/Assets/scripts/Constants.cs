@@ -4,15 +4,23 @@ using System.Collections.Generic;
 
 namespace opal
 {
-// log message event -- fire when you want to log something
-// so others who do logging can listen for the messages
+    // log message event -- fire when you want to log something
+    // so others who do logging can listen for the messages
     public delegate void LogEventHandler(object sender,LogEvent logme);
 
-// object to be moved
+    // object to be moved
     public struct MoveObject
     {
         public string name;
         public Vector3 destination;
+    }
+
+    // configuration
+    public struct GameConfig
+    {
+        public string server;
+        public string port;
+        public bool sidekick;
     }
 
     public static class Constants
@@ -30,6 +38,7 @@ namespace opal
         public const string TAG_BACKGROUND = "Background";
         public const string TAG_FOREGROUND = "Foreground";
         public const string TAG_SIDEKICK = "Sidekick";
+        public const string TAG_SIDEKICK_LIGHT = "SidekickLight";
         public const string TAG_BACK = "Back";
         public const string TAG_FADER = "Fader";
         public const string TAG_FADER_ALL = "FaderAll";

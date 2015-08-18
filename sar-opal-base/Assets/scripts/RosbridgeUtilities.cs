@@ -384,58 +384,6 @@ namespace opal
         }
     
         /// <summary>
-        /// Decodes the websocket JSON config file
-        /// </summary>
-        /// <param name="path">Path.</param>
-        /// <param name="server">Server.</param>
-        /// <param name="port">Port.</param>
-        public static bool DecodeWebsocketJSONConfig (string path, 
-                                                 out string server,
-                                                 out string port)
-        {
-            server = "";
-            port = "";
-            //if (!File.Exists(path))
-            //{
-            //    Debug.LogError("ERROR: can't find websocket config file at " +
-            //              path);
-            //    return;
-            //}
-            string config = "";
-            try {
-                config = File.ReadAllText(path);
-                Debug.Log("got config: " + config);
-                config.Replace("\n", "");
-            
-                Dictionary<string, object> data = null;
-                data = Json.Deserialize(config) as Dictionary<string, object>;
-                if(data == null) {   
-                    Debug.LogError("Could not parse JSON message!");
-                    return false;
-                }
-                Debug.Log("deserialized " + data.Count + " objects from JSON!");
-            
-                // if the message doesn't have both parts, consider it invalid
-                if(!data.ContainsKey("server") && !data.ContainsKey("port")) {
-                    Debug.LogError("Did not get a valid message!");
-                    return false;
-                }
-            
-                // get server and port
-                server = (string)data["server"];
-                port = (string)data["port"];
-                Debug.Log("server: " + server + "  port: " + port);
-                return true;
-            
-            } catch(Exception e) {
-                Debug.LogError("Could not read websocket config file! File path given was " 
-                    + path + "\nError: " + e);
-                return false;
-            }
-            
-        }
-    
-        /// <summary>
         /// convert an object to an int array
         /// </summary>
         /// <returns>int array</returns>

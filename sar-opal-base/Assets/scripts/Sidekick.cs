@@ -20,7 +20,7 @@ namespace opal
         public event DonePlayingEventHandler donePlayingEvent;
         
         // fader for fading out the screen
-        private GameObject fader = null; 
+        //private GameObject fader = null; 
         
         
         /// <summary>

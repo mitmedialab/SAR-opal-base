@@ -69,6 +69,8 @@ To build and deploy the demo version, do the following:
 - Consider using SimplePan to get the position to log, not Pan
 - Use an if-else instead of switch (see MainGameController for the weird switch problem)
 - Add some way of easily seeing which objects in the scene are draggable or able to be interacted with; used to do the grow-shrink pulse motion, but that caused havoc with the collision detection
+- Right now, the sidekick configuration is a simple true/false; you can't start out without a sidekick and add it in later. Consider adding a sar\_opal\_msg that enables or disables the sidekick, so that it can appear or disappear as needed.
+- If you try to send a message with sar\_opal\_sender to move an object but send a json file that doesn't have the right stuff in it for a move command, throws error, need to fix. More generally: we don't check that the command number matches the arguments in the json file. Should probably do that during message decoding.
 
 
 

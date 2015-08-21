@@ -761,7 +761,7 @@ PolygonCollider2D:
   m_GameObject: {fileID: 562268587}
   m_Enabled: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Poly:
     m_Paths:
     - - {x: -.0599999987, y: -1.66999996}
@@ -1167,7 +1167,7 @@ PolygonCollider2D:
   m_GameObject: {fileID: 1405897090}
   m_Enabled: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Poly:
     m_Paths:
     - - {x: .430000007, y: -.540000021}
@@ -1423,7 +1423,7 @@ Rigidbody2D:
   m_IsKinematic: 1
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!212 &1405897102
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1648,7 +1648,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1672345973}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -462, y: 179, z: 1}
+  m_LocalPosition: {x: -464, y: 198, z: 1}
   m_LocalScale: {x: 90.5857849, y: 90.5857849, z: 90.5857849}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1723,7 +1723,7 @@ PolygonCollider2D:
   m_GameObject: {fileID: 1672345973}
   m_Enabled: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Poly:
     m_Paths:
     - - {x: 1.38, y: -.970000029}
@@ -1837,6 +1837,7 @@ GameObject:
   - 60: {fileID: 1685067261}
   - 114: {fileID: 1685067260}
   - 82: {fileID: 1685067259}
+  - 114: {fileID: 1685067271}
   m_Layer: 10
   m_Name: RedBall
   m_TagString: PlayObject
@@ -1923,7 +1924,7 @@ PolygonCollider2D:
   m_GameObject: {fileID: 1685067258}
   m_Enabled: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Poly:
     m_Paths:
     - - {x: .140000001, y: .50999999}
@@ -2065,7 +2066,7 @@ Rigidbody2D:
   m_IsKinematic: 1
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!212 &1685067269
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -2100,6 +2101,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 16
+--- !u!114 &1685067271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1685067258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fef3eee304ac49b5b209d729934ac1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1802569877
 Prefab:
   m_ObjectHideFlags: 0
@@ -2167,6 +2179,7 @@ GameObject:
   - 60: {fileID: 1814297120}
   - 114: {fileID: 1814297121}
   - 82: {fileID: 1814297110}
+  - 114: {fileID: 1814297122}
   m_Layer: 10
   m_Name: BlueBall
   m_TagString: PlayObject
@@ -2246,7 +2259,7 @@ Rigidbody2D:
   m_IsKinematic: 1
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &1814297112
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2399,7 +2412,7 @@ PolygonCollider2D:
   m_GameObject: {fileID: 1814297109}
   m_Enabled: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Poly:
     m_Paths:
     - - {x: .140000001, y: .50999999}
@@ -2430,6 +2443,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Speed: 10
   PanMultiplier: 1
+--- !u!114 &1814297122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1814297109}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fef3eee304ac49b5b209d729934ac1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1891616492
 GameObject:
   m_ObjectHideFlags: 0
@@ -2449,6 +2473,7 @@ GameObject:
   - 60: {fileID: 1891616495}
   - 114: {fileID: 1891616494}
   - 82: {fileID: 1891616493}
+  - 114: {fileID: 1891616505}
   m_Layer: 10
   m_Name: Hat
   m_TagString: PlayObject
@@ -2535,7 +2560,7 @@ PolygonCollider2D:
   m_GameObject: {fileID: 1891616492}
   m_Enabled: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Poly:
     m_Paths:
     - - {x: 1.14999998, y: -.654999971}
@@ -2694,7 +2719,7 @@ Rigidbody2D:
   m_IsKinematic: 1
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!212 &1891616503
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -2729,6 +2754,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 17
+--- !u!114 &1891616505
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1891616492}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fef3eee304ac49b5b209d729934ac1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2050085287
 GameObject:
   m_ObjectHideFlags: 0
@@ -2892,7 +2928,7 @@ PolygonCollider2D:
   m_GameObject: {fileID: 2051130752}
   m_Enabled: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Poly:
     m_Paths:
     - - {x: .430000007, y: -.540000021}
@@ -2956,7 +2992,7 @@ Rigidbody2D:
   m_IsKinematic: 1
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &2051130758
 MonoBehaviour:
   m_ObjectHideFlags: 0

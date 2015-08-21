@@ -38,7 +38,7 @@ namespace opal
                 this.highlight.SetActive(false);
                 Debug.Log("Got light: " + this.highlight.name);
             } else {
-                Debug.Log("ERROR: No light found");
+                Debug.LogError("ERROR: No light found");
             }
         }
 
@@ -59,6 +59,7 @@ namespace opal
                 if (arrow != null) AddAndSubscribeToGestures(arrow, false);
                 
                 // also subscribe for the sidekick
+                
                 GameObject sk = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
                 // add a tap gesture component if one doesn't exist
                 TapGesture tapg = sk.GetComponent<TapGesture>();
@@ -105,8 +106,8 @@ namespace opal
                 }
             }
             
-            if (this.demo)
-            {
+            //if (this.demo)
+            //{
                 // also unsubscribe for the sidekick
                 GameObject gob = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
                 if (gob != null)
@@ -116,8 +117,19 @@ namespace opal
                         tapg.Tapped -= tappedHandler;
                         Debug.Log(gob.name + " unsubscribed from tap events");
                     }
+                    
+                    PressGesture prg = gob.GetComponent<PressGesture>();
+                    if(prg != null) {
+                        prg.Pressed -= pressedHandler;
+                        Debug.Log(gob.name + " unsubscribed from press events");
+                    }
+                    ReleaseGesture rg = gob.GetComponent<ReleaseGesture>();
+                    if(rg != null) {
+                        rg.Released -= releasedHandler;
+                        Debug.Log(gob.name + " unsubscribed from release events");
+                    }
                 }
-            }
+            //}
         }
 
         /// <summary>
@@ -151,6 +163,13 @@ namespace opal
                     pg.PanCompleted += panCompleteHandler;
                     Debug.Log(go.name + " subscribed to pan events");
                 }
+                
+                // make sure we do have a transformer if we're draggable
+                Transformer2D t2d = go.GetComponent<Transformer2D>();
+                if (t2d == null) {
+                    t2d = go.AddComponent<Transformer2D>();
+                    t2d.Speed = 30;
+                }
             }
             PressGesture prg = go.GetComponent<PressGesture>();
             if(prg == null) {
@@ -169,11 +188,7 @@ namespace opal
                 Debug.Log(go.name + " subscribed to release events");
             }
             
-            // make sure we do have a transformer
-            Transformer2D t2d = go.GetComponent<Transformer2D>();
-            if (t2d == null) {
-                go.AddComponent<Transformer2D>();
-            }
+            
         }
 
         #region gesture handlers
@@ -263,12 +278,20 @@ namespace opal
             
                 // move highlighting light and set active
                 if(this.allowTouch)
-                    LightOn(1, hit2d.Point);
+                {
+                    // send the light the z position of the pressed object because
+                    // the 'hit2d' point doesn't have the right z position (is always
+                    // just zero)
+                    LightOn(1, new Vector3(hit2d.Point.x, hit2d.Point.y, 
+                        gesture.gameObject.transform.position.z));
+                }
                     
                 // trigger sound on press
-                Debug.Log("going to play a sound for " + gesture.gameObject.name);
-                if(this.allowTouch) 
+                if(this.allowTouch && !gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK)) 
+                {
+                    Debug.Log("going to play a sound for " + gesture.gameObject.name);
                     PlaySoundAndPulse(gesture.gameObject);
+                }
 
             } else {
                 // this probably won't ever happen, but in case it does, we'll log it
@@ -321,7 +344,11 @@ namespace opal
                 if(this.allowTouch)
                 {
                    // the transformer2D component moves object on pan events
-                   LightOn(1, hit2d.Point);
+                    // send the light the z position of the panned object because
+                    // the 'hit2d' point doesn't have the right z position (is always
+                    // just zero)
+                    LightOn(1, new Vector3(hit2d.Point.x, hit2d.Point.y, 
+                                           gesture.gameObject.transform.position.z));
                 }
                 // fire event indicating that we received a message
                 if(this.logEvent != null) {
@@ -367,7 +394,12 @@ namespace opal
                    // gesture.gameObject.transform.position = 
                      //   CheckAllowedMoves(hit2d.Point, gesture.gameObject.transform.position.z);
                     // move highlighting light and set active
-                        LightOn(1, hit2d.Point);
+                    
+                    // send the light the z position of the panned object because
+                    // the 'hit2d' point doesn't have the right z position (is always
+                    // just zero)
+                    LightOn(1, new Vector3(hit2d.Point.x, hit2d.Point.y, 
+                                           gesture.gameObject.transform.position.z));
                 // fire event indicating that we received a message
                 }
                 if(this.logEvent != null) {

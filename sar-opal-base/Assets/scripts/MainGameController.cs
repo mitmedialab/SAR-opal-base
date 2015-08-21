@@ -30,15 +30,45 @@ namespace opal
     
         // for logging stuff
         public event LogEventHandler logEvent;
+        
+        // fader for fading out the screen
+        private GameObject fader = null; 
     
         // DEMO  VERSION
         private bool demo = false;
+        
+        // config
+        private GameConfig gameConfig;
     
         /// <summary>
         /// Called first, use to initialize stuff
         /// </summary>
         void Awake()
         {
+            Debug.Log("--- RUNNING IN DEMO MODE ---");
+        
+            string path = "";
+            
+            // find the config file
+            #if UNITY_ANDROID
+            path = Constants.CONFIG_PATH_ANDROID + Constants.WEBSOCKET_CONFIG;
+            Debug.Log("trying android path: " + path);
+            #endif
+            
+            #if UNITY_EDITOR
+            path = Application.dataPath + Constants.CONFIG_PATH_OSX + Constants.WEBSOCKET_CONFIG;
+            Debug.Log("trying os x path: " + path);
+            #endif
+            
+            // read config file
+            if(!Utilities.ParseConfig(path, out gameConfig)) {
+                Debug.LogWarning("Could not read config file! Will try default "
+                    + "values of toucan=true, server IP=18.85.38.90, port=9090.");
+            }
+            else {
+                Debug.Log("Got game config!");
+            }
+                    
             // find gesture manager
             FindGestureManager(); 
             this.gestureManager.logEvent += new LogEventHandler(HandleLogEvent);
@@ -53,18 +83,42 @@ namespace opal
                 Debug.LogError("ERROR: Could not find sidekick!");
             } else {
                 Debug.Log("Got sidekick");
+                if(this.gameConfig.sidekick) {
+                    // add sidekick's gestures
+                    this.gestureManager.AddAndSubscribeToGestures(sidekick, false);
+                    
+                    // get sidekick's script
+                    this.sidekickScript = (Sidekick)sidekick.GetComponent<Sidekick>();
+                    if(this.sidekickScript == null) {
+                        Debug.LogError("ERROR: Could not get sidekick script!");
+                    } else {
+                        Debug.Log("Got sidekick script");
+                        this.sidekickScript.donePlayingEvent += new DonePlayingEventHandler(HandleDonePlayingAudioEvent);
+                    }
+                }
+                else {
+                    // we don't have a sidekick in this game, set as inactive
+                    Debug.Log("Don't need sidekick... disabling");
+                    sidekick.SetActive(false);
+                    
+                    // try to disable the sidekick's highlight as well
+                    GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK_LIGHT).SetActive(false);
+                }
             }
             
-            this.sidekickScript = (Sidekick)sidekick.GetComponent<Sidekick>();
-            if(this.sidekickScript == null) {
-                Debug.LogError("ERROR: Could not get sidekick script!");
-                //this.sidekickScript = sidekick.AddComponent<Sidekick>();
-                //if (this.sidekickScript == null) {
-                //Debug.LogError("ERROR: Tried to add sidekick script but failed!");
-                //} else { Debug.Log("Got sidekick script!"); }
+            
+            
+            // set up fader
+            // NOTE right now we're just using one fader that fades out all but the
+            // toucan - but in the unity editor there's an unused 'fader_all' that
+            // can fade out everything including the toucan, just switch this tag
+            // to "TAG_FADER_ALL" to use that fader instead!
+            this.fader = GameObject.FindGameObjectWithTag(Constants.TAG_FADER);
+            if(this.fader != null) {
+                this.fader.SetActive(false);
+                Debug.Log("Got fader: " + this.fader.name);
             } else {
-                Debug.Log("Got sidekick script");
-                this.sidekickScript.donePlayingEvent += new DonePlayingEventHandler(HandleDonePlayingAudioEvent);
+                Debug.LogError("ERROR: No fader found");
             }
             
             // subscribe to all log events from existing play objects 
@@ -78,43 +132,20 @@ namespace opal
         /// </summary>
         void Start()
         {
-            // Create a new background programmatically as a test
-            // TODO remove this background image later!
-            //BackgroundObjectProperties bops = new BackgroundObjectProperties();
-            //bops.setAll("playground", Constants.TAG_BACKGROUND, 
-            //        new Vector3(0, 0, 2));
-            //this.InstantiateBackground(bops);
-        
             // set up rosbridge websocket client
             // note: does not attempt to reconnect if connection fails
             if(this.clientSocket == null && !this.demo) {
-                // load websocket config from file
-                string server = "";
-                string port = "";
-                string path = "";
-            
-                // find the websocket config file
-                #if UNITY_ANDROID
-                path = Constants.CONFIG_PATH_ANDROID + Constants.WEBSOCKET_CONFIG;
-                Debug.Log("trying android path: " + path);
-                #endif
-            
-                #if UNITY_EDITOR
-                path = Application.dataPath + Constants.CONFIG_PATH_OSX + Constants.WEBSOCKET_CONFIG;
-                Debug.Log("osx 1 path: " + path);
-                #endif
-        
                 // load file
-                if(!RosbridgeUtilities.DecodeWebsocketJSONConfig(path, out server, out port)) {
-                    Debug.LogWarning("Could not read websocket config file! Trying "
-                        + "hardcoded IP 18.85.39.35 and port 9090");
+                if (this.gameConfig.server.Equals("") || this.gameConfig.port.Equals("")) {
+                    Debug.LogWarning("Do not have websocket configuration... trying "
+                        + "hardcoded IP 18.85.38.35 and port 9090");
                     this.clientSocket = new RosbridgeWebSocketClient(
-                    "18.85.39.35",// server, // can pass hostname or IP address
+                    "18.85.38.35",// server, // can pass hostname or IP address
                     "9090"); //port);   
                 } else {
                     this.clientSocket = new RosbridgeWebSocketClient(
-                    server, // can pass hostname or IP address
-                    port);  
+                    this.gameConfig.server, // can pass hostname or IP address
+                    this.gameConfig.port);  
                 }
             
                 this.clientSocket.SetupSocket();
@@ -280,22 +311,6 @@ namespace opal
             // set the scale/size of the sprite/image
             go.transform.localScale = pops.Scale();
 
-            // add and subscribe to gestures
-            if(this.gestureManager == null) {
-                Debug.Log("ERROR no gesture manager");
-                FindGestureManager();
-            }
-            
-            try {
-                // add gestures and register to get event notifications
-                this.gestureManager.AddAndSubscribeToGestures(go, pops.draggable);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("Tried to subscribe to gestures but failed! " + e);
-            }
-            
-
             if (pops.draggable)
             {
                 // add rigidbody if this is a draggable object
@@ -306,6 +321,8 @@ namespace opal
                 // don't want gravity, otherwise objects will fall
                 // though with the isKinematic flag set this may not matter
                 rb2d.gravityScale = 0; 
+                // set collision detection to 'continuous' instead of discrete
+                rb2d.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
                 
                 // add collision manager so we get trigger enter/exit events
                 CollisionManager cm = go.AddComponent<CollisionManager>();
@@ -313,7 +330,15 @@ namespace opal
                 cm.logEvent += new LogEventHandler(HandleLogEvent);
                 
                 // and add transformer so it automatically moves on drag
-                go.AddComponent<Transformer2D>();
+                // note that the AddAndSubscribeToGestures function also
+                // checks to add a transformer if there isn't one if the 
+                // object is supposed to be draggable
+                Transformer2D t2d = go.GetComponent<Transformer2D>();
+                if (t2d == null) {
+                    t2d = go.AddComponent<Transformer2D>();
+                    t2d.Speed = 30;
+                    t2d.enabled = true;
+                }
             }
             // if the object is not draggable, then we don't need a rigidbody because
             // it is a static object (won't move even if there are collisions)
@@ -336,6 +361,20 @@ namespace opal
             PolygonCollider2D pc = go.AddComponent<PolygonCollider2D>();
             pc.isTrigger = true;
 
+            // add and subscribe to gestures
+            if(this.gestureManager == null) {
+                Debug.Log("ERROR no gesture manager");
+                FindGestureManager();
+            }
+            
+            try {
+                // add gestures and register to get event notifications
+                this.gestureManager.AddAndSubscribeToGestures(go, pops.draggable);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Tried to subscribe to gestures but failed! " + e);
+            }
            
             // add pulsing behavior (draws attention to actionable objects)
             go.AddComponent<GrowShrinkBehavior>();
@@ -345,7 +384,21 @@ namespace opal
         
             // save the initial position in case we need to reset this object later
             SavedProperties sp = go.AddComponent<SavedProperties>();
-            sp.initialPosition = pops.InitPosition();        
+            sp.initialPosition = pops.InitPosition();   
+            
+            // HACK to get drag to work right after object is loaded
+            // for some reason if we disable then enable the Transformer2D 
+            // component, drag will work. if we don't, then the Transformer2D 
+            // component will be enabled but dragging will do nothing. not 
+            // sure why...
+            if (go.GetComponent<Transformer2D>() != null)
+            {
+                go.GetComponent<Transformer2D>().enabled = false;
+            }
+            if (go.GetComponent<Transformer2D>() != null)
+            {
+                go.GetComponent<Transformer2D>().enabled = true;
+            }
         }
     
         /// <summary>
@@ -371,12 +424,24 @@ namespace opal
             go.layer = Constants.LAYER_STATICS;
         
             // move object to initial position 
-            if(bops.InitPosition().z <= 0)
-                go.transform.position = new Vector3(bops.InitPosition().x, bops.InitPosition().y, 2);
-            else                
-               go.transform.position = bops.InitPosition();
+            // if background, set at z=2
+            // if foreground (in front of toucan), set at z=-4
+            if (bops.Tag().Equals(Constants.TAG_BACKGROUND))
+            {
+                if(bops.InitPosition().z <= 0)
+                    go.transform.position = new Vector3(bops.InitPosition().x, bops.InitPosition().y, 2);
+                else                
+                   go.transform.position = bops.InitPosition();
+            }
+            else if (bops.Tag().Equals(Constants.TAG_FOREGROUND))
+            {
+                if(bops.InitPosition().z >= -3)
+                    go.transform.position = new Vector3(bops.InitPosition().x, bops.InitPosition().y, -4);
+                else                
+                    go.transform.position = bops.InitPosition();
+            }
 
-                        // load sprite/image for object
+            // load sprite/image for object
             SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
             Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + bops.Name());
             if(sprite == null)
@@ -386,8 +451,6 @@ namespace opal
         
             // TODO should the scale be a parameter too?
             go.transform.localScale = new Vector3(100, 100, 100);
-        
-        
         }
     
         /** Find the gesture manager */ 
@@ -457,8 +520,10 @@ namespace opal
                     // disable touch events from user
                     this.gestureManager.allowTouch = false; 
                     MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                    this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
-                        Constants.TAG_PLAY_OBJECT }, false);
+                        this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
+                            Constants.TAG_PLAY_OBJECT }, false);
+                        // and fade the screen
+                        this.fader.SetActive(true);
                     });
                     break;
                 
@@ -466,8 +531,10 @@ namespace opal
                     // enable touch events from user
                     this.gestureManager.allowTouch = true;
                     MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                    this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
-                        Constants.TAG_PLAY_OBJECT }, true);
+                        this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
+                            Constants.TAG_PLAY_OBJECT }, true);
+                        // and unfade the screen
+                        this.fader.SetActive(false);
                     });
                     break;
                 
@@ -481,17 +548,21 @@ namespace opal
                     break;
                 
                 case Constants.SIDEKICK_DO:
-                    // trigger animation for sidekick character
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                        this.sidekickScript.SidekickDo((string)props);
-                    }); 
+                    if(this.gameConfig.sidekick) {
+                        // trigger animation for sidekick character
+                        MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                            this.sidekickScript.SidekickDo((string)props);
+                        }); 
+                    }
                     break;
                 
                 case Constants.SIDEKICK_SAY:
-                    // trigger playback of speech for sidekick character
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                    this.sidekickScript.SidekickSay((string)props);
-                    }); 
+                    if(this.gameConfig.sidekick) {
+                        // trigger playback of speech for sidekick character
+                        MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                        this.sidekickScript.SidekickSay((string)props);
+                        }); 
+                    }
                     break;
             
                 case Constants.CLEAR:
@@ -517,7 +588,8 @@ namespace opal
                     SceneObjectProperties sops = (SceneObjectProperties)props;
                     
                     // load new background image with the specified properties
-                    if(sops.Tag().Equals(Constants.TAG_BACKGROUND)) {
+                    if(sops.Tag().Equals(Constants.TAG_BACKGROUND) ||
+                        sops.Tag().Equals(Constants.TAG_FOREGROUND)) {
                         Debug.Log("background");
                         MainGameController.ExecuteOnMainThread.Enqueue(() => {
                             this.InstantiateBackground((BackgroundObjectProperties)sops);
@@ -532,6 +604,7 @@ namespace opal
                     }
                     break;
                 
+            
                 case Constants.MOVE_OBJECT:
                     if(props == null) {
                         Debug.Log("Was told to move an object but did not " +
@@ -548,11 +621,20 @@ namespace opal
                     });
                     break;
                 
-                case Constants.GOT_TO_GOAL:
-                    Debug.LogWarning("Action got_to_goal not implemented yet!");
-                    // TODO do something now that object X is at its goal ...?
+                case Constants.FADE_SCREEN:
+                    Debug.LogWarning("Action fade screen not tested yet!");
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                        this.fader.SetActive(true);
+                    });
                     break;
                     
+                case Constants.UNFADE_SCREEN:
+                    Debug.LogWarning("Action unfade screen not tested yet!");
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                        this.fader.SetActive(false);
+                    });
+                    break;
+                
                 default:
                     Debug.LogWarning("Got a message that doesn't match any we expect!");
                     break;
@@ -645,16 +727,16 @@ namespace opal
         /// <param name="enabled">enable touch or disable touch</param>
         void SetTouch (string[] tags, bool enabled)
         {
-            // destroy objects with the specified tags
+            // change touch for objects with the specified tags
             foreach(string tag in tags) {
                 GameObject[] objs = GameObject.FindGameObjectsWithTag(tag);
                 if(objs.Length == 0)
                     continue;
                 foreach(GameObject go in objs) {
-                    Debug.Log("touch " + (enabled ? "enabled" : "disabled") + " for " + go.name);
-                    if (go.GetComponent<TouchScript.Behaviors.Transformer2D>() != null)
+                    if (go.GetComponent<Transformer2D>() != null)
                     {
-                        go.GetComponent<TouchScript.Behaviors.Transformer2D>().enabled = enabled;
+                        Debug.Log("touch " + (enabled ? "enabled" : "disabled") + " for " + go.name);
+                        go.GetComponent<Transformer2D>().enabled = enabled;
                     }
                 }
             }

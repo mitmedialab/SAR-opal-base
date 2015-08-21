@@ -53,6 +53,8 @@ Note that if you try to build this project, the Newtonsoft.Json dll appears to b
 ## Miscellaneous Notes
 - When adding new audio to the project, make sure each audio clip is set as a 2D sound. This will ensure it plays without the default volume rolloff that 3D sounds have (and thus, is audible when played). Note that the Force2DAudio script in Assets/Editor will automatically set any audio files that Unity imports from the Assets folder as 2D sounds, so you probably won't have to worry about this.
 
+- When adding new images to the project, make sure to set each image as 'Advanced' and check the 'read/write' box in the Unity editor. If you don't do this, when images are programatically loaded as PlayObjects, the polygon colliders won't be generated to properly fit the image's shape/outline. When deploying the app, you'll probably get the error "Sprite outline generation failed - could not read texture pixel data. Did you forget to make the texture readable?" whenever you dynamically add a polygon collider to an object. Something about textures/images not being readable by scripts by default, the polygon collider needing to read the texture to figure out the outline to make the collider the right shape, but not being able to, and thus the collider ending up the wrong shape and making collisions happen weird... 
+
 ## Demo Version
 To build and deploy the demo version, do the following:
 - In Unity > Build Settings > Scenes in build, check all the demo scenes and uncheck basic-scene and all other non-demo scenes.
@@ -60,6 +62,17 @@ To build and deploy the demo version, do the following:
 - In the MainGameController, set the flag "demo" to true.
 - Build and deploy. 
 
+## TODO
+- Move 'highlight' object with transformer2D, currently does not follow drag path very well
+- Log all log messages locally to tablet
+- Objects can leave the viewable screen on drag, changes margins (this is because we used TouchScript's Transformer2D for drag, which doesn't have the margins for where not to go)
+- Consider using SimplePan to get the position to log, not Pan
+- Use an if-else instead of switch (see MainGameController for the weird switch problem)
+- Add some way of easily seeing which objects in the scene are draggable or able to be interacted with; used to do the grow-shrink pulse motion, but that caused havoc with the collision detection
+- Right now, the sidekick configuration is a simple true/false; you can't start out without a sidekick and add it in later. Consider adding a sar\_opal\_msg that enables or disables the sidekick, so that it can appear or disappear as needed.
+- If you try to send a message with sar\_opal\_sender to move an object but send a json file that doesn't have the right stuff in it for a move command, throws error, need to fix. More generally: we don't check that the command number matches the arguments in the json file. Should probably do that during message decoding.
+- Figure out how to put all graphics in a folder outside of the compiled app \(right now they are in the 'Resources' folder so Unity knows where they are more easily\), so that we can add new graphics more easily. 
+- Change config file name from 'websocket\_config' to something generic since it's not just for websocket setup anymore
 
 
 

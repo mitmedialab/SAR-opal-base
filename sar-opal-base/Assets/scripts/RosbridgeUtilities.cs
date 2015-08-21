@@ -342,17 +342,18 @@ namespace opal
             }
         // if we are loading a background object, build up its properties instead
         else if(props.ContainsKey("tag") && 
-                ((string)props["tag"]).Equals(Constants.TAG_BACKGROUND)) {
+                (((string)props["tag"]).Equals(Constants.TAG_BACKGROUND) ||
+                ((string)props["tag"]).Equals(Constants.TAG_FOREGROUND))) {
                 BackgroundObjectProperties bops = new BackgroundObjectProperties();
                 bops.SetTag((string)props["tag"]);
                 if(props.ContainsKey("name"))
                     bops.SetName((string)props["name"]);
-                if(props.ContainsKey("initPosition")) {
+                if(props.ContainsKey("position")) {
                     try {
                         // this is the weird way of converting an object back into
                         // an int array .. not as straightforward as it should be!
-                        int[] posn = ObjectToIntArray(props["initPosition"] as IEnumerable);
-                        Debug.Log("posn: " + posn);
+                        int[] posn = ObjectToIntArray(props["position"] as IEnumerable);
+                        //Debug.Log("posn: " + posn);
                         bops.SetInitPosition(new Vector3(posn[0], posn[1], posn[2]));
                     } catch(Exception ex) {
                         Debug.LogError("Error! Could not get initial position: " + ex);
@@ -380,58 +381,6 @@ namespace opal
                 properties = mo;
             }
         
-        }
-    
-        /// <summary>
-        /// Decodes the websocket JSON config file
-        /// </summary>
-        /// <param name="path">Path.</param>
-        /// <param name="server">Server.</param>
-        /// <param name="port">Port.</param>
-        public static bool DecodeWebsocketJSONConfig (string path, 
-                                                 out string server,
-                                                 out string port)
-        {
-            server = "";
-            port = "";
-            //if (!File.Exists(path))
-            //{
-            //    Debug.LogError("ERROR: can't find websocket config file at " +
-            //              path);
-            //    return;
-            //}
-            string config = "";
-            try {
-                config = File.ReadAllText(path);
-                Debug.Log("got config: " + config);
-                config.Replace("\n", "");
-            
-                Dictionary<string, object> data = null;
-                data = Json.Deserialize(config) as Dictionary<string, object>;
-                if(data == null) {   
-                    Debug.LogError("Could not parse JSON message!");
-                    return false;
-                }
-                Debug.Log("deserialized " + data.Count + " objects from JSON!");
-            
-                // if the message doesn't have both parts, consider it invalid
-                if(!data.ContainsKey("server") && !data.ContainsKey("port")) {
-                    Debug.LogError("Did not get a valid message!");
-                    return false;
-                }
-            
-                // get server and port
-                server = (string)data["server"];
-                port = (string)data["port"];
-                Debug.Log("server: " + server + "  port: " + port);
-                return true;
-            
-            } catch(Exception e) {
-                Debug.LogError("Could not read websocket config file! File path given was " 
-                    + path + "\nError: " + e);
-                return false;
-            }
-            
         }
     
         /// <summary>

@@ -4,15 +4,23 @@ using System.Collections.Generic;
 
 namespace opal
 {
-// log message event -- fire when you want to log something
-// so others who do logging can listen for the messages
+    // log message event -- fire when you want to log something
+    // so others who do logging can listen for the messages
     public delegate void LogEventHandler(object sender,LogEvent logme);
 
-// object to be moved
+    // object to be moved
     public struct MoveObject
     {
         public string name;
         public Vector3 destination;
+    }
+
+    // configuration
+    public struct GameConfig
+    {
+        public string server;
+        public string port;
+        public bool sidekick;
     }
 
     public static class Constants
@@ -28,8 +36,12 @@ namespace opal
         public const string TAG_LIGHT = "Light";
         public const string TAG_GESTURE_MAN = "GestureManager";
         public const string TAG_BACKGROUND = "Background";
+        public const string TAG_FOREGROUND = "Foreground";
         public const string TAG_SIDEKICK = "Sidekick";
+        public const string TAG_SIDEKICK_LIGHT = "SidekickLight";
         public const string TAG_BACK = "Back";
+        public const string TAG_FADER = "Fader";
+        public const string TAG_FADER_ALL = "FaderAll";
     
         // DEMO - scene numbers (by index -- see list of scenes in build settings)
         public const int SCENE_DEMO_INTRO = 0;
@@ -58,10 +70,10 @@ namespace opal
     
         // edges of screen - used to make sure objects aren't dragged off the screen
         // screen is 1280x768, minus the menu bar
-        public const int LEFT_SIDE = -630; // -640
-        public const int RIGHT_SIDE = 630; //640
-        public const int TOP_SIDE = 370; //390
-        public const int BOTTOM_SIDE = -370; //-390
+        public const int LEFT_SIDE = -620; // -640
+        public const int RIGHT_SIDE = 620; //640
+        public const int TOP_SIDE = 360; //384
+        public const int BOTTOM_SIDE = -330; //-384
 
         /** messages we can receive */
         public const int DISABLE_TOUCH = 1;
@@ -74,7 +86,8 @@ namespace opal
         public const int MOVE_OBJECT = 7;
         public const int HIGHLIGHT_OBJECT = 8;
         public const int REQUEST_KEYFRAME = 9;
-        public const int GOT_TO_GOAL = 10;
+        public const int FADE_SCREEN = 10;
+        public const int UNFADE_SCREEN = 11;
     
         /** sidekick animations */
         // name of each animation, from unity editor

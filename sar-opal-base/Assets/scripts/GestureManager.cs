@@ -520,7 +520,7 @@ namespace opal
 				if(this.allowTouch)
 				{	
 					// if flick/swipe was to the right, advance page
-					if (gesture.ScreenFlickVector.x > 0)
+					if (gesture.ScreenFlickVector.x < 0)
 					{
 						if (this.mainCam != null) 
 						{
@@ -533,7 +533,7 @@ namespace opal
 						}
 					}
 					
-					else if (gesture.ScreenFlickVector.x < 0)
+					else if (gesture.ScreenFlickVector.x > 0)
 					{
 						if (this.mainCam != null) 
 						{

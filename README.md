@@ -2,7 +2,7 @@
 A generalized Unity game template designed for use in a child-robot interaction that helps the child learn a second language.
 
 ## Build and Run
-This tablet app was built and tested with Unity 4.6.2 and MonoDevelop 4.0.1.
+This tablet app was built and tested with Unity 5.0.0 and MonoDevelop 4.0.1.
 
 ## Configuration
 On startup, the tablet app will try to connect to the IP address or host name specified in the websocket\_config file. There is an example file located in Assets/Resources/. This IP address should be the address of the machine running roscore and the rosbride\_server (start the server with the command "roslaunch rosbridge\_server rosbridge\_websocket.launch").
@@ -63,12 +63,6 @@ To build and deploy the demo version, do the following:
 - Build and deploy. 
 
 ## TODO
-
-For cyber study:
-- Load pictures for frog story
-- Swipe/flick action to turn the page
-- Log actions taken on tablet
-
 - Move 'highlight' object with transformer2D, currently does not follow drag path very well
 - Log all log messages locally to tablet
 - Objects can leave the viewable screen on drag, changes margins (this is because we used TouchScript's Transformer2D for drag, which doesn't have the margins for where not to go)

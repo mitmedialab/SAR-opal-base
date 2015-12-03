@@ -28,6 +28,7 @@ namespace opal
         /** where images to load as sprites are located in Resources */
         public const string GRAPHICS_FILE_PATH = "graphics/base-images/";
         public const string AUDIO_FILE_PATH = "audio/";
+        public const string FROG_FILE_PATH = "frogwhereareyou/";
 
         /// <summary>
         /// tag applied to all playobjects
@@ -42,6 +43,7 @@ namespace opal
         public const string TAG_BACK = "Back";
         public const string TAG_FADER = "Fader";
         public const string TAG_FADER_ALL = "FaderAll";
+        public const string TAG_DIRECTOR = "Director";
     
         // DEMO - scene numbers (by index -- see list of scenes in build settings)
         public const int SCENE_DEMO_INTRO = 0;

@@ -58,7 +58,7 @@ namespace opal
         }
     
         /** set object initial position - checks that the desired initial
-     * position is within the screen */
+        * position is within the screen */
         public void SetInitPosition (Vector3 posn)
         {
         

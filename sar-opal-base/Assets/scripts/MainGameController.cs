@@ -35,7 +35,7 @@ namespace opal
         private GameObject fader = null; 
     
         // DEMO  VERSION
-        private bool demo = false;
+        private bool demo = true;
         
         // config
         private GameConfig gameConfig;
@@ -85,7 +85,7 @@ namespace opal
                 Debug.Log("Got sidekick");
                 if(this.gameConfig.sidekick) {
                     // add sidekick's gestures
-                    this.gestureManager.AddAndSubscribeToGestures(sidekick, false);
+                    this.gestureManager.AddAndSubscribeToGestures(sidekick, false, false);
                     
                     // get sidekick's script
                     this.sidekickScript = (Sidekick)sidekick.GetComponent<Sidekick>();
@@ -267,7 +267,7 @@ namespace opal
         /// Instantiate a new game object with the specified properties
         /// </summary>
         /// <param name="pops">properties of the play object.</param>
-        void InstantiatePlayObject (PlayObjectProperties pops)
+        private void InstantiatePlayObject (PlayObjectProperties pops)
         {
             GameObject go = new GameObject();
 
@@ -369,7 +369,7 @@ namespace opal
             
             try {
                 // add gestures and register to get event notifications
-                this.gestureManager.AddAndSubscribeToGestures(go, pops.draggable);
+                this.gestureManager.AddAndSubscribeToGestures(go, pops.draggable, false);
             }
             catch (Exception e)
             {
@@ -453,6 +453,73 @@ namespace opal
             go.transform.localScale = new Vector3(100, 100, 100);
         }
     
+    
+        /// <summary>
+        /// Instantiates a story page
+        /// </summary>
+        /// <param name="sops">story page object properties</param>
+        public void InstantiateStoryPage (StorypageObjectProperties sops, Sprite sprite)
+        {
+			// now make a new background
+			GameObject go = new GameObject();
+			
+			// set object name
+			go.name = (sops.Name() != "") ? sops.Name() : UnityEngine.Random.value.ToString();
+			Debug.Log("Creating new story page: " + sops.Name());
+			
+			// set tag
+			go.tag = Constants.TAG_BACKGROUND;
+			
+			// set layer
+			go.layer = Constants.LAYER_STATICS; // TODO we want to catch touch events on the page
+			
+			// move object to initial position 
+			go.transform.position = sops.InitPosition();
+			
+			// load sprite/image for object
+			SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
+			
+			// if no sprite was provided, try to load one with that file name
+			if (sprite == null)
+			{
+				Sprite spt = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + 
+					sops.StoryPath() + sops.Name());
+				if(spt == null)
+					Debug.Log("ERROR could not load sprite: " 
+				          + Constants.GRAPHICS_FILE_PATH + sops.Name());
+			 }
+			
+			spriteRenderer.sprite = sprite; 
+			
+			// set scale
+			if (sops.Scale() != Vector3.zero)
+			{
+				go.transform.localScale = sops.Scale();
+			}
+			else
+			{
+				go.transform.localScale = new Vector3(100, 100, 100);
+			}
+			
+			// add and subscribe to gestures
+			if(this.gestureManager == null) {
+				Debug.Log("ERROR no gesture manager");
+				FindGestureManager();
+			}
+			
+			try {
+				// add gestures and register to get event notifications
+				this.gestureManager.AddAndSubscribeToGestures(go, false, true);
+			}
+			catch (Exception e)
+			{
+				Debug.LogError("Tried to subscribe to gestures but failed! " + e);
+			}
+            
+        }
+        
+        
+        
         /** Find the gesture manager */ 
         private void FindGestureManager ()
         {

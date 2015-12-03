@@ -50,13 +50,13 @@ namespace opal
             // subscribe to gesture events
             GameObject[] gos = GameObject.FindGameObjectsWithTag(Constants.TAG_PLAY_OBJECT);
             foreach(GameObject go in gos) {
-                AddAndSubscribeToGestures(go, true);
+                AddAndSubscribeToGestures(go, true, false);
             }
             
             if (this.demo)
             {
                 GameObject arrow = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
-                if (arrow != null) AddAndSubscribeToGestures(arrow, false);
+                if (arrow != null) AddAndSubscribeToGestures(arrow, false, false);
                 
                 // also subscribe for the sidekick
                 
@@ -138,7 +138,7 @@ namespace opal
         /// </summary>
         /// <param name="go">Game object</param>
         /// <param name="draggable">If set to <c>true</c> is a draggable object.</param>
-        public void AddAndSubscribeToGestures (GameObject go, bool draggable)
+        public void AddAndSubscribeToGestures (GameObject go, bool draggable, bool storypage)
         {
             // add a tap gesture component if one doesn't exist
             TapGesture tg = go.GetComponent<TapGesture>();
@@ -150,6 +150,7 @@ namespace opal
                 tg.Tapped += tappedHandler; // subscribe to tap events
                 Debug.Log(go.name + " subscribed to pan events");
             }
+            // if this object is draggable, handle pan events
             if(draggable) {
                 // add pan gesture component if one doesn't exist yet
                 PanGesture pg = go.GetComponent<PanGesture>();
@@ -187,6 +188,9 @@ namespace opal
                 rg.Released += releasedHandler;
                 Debug.Log(go.name + " subscribed to release events");
             }
+            
+            // if this is a story page, handle swipe/flick events
+            // TODO add swipe gesture
             
             
         }
@@ -525,8 +529,8 @@ namespace opal
                 Debug.Log("playing clip for object " + go.name);
 
                 // play the audio clip attached to the game object
-                if(!go.audio.isPlaying)
-                    go.audio.Play();
+                if(!go.GetComponent<AudioSource>().isPlaying)
+                    go.GetComponent<AudioSource>().Play();
                 
                 return true;   
             } else {
@@ -545,7 +549,7 @@ namespace opal
             if(go != null) {
                 // play a sound, if it exists and is not already playing
                 // and also pulse size
-                if(PlaySound(go) && (go.audio != null) && !go.audio.isPlaying)
+                if(PlaySound(go) && (go.GetComponent<AudioSource>() != null) && !go.GetComponent<AudioSource>().isPlaying)
                     go.GetComponent<GrowShrinkBehavior>().ScaleUpOnce();
             }
         }

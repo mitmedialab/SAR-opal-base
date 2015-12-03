@@ -65,7 +65,9 @@ namespace opal
 					Constants.TAG_BACKGROUND,
 					pageCounter,
 					Constants.FROG_FILE_PATH,
-					new Vector3(200,200,200)
+					new Vector3(200,200,200),
+					(pageCounter == 0 ? true : false),
+					(pageCounter == sprites.Length-1 ? true : false)
 				);
 				
 				// instantiate the page

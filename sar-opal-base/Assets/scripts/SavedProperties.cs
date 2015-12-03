@@ -13,5 +13,15 @@ namespace opal
         /// The initial position of the game object
         /// </summary>
         public Vector3 initialPosition = Vector3.zero;
+        
+		/// <summary>
+		/// is this the first page of the story?
+		/// </summary>
+		public bool isStartPage = false;
+		
+		/// <summary>
+		/// is this the first page of the story?
+		/// </summary>
+		public bool isEndPage = false;
     }
 }

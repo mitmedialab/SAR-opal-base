@@ -40,10 +40,11 @@ namespace opal
         public const string TAG_FOREGROUND = "Foreground";
         public const string TAG_SIDEKICK = "Sidekick";
         public const string TAG_SIDEKICK_LIGHT = "SidekickLight";
-        public const string TAG_BACK = "Back";
+        public const string TAG_BACK = "GoBack";
         public const string TAG_FADER = "Fader";
         public const string TAG_FADER_ALL = "FaderAll";
         public const string TAG_DIRECTOR = "Director";
+        public const string TAG_CAMERA = "MainCamera";
     
         // DEMO - scene numbers (by index -- see list of scenes in build settings)
         public const int SCENE_DEMO_INTRO = 0;

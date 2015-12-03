@@ -34,8 +34,11 @@ namespace opal
         // fader for fading out the screen
         private GameObject fader = null; 
     
-        // DEMO  VERSION
-        private bool demo = true;
+        // DEMO VERSION
+        private bool demo = false;
+        
+        // STORYBOOK VERSION
+        private bool story = true;
         
         // config
         private GameConfig gameConfig;
@@ -45,7 +48,8 @@ namespace opal
         /// </summary>
         void Awake()
         {
-            Debug.Log("--- RUNNING IN DEMO MODE ---");
+            if (this.demo) Debug.Log("--- RUNNING IN DEMO MODE ---");
+            if (this.story) Debug.Log ("--- RUNNING IN STORYBOOK MODE ---");
         
             string path = "";
             
@@ -76,6 +80,9 @@ namespace opal
             
             // if demo, tell everyone else
             this.gestureManager.demo = this.demo;
+            
+            // if story, tell everyone else
+            this.gestureManager.story = this.story;
             
             // find our sidekick
             GameObject sidekick = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
@@ -134,7 +141,8 @@ namespace opal
         {
             // set up rosbridge websocket client
             // note: does not attempt to reconnect if connection fails
-            if(this.clientSocket == null && !this.demo) {
+            // TODO story network ros connection??
+            if(this.clientSocket == null && !this.demo && !this.story) {
                 // load file
                 if (this.gameConfig.server.Equals("") || this.gameConfig.port.Equals("")) {
                     Debug.LogWarning("Do not have websocket configuration... trying "
@@ -470,8 +478,8 @@ namespace opal
 			// set tag
 			go.tag = Constants.TAG_BACKGROUND;
 			
-			// set layer
-			go.layer = Constants.LAYER_STATICS; // TODO we want to catch touch events on the page
+			// set layer to statics because these pages won't move
+			go.layer = Constants.LAYER_STATICS;
 			
 			// move object to initial position 
 			go.transform.position = sops.InitPosition();
@@ -501,6 +509,11 @@ namespace opal
 				go.transform.localScale = new Vector3(100, 100, 100);
 			}
 			
+			// add polygon collider and set as a trigger so enter/exit events
+			// fire when this collider is hit -- needed to recognize touch events!
+			PolygonCollider2D pc = go.AddComponent<PolygonCollider2D>();
+			pc.isTrigger = true;
+			
 			// add and subscribe to gestures
 			if(this.gestureManager == null) {
 				Debug.Log("ERROR no gesture manager");
@@ -515,6 +528,12 @@ namespace opal
 			{
 				Debug.LogError("Tried to subscribe to gestures but failed! " + e);
 			}
+			
+			// save the initial position in case we need to reset this object later
+			SavedProperties sp = go.AddComponent<SavedProperties>();
+			sp.initialPosition = sops.InitPosition(); 
+			sp.isStartPage = sops.IsStart();
+			sp.isEndPage = sops.IsEnd();
             
         }
         
@@ -869,6 +888,7 @@ namespace opal
         void HandleLogEvent (object sender, LogEvent logme)
         {
             if (this.demo) return;
+            if (this.story) return; //TODO log story stuff
         
             switch(logme.type) {
             case LogEvent.EventType.Action:

@@ -20,12 +20,18 @@ namespace opal
         // light for highlighting objects
         private GameObject highlight = null; 
         
+        // main camera
+        private GameObject mainCam = null;
+        
         // for logging stuff
         public event LogEventHandler logEvent;
         
         // DEMO VERSION
         public bool demo = false;
         private int demospeech = 0;
+        
+        // STORYBOOK VERSION
+        public bool story = false;
         
         /// <summary>
         /// Called on start, use to initialize stuff
@@ -40,6 +46,20 @@ namespace opal
             } else {
                 Debug.LogError("ERROR: No light found");
             }
+            
+            // if in story mode, we need the main camera
+            if (this.story)
+            {
+	            // find main camera
+				this.mainCam = GameObject.Find("Main Camera");
+				if (this.mainCam != null)
+				{
+					Debug.Log ("Got main camera!");
+					this.mainCam.transform.position = new Vector3(0,0,-1);
+				} else {
+					Debug.LogError("ERROR: Couldn't find main camera!");
+				}
+			}
         }
 
         /// <summary>
@@ -62,14 +82,20 @@ namespace opal
                 
                 GameObject sk = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
                 // add a tap gesture component if one doesn't exist
-                TapGesture tapg = sk.GetComponent<TapGesture>();
-                if(tapg == null) {
-                    tapg = sk.AddComponent<TapGesture>();
+                if (sk != null)
+                {
+	                TapGesture tapg = sk.GetComponent<TapGesture>();
+	                if(tapg == null) {
+	                    tapg = sk.AddComponent<TapGesture>();
+	                }
+	                // checking for null anyway in case adding the component didn't work
+	                if(tapg != null) {
+	                    tapg.Tapped += tappedHandler; // subscribe to tap events
+	                    Debug.Log(sk.name + " subscribed to tap events");
+	                }
                 }
-                // checking for null anyway in case adding the component didn't work
-                if(tapg != null) {
-                    tapg.Tapped += tappedHandler; // subscribe to tap events
-                    Debug.Log(sk.name + " subscribed to tap events");
+                else { 
+                	Debug.Log ("Gesture manager could not find sidekick!"); 
                 }
             }
         } 
@@ -104,6 +130,12 @@ namespace opal
                     rg.Released -= releasedHandler;
                     Debug.Log(go.name + " unsubscribed from release events");
                 }
+                FlickGesture fg = go.GetComponent<FlickGesture>();
+                if(fg != null) {
+                	fg.Flicked -= flickHandler;
+                	Debug.Log (go.name + " unsubscribed from flick events");
+                }
+                
             }
             
             //if (this.demo)
@@ -148,7 +180,7 @@ namespace opal
             // checking for null anyway in case adding the component didn't work
             if(tg != null) {
                 tg.Tapped += tappedHandler; // subscribe to tap events
-                Debug.Log(go.name + " subscribed to pan events");
+                Debug.Log(go.name + " subscribed to tap events");
             }
             // if this object is draggable, handle pan events
             if(draggable) {
@@ -190,11 +222,26 @@ namespace opal
             }
             
             // if this is a story page, handle swipe/flick events
-            // TODO add swipe gesture
+            if (storypage)
+            {
+				// add flick gesture component if one doesn't exist yet
+				FlickGesture fg = go.GetComponent<FlickGesture>();
+				if(fg == null) {
+					fg = go.AddComponent<FlickGesture>();
+				}
+				if(fg != null) {
+					fg.Flicked += flickHandler;
+					//fg.Direction = FlickGesture.GestureDirection.Horizontal;
+					fg.AddFriendlyGesture(tg);
+					fg.AddFriendlyGesture(prg);
+					Debug.Log(go.name + " subscribed to flick events");
+				}
+            }
             
             
         }
 
+        
         #region gesture handlers
         /// <summary>
         /// Handle all tap events - log them and trigger actions in response
@@ -281,7 +328,8 @@ namespace opal
                 }
             
                 // move highlighting light and set active
-                if(this.allowTouch)
+                // don't highlight touches in a story
+                if(this.allowTouch && !this.story)
                 {
                     // send the light the z position of the pressed object because
                     // the 'hit2d' point doesn't have the right z position (is always
@@ -311,7 +359,10 @@ namespace opal
         private void releasedHandler (object sender, EventArgs e)
         {
             Debug.Log("PRESS COMPLETE");
-            LightOff();
+            if (this.allowTouch && !this.story)
+            {
+            	LightOff();
+            }
         
             // fire event indicating that we received a message
             if(this.logEvent != null) {
@@ -319,7 +370,6 @@ namespace opal
                 this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
                         "", "release", null));
             }
-          
         }
      
      
@@ -438,6 +488,79 @@ namespace opal
                         "", "pancomplete", null));
             }      
         }
+        
+        /// <summary>
+        /// Handle flick events
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">E.</param>
+		void flickHandler (object sender, EventArgs e)
+		{
+			// get the gesture that was sent to us, which will tell us 
+			// which object was flicked
+			FlickGesture gesture = sender as FlickGesture;
+			
+			ITouchHit hit;
+			// get info about where the hit object was located when the gesture was
+			// recognized - i.e., where on the object (in screen dimensions) did
+			// the flick occur?
+			if(gesture.GetTargetHitResult(out hit)) {
+				// want the info as a 2D point 
+				ITouchHit2D hit2d = (ITouchHit2D)hit; 
+				Debug.Log("FLICK on " + gesture.gameObject.name + " at " + hit2d.Point);
+				
+				// fire event to logger to log this action
+				if(this.logEvent != null) {
+					// log the flick
+					this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+					              gesture.gameObject.name, "flick", hit2d.Point));
+				}
+				
+				
+				if(this.allowTouch)
+				{	
+					// if flick/swipe was to the right, advance page
+					if (gesture.ScreenFlickVector.x > 0)
+					{
+						if (this.mainCam != null) 
+						{
+							Debug.Log ("swiping right...");
+							// don't go past end of story
+							if (!gesture.gameObject.GetComponent<SavedProperties>().isEndPage)
+								this.mainCam.transform.Translate(new Vector3(0,0,1));
+								// TODO loop to beginning of story?
+							
+						}
+					}
+					
+					else if (gesture.ScreenFlickVector.x < 0)
+					{
+						if (this.mainCam != null) 
+						{
+							Debug.Log("swiping left...");
+							// don't go before start of story
+							if (!gesture.gameObject.GetComponent<SavedProperties>().isStartPage)
+								this.mainCam.transform.Translate(new Vector3(0,0,-1));
+							
+						}
+					}
+				}
+				
+				// trigger sound on flick as feedback?
+				//if(this.allowTouch && !gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK)) 
+				//{
+				//	Debug.Log("going to play a sound for " + gesture.gameObject.name);
+				//	PlaySoundAndPulse(gesture.gameObject);
+				//}
+				
+			} else {
+				// this probably won't ever happen, but in case it does, we'll log it
+				Debug.LogWarning("!! could not register where FLICK was located!");
+			}
+			
+		}
+		
+        
     #endregion
     
     #region utilities

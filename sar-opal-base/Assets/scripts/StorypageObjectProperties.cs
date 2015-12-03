@@ -18,6 +18,12 @@ namespace opal
         /** scale */
         protected Vector3 scale = new Vector3(0,0,0);
         
+        /** is this the first page? */
+        protected bool start = false;
+        
+        /** is this the last page? */
+        protected bool end = false;
+        
         /** constructor */
         public StorypageObjectProperties()
         {
@@ -25,7 +31,7 @@ namespace opal
         
         /** constructor */
         public StorypageObjectProperties(string name, string tag, int pageNum, string storypath, 
-        	Vector3 scale)
+        	Vector3 scale, bool start, bool end)
         {
         	this.pageNum = pageNum;
             this.SetName(name);
@@ -33,6 +39,8 @@ namespace opal
 			this.SetInitPosition(new Vector3(initPosn.x, initPosn.y, this.pageNum));
 			this.SetStoryPath(storypath);
 			this.SetScale(scale);
+			this.start = start;
+			this.end = end;
         }
         
         /** Set storypath */
@@ -57,6 +65,18 @@ namespace opal
         public Vector3 Scale()
         {
         	return this.scale;
+        }
+        
+        /** is this the start page? */
+        public bool IsStart()
+        {
+        	return this.start;
+        }
+        
+		/** is this the end page? */
+        public bool IsEnd()
+        {
+        	return this.end;
         }
         
     }

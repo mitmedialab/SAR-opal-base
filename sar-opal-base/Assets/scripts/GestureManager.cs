@@ -32,6 +32,7 @@ namespace opal
         
         // STORYBOOK VERSION
         public bool story = false;
+        public int pagesInStory = 0;
         
         /// <summary>
         /// Called on start, use to initialize stuff
@@ -97,6 +98,16 @@ namespace opal
                 else { 
                 	Debug.Log ("Gesture manager could not find sidekick!"); 
                 }
+            }
+            
+            if (this.story)
+            {
+            	// subscribe to gestures for next/previous arrows
+				GameObject arrow = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
+				if (arrow != null) AddAndSubscribeToGestures(arrow, false, false);
+				
+				GameObject arrow2 = GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT);
+				if (arrow2 != null) AddAndSubscribeToGestures(arrow2, false, false);
             }
         } 
     
@@ -231,9 +242,10 @@ namespace opal
 				}
 				if(fg != null) {
 					fg.Flicked += flickHandler;
-					//fg.Direction = FlickGesture.GestureDirection.Horizontal;
 					fg.AddFriendlyGesture(tg);
-					fg.AddFriendlyGesture(prg);
+					fg.MinDistance = 0.4f;
+					fg.FlickTime = 0.5f;
+					fg.MovementThreshold = 0.1f;
 					Debug.Log(go.name + " subscribed to flick events");
 				}
             }
@@ -289,6 +301,16 @@ namespace opal
                     }
                     this.demospeech = (this.demospeech + 1) % Constants.DEMO_SIDEKICK_SPEECH.Length;
                     
+                }
+                
+                // if this is a story, use arrows to go next/back in pages
+                if(this.story && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
+                {
+                	ChangePage(Constants.PREVIOUS);
+                }
+                else if (this.story && gesture.gameObject.tag.Contains(Constants.TAG_GO_NEXT))
+                {
+                	ChangePage(Constants.NEXT);
                 }
             
                 // trigger sound on tap
@@ -522,27 +544,13 @@ namespace opal
 					// if flick/swipe was to the right, advance page
 					if (gesture.ScreenFlickVector.x < 0)
 					{
-						if (this.mainCam != null) 
-						{
-							Debug.Log ("swiping right...");
-							// don't go past end of story
-							if (!gesture.gameObject.GetComponent<SavedProperties>().isEndPage)
-								this.mainCam.transform.Translate(new Vector3(0,0,1));
-								// TODO loop to beginning of story?
-							
-						}
+						ChangePage(Constants.NEXT);
 					}
 					
+					// if to the left, go back a page
 					else if (gesture.ScreenFlickVector.x > 0)
 					{
-						if (this.mainCam != null) 
-						{
-							Debug.Log("swiping left...");
-							// don't go before start of story
-							if (!gesture.gameObject.GetComponent<SavedProperties>().isStartPage)
-								this.mainCam.transform.Translate(new Vector3(0,0,-1));
-							
-						}
+						ChangePage(Constants.PREVIOUS);
 					}
 				}
 				
@@ -638,6 +646,69 @@ namespace opal
                 Debug.Log("Tried to turn light off ... but light is null!");
             }
         }
+  
+  
+  		/// <summary>
+  		/// Changes the page.
+  		/// </summary>
+  		/// <param name="next">If set to <c>true</c> next page, otherwise, previous page</param>
+  		public void ChangePage (bool next)
+  		{
+			// fire event to logger to log this action
+			if(this.logEvent != null) {
+				// log the flick
+				this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+				                                 "", "flick", new Vector3(0,0,0)));
+			}
+			
+			if(this.allowTouch)
+			{	
+				// if flick/swipe was to the right, advance page
+				if (next)
+				{
+					if (this.mainCam != null) 
+					{
+						Debug.Log ("swiping right...");
+						// don't go past end of story
+						if (this.mainCam.transform.position.z < this.pagesInStory-1)
+						{
+							this.mainCam.transform.Translate(new Vector3(0,0,1));
+							GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT).transform.Translate(new Vector3(0,0,1));
+							GameObject.FindGameObjectWithTag(Constants.TAG_BACK).transform.Translate(new Vector3(0,0,1));
+						}
+						else // this is the end page, loop back to beginning of story
+						{
+							this.mainCam.transform.position = new Vector3(0,0,-1);
+							GameObject.FindGameObjectWithTag(Constants.TAG_BACK).transform.position = new Vector3(-610,320,0);
+							GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT).transform.position = new Vector3(610,320,0);
+						}
+					}
+					else {
+						Debug.Log ("no main cam! can't change page!");
+					}
+				}
+				
+				else
+                {
+                    if (this.mainCam != null) 
+                    {
+                        Debug.Log("swiping left...");
+                        // don't go before start of story
+                        if (this.mainCam.transform.position.z > -1)
+                        {
+                            this.mainCam.transform.Translate(new Vector3(0,0,-1));
+							GameObject.FindGameObjectWithTag(Constants.TAG_BACK).transform.Translate(new Vector3(0,0,-1));
+							GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT).transform.Translate(new Vector3(0,0,-1));
+                        }
+                        
+                    }
+					else {
+						Debug.Log ("no main cam! can't change page!");
+                    }
+                }
+            }
+  		}
+  
   
         /// <summary>
         /// Plays the first sound attached to the object, if one exists 

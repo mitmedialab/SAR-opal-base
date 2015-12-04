@@ -45,6 +45,7 @@ namespace opal
         public const string TAG_FADER_ALL = "FaderAll";
         public const string TAG_DIRECTOR = "Director";
         public const string TAG_CAMERA = "MainCamera";
+        public const string TAG_GO_NEXT = "GoNext";
     
         // DEMO - scene numbers (by index -- see list of scenes in build settings)
         public const int SCENE_DEMO_INTRO = 0;
@@ -91,6 +92,12 @@ namespace opal
         public const int REQUEST_KEYFRAME = 9;
         public const int FADE_SCREEN = 10;
         public const int UNFADE_SCREEN = 11;
+        public const int NEXT_PAGE = 12;
+        public const int PREV_PAGE = 13;
+        
+        /** next page and previous page */
+        public const bool NEXT = true;
+        public const bool PREVIOUS = false;
     
         /** sidekick animations */
         // name of each animation, from unity editor

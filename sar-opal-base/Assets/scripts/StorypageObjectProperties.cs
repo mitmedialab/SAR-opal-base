@@ -31,7 +31,7 @@ namespace opal
         
         /** constructor */
         public StorypageObjectProperties(string name, string tag, int pageNum, string storypath, 
-        	Vector3 scale, bool start, bool end)
+        	Vector3 scale, bool start, bool end, Vector2 initPosn)
         {
         	this.pageNum = pageNum;
             this.SetName(name);

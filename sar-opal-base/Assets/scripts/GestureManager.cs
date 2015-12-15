@@ -16,6 +16,9 @@ namespace opal
     {
         // allow touch? if false, doesn't react to touch events
         public bool allowTouch = true;
+        
+        // if changing page
+        private bool changingpage = false;
     
         // light for highlighting objects
         private GameObject highlight = null; 
@@ -183,7 +186,7 @@ namespace opal
         /// <param name="draggable">If set to <c>true</c> is a draggable object.</param>
         public void AddAndSubscribeToGestures (GameObject go, bool draggable, bool storypage)
         {
-            // add a tap gesture component if one doesn't exist
+			// add a tap gesture component if one doesn't exist
             TapGesture tg = go.GetComponent<TapGesture>();
             if(tg == null) {
                 tg = go.AddComponent<TapGesture>();
@@ -215,6 +218,7 @@ namespace opal
                     t2d.Speed = 30;
                 }
             }
+           
             PressGesture prg = go.GetComponent<PressGesture>();
             if(prg == null) {
                 prg = go.AddComponent<PressGesture>();
@@ -231,6 +235,7 @@ namespace opal
                 rg.Released += releasedHandler;
                 Debug.Log(go.name + " subscribed to release events");
             }
+           
             
             // if this is a story page, handle swipe/flick events
             if (storypage)
@@ -272,7 +277,7 @@ namespace opal
             if(gesture.GetTargetHitResult(out hit)) {
                 // want the info as a 2D point 
                 ITouchHit2D hit2d = (ITouchHit2D)hit; 
-                Debug.Log("TAP registered on " + gesture.gameObject.name + " at " + hit2d.Point);
+                //Debug.Log("TAP registered on " + gesture.gameObject.name + " at " + hit2d.Point);
             
                 // fire event indicating that we received a message
                 if(this.logEvent != null) {
@@ -281,13 +286,25 @@ namespace opal
                     gesture.gameObject.name, "tap", hit2d.Point));
                 }
                 
+                
+				// if this is a story, use arrows to go next/back in pages
+				if(this.story && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
+				{
+					ChangePage(Constants.PREVIOUS);
+				}
+				else if (this.story && gesture.gameObject.tag.Contains(Constants.TAG_GO_NEXT))
+				{
+					ChangePage(Constants.NEXT);
+				}
+				
                 // if this is the demo app, and if the tap was on the back arrow,
                 // go back to the demo intro scene
-                if(this.demo && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
+                else if(this.demo && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
                 {
                     Application.LoadLevel(Constants.SCENE_DEMO_INTRO);
                 }
-                // play sidekick animation if it is touched
+ 
+                // if this is a demo app, play sidekick animation if it is touched
                 else if (this.demo && gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK))
                 {   
                     // tell the sidekick to animate
@@ -303,16 +320,6 @@ namespace opal
                     
                 }
                 
-                // if this is a story, use arrows to go next/back in pages
-                if(this.story && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
-                {
-                	ChangePage(Constants.PREVIOUS);
-                }
-                else if (this.story && gesture.gameObject.tag.Contains(Constants.TAG_GO_NEXT))
-                {
-                	ChangePage(Constants.NEXT);
-                }
-            
                 // trigger sound on tap
                 //Debug.Log("going to play a sound for " + gesture.gameObject.name);
                 //if(this.allowTouch) PlaySoundAndPulse(gesture.gameObject);
@@ -349,9 +356,10 @@ namespace opal
                             gesture.gameObject.name, "press", hit2d.Point));
                 }
             
+				
                 // move highlighting light and set active
                 // don't highlight touches in a story
-                if(this.allowTouch && !this.story)
+                if(this.allowTouch)// && !this.story)
                 {
                     // send the light the z position of the pressed object because
                     // the 'hit2d' point doesn't have the right z position (is always
@@ -361,7 +369,7 @@ namespace opal
                 }
                     
                 // trigger sound on press
-                if(this.allowTouch && !gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK)) 
+                if(this.allowTouch && gesture.gameObject.tag.Contains(Constants.TAG_PLAY_OBJECT)) 
                 {
                     Debug.Log("going to play a sound for " + gesture.gameObject.name);
                     PlaySoundAndPulse(gesture.gameObject);
@@ -381,7 +389,7 @@ namespace opal
         private void releasedHandler (object sender, EventArgs e)
         {
             Debug.Log("PRESS COMPLETE");
-            if (this.allowTouch && !this.story)
+            if (this.allowTouch)// && !this.story)
             {
             	LightOff();
             }
@@ -679,8 +687,10 @@ namespace opal
 						else // this is the end page, loop back to beginning of story
 						{
 							this.mainCam.transform.position = new Vector3(0,0,-1);
-							GameObject.FindGameObjectWithTag(Constants.TAG_BACK).transform.position = new Vector3(-610,320,0);
-							GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT).transform.position = new Vector3(610,320,0);
+							GameObject tb = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
+							GameObject tn = GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT);
+							tb.transform.position = new Vector3(tb.transform.position.x,tb.transform.position.y,0);
+							tn.transform.position = new Vector3(tn.transform.position.x,tn.transform.position.y,0);
 						}
 					}
 					else {

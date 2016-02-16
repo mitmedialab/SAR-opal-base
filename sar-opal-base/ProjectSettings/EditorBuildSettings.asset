@@ -5,7 +5,7 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/scenes/basic-scene.unity
   - enabled: 0
     path: Assets/scenes/demo-intro.unity
@@ -13,3 +13,5 @@ EditorBuildSettings:
     path: Assets/scenes/demo-scene1.unity
   - enabled: 0
     path: Assets/scenes/demo-scene2.unity
+  - enabled: 1
+    path: Assets/scenes/frog-where-are-you.unity

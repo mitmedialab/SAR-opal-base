@@ -16,9 +16,15 @@ namespace opal
     {
         // allow touch? if false, doesn't react to touch events
         public bool allowTouch = true;
+        
+        // if changing page
+        private bool changingpage = false;
     
         // light for highlighting objects
         private GameObject highlight = null; 
+        
+        // main camera
+        private GameObject mainCam = null;
         
         // for logging stuff
         public event LogEventHandler logEvent;
@@ -26,6 +32,10 @@ namespace opal
         // DEMO VERSION
         public bool demo = false;
         private int demospeech = 0;
+        
+        // STORYBOOK VERSION
+        public bool story = false;
+        public int pagesInStory = 0;
         
         /// <summary>
         /// Called on start, use to initialize stuff
@@ -40,6 +50,20 @@ namespace opal
             } else {
                 Debug.LogError("ERROR: No light found");
             }
+            
+            // if in story mode, we need the main camera
+            if (this.story)
+            {
+	            // find main camera
+				this.mainCam = GameObject.Find("Main Camera");
+				if (this.mainCam != null)
+				{
+					Debug.Log ("Got main camera!");
+					this.mainCam.transform.position = new Vector3(0,0,-1);
+				} else {
+					Debug.LogError("ERROR: Couldn't find main camera!");
+				}
+			}
         }
 
         /// <summary>
@@ -50,27 +74,43 @@ namespace opal
             // subscribe to gesture events
             GameObject[] gos = GameObject.FindGameObjectsWithTag(Constants.TAG_PLAY_OBJECT);
             foreach(GameObject go in gos) {
-                AddAndSubscribeToGestures(go, true);
+                AddAndSubscribeToGestures(go, true, false);
             }
             
             if (this.demo)
             {
                 GameObject arrow = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
-                if (arrow != null) AddAndSubscribeToGestures(arrow, false);
+                if (arrow != null) AddAndSubscribeToGestures(arrow, false, false);
                 
                 // also subscribe for the sidekick
                 
                 GameObject sk = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
                 // add a tap gesture component if one doesn't exist
-                TapGesture tapg = sk.GetComponent<TapGesture>();
-                if(tapg == null) {
-                    tapg = sk.AddComponent<TapGesture>();
+                if (sk != null)
+                {
+	                TapGesture tapg = sk.GetComponent<TapGesture>();
+	                if(tapg == null) {
+	                    tapg = sk.AddComponent<TapGesture>();
+	                }
+	                // checking for null anyway in case adding the component didn't work
+	                if(tapg != null) {
+	                    tapg.Tapped += tappedHandler; // subscribe to tap events
+	                    Debug.Log(sk.name + " subscribed to tap events");
+	                }
                 }
-                // checking for null anyway in case adding the component didn't work
-                if(tapg != null) {
-                    tapg.Tapped += tappedHandler; // subscribe to tap events
-                    Debug.Log(sk.name + " subscribed to tap events");
+                else { 
+                	Debug.Log ("Gesture manager could not find sidekick!"); 
                 }
+            }
+            
+            if (this.story)
+            {
+            	// subscribe to gestures for next/previous arrows
+				GameObject arrow = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
+				if (arrow != null) AddAndSubscribeToGestures(arrow, false, false);
+				
+				GameObject arrow2 = GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT);
+				if (arrow2 != null) AddAndSubscribeToGestures(arrow2, false, false);
             }
         } 
     
@@ -104,6 +144,12 @@ namespace opal
                     rg.Released -= releasedHandler;
                     Debug.Log(go.name + " unsubscribed from release events");
                 }
+                FlickGesture fg = go.GetComponent<FlickGesture>();
+                if(fg != null) {
+                	fg.Flicked -= flickHandler;
+                	Debug.Log (go.name + " unsubscribed from flick events");
+                }
+                
             }
             
             //if (this.demo)
@@ -138,9 +184,9 @@ namespace opal
         /// </summary>
         /// <param name="go">Game object</param>
         /// <param name="draggable">If set to <c>true</c> is a draggable object.</param>
-        public void AddAndSubscribeToGestures (GameObject go, bool draggable)
+        public void AddAndSubscribeToGestures (GameObject go, bool draggable, bool storypage)
         {
-            // add a tap gesture component if one doesn't exist
+			// add a tap gesture component if one doesn't exist
             TapGesture tg = go.GetComponent<TapGesture>();
             if(tg == null) {
                 tg = go.AddComponent<TapGesture>();
@@ -148,8 +194,9 @@ namespace opal
             // checking for null anyway in case adding the component didn't work
             if(tg != null) {
                 tg.Tapped += tappedHandler; // subscribe to tap events
-                Debug.Log(go.name + " subscribed to pan events");
+                Debug.Log(go.name + " subscribed to tap events");
             }
+            // if this object is draggable, handle pan events
             if(draggable) {
                 // add pan gesture component if one doesn't exist yet
                 PanGesture pg = go.GetComponent<PanGesture>();
@@ -171,6 +218,7 @@ namespace opal
                     t2d.Speed = 30;
                 }
             }
+           
             PressGesture prg = go.GetComponent<PressGesture>();
             if(prg == null) {
                 prg = go.AddComponent<PressGesture>();
@@ -187,10 +235,30 @@ namespace opal
                 rg.Released += releasedHandler;
                 Debug.Log(go.name + " subscribed to release events");
             }
+           
+            
+            // if this is a story page, handle swipe/flick events
+            if (storypage)
+            {
+				// add flick gesture component if one doesn't exist yet
+				FlickGesture fg = go.GetComponent<FlickGesture>();
+				if(fg == null) {
+					fg = go.AddComponent<FlickGesture>();
+				}
+				if(fg != null) {
+					fg.Flicked += flickHandler;
+					fg.AddFriendlyGesture(tg);
+					fg.MinDistance = 0.4f;
+					fg.FlickTime = 0.5f;
+					fg.MovementThreshold = 0.1f;
+					Debug.Log(go.name + " subscribed to flick events");
+				}
+            }
             
             
         }
 
+        
         #region gesture handlers
         /// <summary>
         /// Handle all tap events - log them and trigger actions in response
@@ -209,7 +277,7 @@ namespace opal
             if(gesture.GetTargetHitResult(out hit)) {
                 // want the info as a 2D point 
                 ITouchHit2D hit2d = (ITouchHit2D)hit; 
-                Debug.Log("TAP registered on " + gesture.gameObject.name + " at " + hit2d.Point);
+                //Debug.Log("TAP registered on " + gesture.gameObject.name + " at " + hit2d.Point);
             
                 // fire event indicating that we received a message
                 if(this.logEvent != null) {
@@ -218,13 +286,25 @@ namespace opal
                     gesture.gameObject.name, "tap", hit2d.Point));
                 }
                 
+                
+				// if this is a story, use arrows to go next/back in pages
+				if(this.story && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
+				{
+					ChangePage(Constants.PREVIOUS);
+				}
+				else if (this.story && gesture.gameObject.tag.Contains(Constants.TAG_GO_NEXT))
+				{
+					ChangePage(Constants.NEXT);
+				}
+				
                 // if this is the demo app, and if the tap was on the back arrow,
                 // go back to the demo intro scene
-                if(this.demo && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
+                else if(this.demo && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
                 {
                     Application.LoadLevel(Constants.SCENE_DEMO_INTRO);
                 }
-                // play sidekick animation if it is touched
+ 
+                // if this is a demo app, play sidekick animation if it is touched
                 else if (this.demo && gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK))
                 {   
                     // tell the sidekick to animate
@@ -239,7 +319,7 @@ namespace opal
                     this.demospeech = (this.demospeech + 1) % Constants.DEMO_SIDEKICK_SPEECH.Length;
                     
                 }
-            
+                
                 // trigger sound on tap
                 //Debug.Log("going to play a sound for " + gesture.gameObject.name);
                 //if(this.allowTouch) PlaySoundAndPulse(gesture.gameObject);
@@ -276,8 +356,10 @@ namespace opal
                             gesture.gameObject.name, "press", hit2d.Point));
                 }
             
+				
                 // move highlighting light and set active
-                if(this.allowTouch)
+                // don't highlight touches in a story
+                if(this.allowTouch)// && !this.story)
                 {
                     // send the light the z position of the pressed object because
                     // the 'hit2d' point doesn't have the right z position (is always
@@ -287,7 +369,7 @@ namespace opal
                 }
                     
                 // trigger sound on press
-                if(this.allowTouch && !gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK)) 
+                if(this.allowTouch && gesture.gameObject.tag.Contains(Constants.TAG_PLAY_OBJECT)) 
                 {
                     Debug.Log("going to play a sound for " + gesture.gameObject.name);
                     PlaySoundAndPulse(gesture.gameObject);
@@ -307,7 +389,10 @@ namespace opal
         private void releasedHandler (object sender, EventArgs e)
         {
             Debug.Log("PRESS COMPLETE");
-            LightOff();
+            if (this.allowTouch)// && !this.story)
+            {
+            	LightOff();
+            }
         
             // fire event indicating that we received a message
             if(this.logEvent != null) {
@@ -315,7 +400,6 @@ namespace opal
                 this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
                         "", "release", null));
             }
-          
         }
      
      
@@ -434,6 +518,65 @@ namespace opal
                         "", "pancomplete", null));
             }      
         }
+        
+        /// <summary>
+        /// Handle flick events
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">E.</param>
+		void flickHandler (object sender, EventArgs e)
+		{
+			// get the gesture that was sent to us, which will tell us 
+			// which object was flicked
+			FlickGesture gesture = sender as FlickGesture;
+			
+			ITouchHit hit;
+			// get info about where the hit object was located when the gesture was
+			// recognized - i.e., where on the object (in screen dimensions) did
+			// the flick occur?
+			if(gesture.GetTargetHitResult(out hit)) {
+				// want the info as a 2D point 
+				ITouchHit2D hit2d = (ITouchHit2D)hit; 
+				Debug.Log("FLICK on " + gesture.gameObject.name + " at " + hit2d.Point);
+				
+				// fire event to logger to log this action
+				if(this.logEvent != null) {
+					// log the flick
+					this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+					              gesture.gameObject.name, "flick", hit2d.Point));
+				}
+				
+				
+				if(this.allowTouch)
+				{	
+					// if flick/swipe was to the right, advance page
+					if (gesture.ScreenFlickVector.x < 0)
+					{
+						ChangePage(Constants.NEXT);
+					}
+					
+					// if to the left, go back a page
+					else if (gesture.ScreenFlickVector.x > 0)
+					{
+						ChangePage(Constants.PREVIOUS);
+					}
+				}
+				
+				// trigger sound on flick as feedback?
+				//if(this.allowTouch && !gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK)) 
+				//{
+				//	Debug.Log("going to play a sound for " + gesture.gameObject.name);
+				//	PlaySoundAndPulse(gesture.gameObject);
+				//}
+				
+			} else {
+				// this probably won't ever happen, but in case it does, we'll log it
+				Debug.LogWarning("!! could not register where FLICK was located!");
+			}
+			
+		}
+		
+        
     #endregion
     
     #region utilities
@@ -512,6 +655,71 @@ namespace opal
             }
         }
   
+  
+  		/// <summary>
+  		/// Changes the page.
+  		/// </summary>
+  		/// <param name="next">If set to <c>true</c> next page, otherwise, previous page</param>
+  		public void ChangePage (bool next)
+  		{
+			// fire event to logger to log this action
+			if(this.logEvent != null) {
+				// log the flick
+				this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+				                                 "", "flick", new Vector3(0,0,0)));
+			}
+			
+			if(this.allowTouch)
+			{	
+				// if flick/swipe was to the right, advance page
+				if (next)
+				{
+					if (this.mainCam != null) 
+					{
+						Debug.Log ("swiping right...");
+						// don't go past end of story
+						if (this.mainCam.transform.position.z < this.pagesInStory-1)
+						{
+							this.mainCam.transform.Translate(new Vector3(0,0,1));
+							GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT).transform.Translate(new Vector3(0,0,1));
+							GameObject.FindGameObjectWithTag(Constants.TAG_BACK).transform.Translate(new Vector3(0,0,1));
+						}
+						else // this is the end page, loop back to beginning of story
+						{
+							this.mainCam.transform.position = new Vector3(0,0,-1);
+							GameObject tb = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
+							GameObject tn = GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT);
+							tb.transform.position = new Vector3(tb.transform.position.x,tb.transform.position.y,0);
+							tn.transform.position = new Vector3(tn.transform.position.x,tn.transform.position.y,0);
+						}
+					}
+					else {
+						Debug.Log ("no main cam! can't change page!");
+					}
+				}
+				
+				else
+                {
+                    if (this.mainCam != null) 
+                    {
+                        Debug.Log("swiping left...");
+                        // don't go before start of story
+                        if (this.mainCam.transform.position.z > -1)
+                        {
+                            this.mainCam.transform.Translate(new Vector3(0,0,-1));
+							GameObject.FindGameObjectWithTag(Constants.TAG_BACK).transform.Translate(new Vector3(0,0,-1));
+							GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT).transform.Translate(new Vector3(0,0,-1));
+                        }
+                        
+                    }
+					else {
+						Debug.Log ("no main cam! can't change page!");
+                    }
+                }
+            }
+  		}
+  
+  
         /// <summary>
         /// Plays the first sound attached to the object, if one exists 
         /// </summary>
@@ -525,8 +733,8 @@ namespace opal
                 Debug.Log("playing clip for object " + go.name);
 
                 // play the audio clip attached to the game object
-                if(!go.audio.isPlaying)
-                    go.audio.Play();
+                if(!go.GetComponent<AudioSource>().isPlaying)
+                    go.GetComponent<AudioSource>().Play();
                 
                 return true;   
             } else {
@@ -545,7 +753,7 @@ namespace opal
             if(go != null) {
                 // play a sound, if it exists and is not already playing
                 // and also pulse size
-                if(PlaySound(go) && (go.audio != null) && !go.audio.isPlaying)
+                if(PlaySound(go) && (go.GetComponent<AudioSource>() != null) && !go.GetComponent<AudioSource>().isPlaying)
                     go.GetComponent<GrowShrinkBehavior>().ScaleUpOnce();
             }
         }

@@ -46,6 +46,8 @@ sar-opal-base/Assets/Resources/audio/*.wav
 sar-opal-base/Assets/Resources/audio/*.wav.meta
 sar-opal-base/Assets/Resources/graphics/base-images/*.png
 sar-opal-base/Assets/Resources/graphics/base-images/*.png.meta
+sar-opal-base/Assets/Resources/graphics/base-images/frogwhereareyou/*.jpg
+sar-opal-base/Assets/Resources/graphics/base-images/frogwhereareyou/*.jpg.meta
 !sar-opal-base/Assets/Resources/audio/chimes.wav
 !sar-opal-base/Assets/Resources/audio/chimes.wav.meta
 !sar-opal-base/Assets/Resources/audio/wakeup.wav

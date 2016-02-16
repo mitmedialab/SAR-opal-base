@@ -140,7 +140,7 @@ namespace opal
             this.audioSource.playOnAwake = false;
             
             // then play sound if it's not playing
-            if (!this.gameObject.audio.isPlaying)
+            if (!this.gameObject.GetComponent<AudioSource>().isPlaying)
             {
                 // start the speaking animation
                 //Debug.Log("flag is ... " 
@@ -152,7 +152,7 @@ namespace opal
                 //    + this.animator.GetBool(Constants.ANIM_FLAGS[Constants.ANIM_SPEAK]));
                 
                 // play audio
-                this.gameObject.audio.Play();
+                this.gameObject.GetComponent<AudioSource>().Play();
                 this.checkAudio = true;
                 // NOTE right now we're just fading screen when touch is diabled
                 // but we could easily just fade screen when toucan speaks, here

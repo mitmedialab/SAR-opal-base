@@ -34,8 +34,12 @@ namespace opal
         // fader for fading out the screen
         private GameObject fader = null; 
     
-        // DEMO  VERSION
+        // DEMO VERSION
         private bool demo = false;
+        
+        // STORYBOOK VERSION
+        private bool story = true;
+        public int pagesInStory = 0;
         
         // config
         private GameConfig gameConfig;
@@ -45,7 +49,8 @@ namespace opal
         /// </summary>
         void Awake()
         {
-            Debug.Log("--- RUNNING IN DEMO MODE ---");
+            if (this.demo) Debug.Log("--- RUNNING IN DEMO MODE ---");
+            if (this.story) Debug.Log ("--- RUNNING IN STORYBOOK MODE ---");
         
             string path = "";
             
@@ -77,32 +82,38 @@ namespace opal
             // if demo, tell everyone else
             this.gestureManager.demo = this.demo;
             
+            // if story, tell everyone else
+            this.gestureManager.story = this.story;
+            
             // find our sidekick
-            GameObject sidekick = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
-            if(sidekick == null) {
-                Debug.LogError("ERROR: Could not find sidekick!");
-            } else {
-                Debug.Log("Got sidekick");
-                if(this.gameConfig.sidekick) {
-                    // add sidekick's gestures
-                    this.gestureManager.AddAndSubscribeToGestures(sidekick, false);
-                    
-                    // get sidekick's script
-                    this.sidekickScript = (Sidekick)sidekick.GetComponent<Sidekick>();
-                    if(this.sidekickScript == null) {
-                        Debug.LogError("ERROR: Could not get sidekick script!");
-                    } else {
-                        Debug.Log("Got sidekick script");
-                        this.sidekickScript.donePlayingEvent += new DonePlayingEventHandler(HandleDonePlayingAudioEvent);
-                    }
-                }
-                else {
-                    // we don't have a sidekick in this game, set as inactive
-                    Debug.Log("Don't need sidekick... disabling");
-                    sidekick.SetActive(false);
-                    
-                    // try to disable the sidekick's highlight as well
-                    GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK_LIGHT).SetActive(false);
+            if (!this.story)
+            {
+	            GameObject sidekick = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
+	            if(sidekick == null) {
+	                Debug.LogError("ERROR: Could not find sidekick!");
+	            } else {
+	                Debug.Log("Got sidekick");
+	                if(this.gameConfig.sidekick) {
+	                    // add sidekick's gestures
+	                    this.gestureManager.AddAndSubscribeToGestures(sidekick, false, false);
+	                    
+	                    // get sidekick's script
+	                    this.sidekickScript = (Sidekick)sidekick.GetComponent<Sidekick>();
+	                    if(this.sidekickScript == null) {
+	                        Debug.LogError("ERROR: Could not get sidekick script!");
+	                    } else {
+	                        Debug.Log("Got sidekick script");
+	                        this.sidekickScript.donePlayingEvent += new DonePlayingEventHandler(HandleDonePlayingAudioEvent);
+	                    }
+	                }
+	                else {
+	                    // we don't have a sidekick in this game, set as inactive
+	                    Debug.Log("Don't need sidekick... disabling");
+	                    sidekick.SetActive(false);
+	                    
+	                    // try to disable the sidekick's highlight as well
+	                    GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK_LIGHT).SetActive(false);
+	                }
                 }
             }
             
@@ -133,7 +144,8 @@ namespace opal
         void Start()
         {
             // set up rosbridge websocket client
-            // note: does not attempt to reconnect if connection fails
+            // note: does not attempt to reconnect if connection fails!
+            // TODO story network ros connection??
             if(this.clientSocket == null && !this.demo) {
                 // load file
                 if (this.gameConfig.server.Equals("") || this.gameConfig.port.Equals("")) {
@@ -267,7 +279,7 @@ namespace opal
         /// Instantiate a new game object with the specified properties
         /// </summary>
         /// <param name="pops">properties of the play object.</param>
-        void InstantiatePlayObject (PlayObjectProperties pops)
+        private void InstantiatePlayObject (PlayObjectProperties pops)
         {
             GameObject go = new GameObject();
 
@@ -369,7 +381,7 @@ namespace opal
             
             try {
                 // add gestures and register to get event notifications
-                this.gestureManager.AddAndSubscribeToGestures(go, pops.draggable);
+                this.gestureManager.AddAndSubscribeToGestures(go, pops.draggable, false);
             }
             catch (Exception e)
             {
@@ -453,6 +465,85 @@ namespace opal
             go.transform.localScale = new Vector3(100, 100, 100);
         }
     
+    
+        /// <summary>
+        /// Instantiates a story page
+        /// </summary>
+        /// <param name="sops">story page object properties</param>
+        public void InstantiateStoryPage (StorypageObjectProperties sops, Sprite sprite)
+        {
+			// now make a new background
+			GameObject go = new GameObject();
+			
+			// set object name
+			go.name = (sops.Name() != "") ? sops.Name() : UnityEngine.Random.value.ToString();
+			Debug.Log("Creating new story page: " + sops.Name());
+			
+			// set tag
+			go.tag = Constants.TAG_BACKGROUND;
+			
+			// set layer to statics because these pages won't move
+			go.layer = Constants.LAYER_STATICS;
+			
+			// move object to initial position 
+			go.transform.position = sops.InitPosition();
+			
+			// load sprite/image for object
+			SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
+			
+			// if no sprite was provided, try to load one with that file name
+			if (sprite == null)
+			{
+				Sprite spt = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + 
+					sops.StoryPath() + sops.Name());
+				if(spt == null)
+					Debug.Log("ERROR could not load sprite: " 
+				          + Constants.GRAPHICS_FILE_PATH + sops.Name());
+			 }
+			
+			spriteRenderer.sprite = sprite; 
+			
+			// set scale
+			if (sops.Scale() != Vector3.zero)
+			{
+				go.transform.localScale = sops.Scale();
+			}
+			else
+			{
+				go.transform.localScale = new Vector3(100, 100, 100);
+			}
+			
+			// add polygon collider and set as a trigger so enter/exit events
+			// fire when this collider is hit -- needed to recognize touch events!
+			PolygonCollider2D pc = go.AddComponent<PolygonCollider2D>();
+			pc.isTrigger = true;
+			
+			// add and subscribe to gestures
+			if(this.gestureManager == null) {
+				Debug.Log("ERROR no gesture manager");
+				FindGestureManager();
+			}
+			
+			try {
+				// add gestures and register to get event notifications
+				this.gestureManager.AddAndSubscribeToGestures(go, false, true);
+				this.gestureManager.pagesInStory = this.pagesInStory;
+			}
+			catch (Exception e)
+			{
+				Debug.LogError("Tried to subscribe to gestures but failed! " + e);
+			}
+			
+			// save the initial position in case we need to reset this object later
+			SavedProperties sp = go.AddComponent<SavedProperties>();
+			sp.initialPosition = sops.InitPosition(); 
+			sp.isStartPage = sops.IsStart();
+			sp.isEndPage = sops.IsEnd();
+            
+        }
+        
+        
+        
         /** Find the gesture manager */ 
         private void FindGestureManager ()
         {
@@ -486,159 +577,192 @@ namespace opal
             // behavior if, e.g., the "CLEAR" case is last (then nothing clears and
             // we get an argument invalid exception). I hate to be the one who 
             // writes the "sometimes weird things happen :)" comment, but here it 
-            // is, weird things happen. TODO Consider swapping switch for if-elses.
-            switch(cmd) { 
-                case Constants.REQUEST_KEYFRAME:
-                    // fire event indicating we want to log the state of the current scene
-                    if(this.logEvent != null) {
-                        // get keyframe and send it
-                        MainGameController.ExecuteOnMainThread.Enqueue(() => {
-                            LogEvent.SceneObject[] sos = null;
-                            this.GetSceneKeyframe(out sos);
-                            this.logEvent(this, new LogEvent(LogEvent.EventType.Scene, sos));
-                        });
-                    }  else {
-                        Debug.LogWarning("Was told to send keyframe but logger " +
-                                         "doesn't appear to exist.");
-                    }
-                    break;
-                
-                case Constants.HIGHLIGHT_OBJECT:
-                    // move the highlight behind the specified game object
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                        GameObject go = GameObject.Find((string)props);
-                        if(go != null) {
-                            this.gestureManager.LightOn(go.transform.position);
-                        } else {
-                            Debug.LogWarning("Was told to highlight " + (string)props + 
-                                             " but could not find the game object!");
-                        }
-                    });  
-                    break;
-                
-                case Constants.DISABLE_TOUCH:
-                    // disable touch events from user
-                    this.gestureManager.allowTouch = false; 
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                        this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
-                            Constants.TAG_PLAY_OBJECT }, false);
-                        // and fade the screen
-                        this.fader.SetActive(true);
+            // is, weird things happen.
+            // *** swapped switch for if else so this problem should be fixed. Leaving
+            // note as info in case someone in the future wants to switch to a switch.
+            if (cmd == Constants.REQUEST_KEYFRAME)
+            {
+                // fire event indicating we want to log the state of the current scene
+                if(this.logEvent != null) {
+                    // get keyframe and send it
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => {
+                        LogEvent.SceneObject[] sos = null;
+                        this.GetSceneKeyframe(out sos);
+                        this.logEvent(this, new LogEvent(LogEvent.EventType.Scene, sos));
                     });
-                    break;
-                
-                case Constants.ENABLE_TOUCH:
-                    // enable touch events from user
-                    this.gestureManager.allowTouch = true;
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                        this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
-                            Constants.TAG_PLAY_OBJECT }, true);
-                        // and unfade the screen
-                        this.fader.SetActive(false);
-                    });
-                    break;
-                
-                case Constants.RESET:
-                   // reload the current level
-                    // e.g., when the robot's turn starts, want all characters back in their
-                    // starting configuration for use with automatic playbacks
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                        this.ReloadScene();
-                    });
-                    break;
-                
-                case Constants.SIDEKICK_DO:
-                    if(this.gameConfig.sidekick) {
-                        // trigger animation for sidekick character
-                        MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                            this.sidekickScript.SidekickDo((string)props);
-                        }); 
-                    }
-                    break;
-                
-                case Constants.SIDEKICK_SAY:
-                    if(this.gameConfig.sidekick) {
-                        // trigger playback of speech for sidekick character
-                        MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                        this.sidekickScript.SidekickSay((string)props);
-                        }); 
-                    }
-                    break;
-            
-                case Constants.CLEAR:
-                    Debug.Log("clearing scene");
-                    try {                   
-                        // remove all play objects and background objects from scene, hide highlight
-                        MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                            this.ClearScene(); 
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogError(ex);
-                    }
-                break;
-                
-                case Constants.LOAD_OBJECT:
-                    // load the specified game object
-                    if(props == null) {
-                        Debug.Log("was told to load an object, but got no properties!");
-                        break;
-                    }
-                    SceneObjectProperties sops = (SceneObjectProperties)props;
-                    
-                    // load new background image with the specified properties
-                    if(sops.Tag().Equals(Constants.TAG_BACKGROUND) ||
-                        sops.Tag().Equals(Constants.TAG_FOREGROUND)) {
-                        Debug.Log("background");
-                        MainGameController.ExecuteOnMainThread.Enqueue(() => {
-                            this.InstantiateBackground((BackgroundObjectProperties)sops);
-                        }); 
-                    }
-                    // or instantiate new playobject with the specified properties
-                    else if(sops.Tag().Equals(Constants.TAG_PLAY_OBJECT)) {
-                        Debug.Log("play object");
-                        MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                            this.InstantiatePlayObject((PlayObjectProperties)sops);
-                        });
-                    }
-                    break;
-                
-            
-                case Constants.MOVE_OBJECT:
-                    if(props == null) {
-                        Debug.Log("Was told to move an object but did not " +
-                                  "get name of which one or position to move to.");
-                        return;
-                    }
-                    MoveObject mo = (MoveObject)props;
-                    // use LeanTween to move object from curr_posn to new_posn
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                        GameObject go = GameObject.Find(mo.name);
-                        if(go != null)
-                            LeanTween.move(go, mo.destination, 2.0f).setEase(
-                                LeanTweenType.easeOutSine);    
-                    });
-                    break;
-                
-                case Constants.FADE_SCREEN:
-                    Debug.LogWarning("Action fade screen not tested yet!");
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                        this.fader.SetActive(true);
-                    });
-                    break;
-                    
-                case Constants.UNFADE_SCREEN:
-                    Debug.LogWarning("Action unfade screen not tested yet!");
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                        this.fader.SetActive(false);
-                    });
-                    break;
-                
-                default:
-                    Debug.LogWarning("Got a message that doesn't match any we expect!");
-                    break;
+                }  else {
+                    Debug.LogWarning("Was told to send keyframe but logger " +
+                                     "doesn't appear to exist.");
+                }
             }
+            
+			else if (cmd == Constants.HIGHLIGHT_OBJECT)
+            {
+                // move the highlight behind the specified game object
+                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    GameObject go = GameObject.Find((string)props);
+                    if(go != null) {
+                        this.gestureManager.LightOn(go.transform.position);
+                    } else {
+                        Debug.LogWarning("Was told to highlight " + (string)props + 
+                                         " but could not find the game object!");
+                    }
+                });  
+            }
+            
+			else if (cmd == Constants.DISABLE_TOUCH)
+            {
+                // disable touch events from user
+                this.gestureManager.allowTouch = false; 
+                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
+                        Constants.TAG_PLAY_OBJECT }, false);
+                    // and fade the screen 
+                    // - actually no, don't, there's a separate message for that!
+                    //this.fader.SetActive(true);
+                });
+            }
+            
+			else if (cmd == Constants.ENABLE_TOUCH)
+            {
+                // enable touch events from user
+                this.gestureManager.allowTouch = true;
+                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
+                        Constants.TAG_PLAY_OBJECT }, true);
+                    // and unfade the screen
+                    // no - we don't want to tie fade/touch together!
+                    //this.fader.SetActive(false);
+                });
+            }
+            
+			else if (cmd == Constants.RESET)
+            {
+               // reload the current level
+                // e.g., when the robot's turn starts, want all characters back in their
+                // starting configuration for use with automatic playbacks
+                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    this.ReloadScene();
+                });
+            }
+            
+			else if (cmd == Constants.SIDEKICK_DO)
+            {
+                if(this.gameConfig.sidekick) {
+                    // trigger animation for sidekick character
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                        this.sidekickScript.SidekickDo((string)props);
+                    }); 
+                }
+            }
+            
+			else if (cmd == Constants.SIDEKICK_SAY)
+            {
+                if(this.gameConfig.sidekick) {
+                    // trigger playback of speech for sidekick character
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    this.sidekickScript.SidekickSay((string)props);
+                    }); 
+                }
+            }
+        
+			else if (cmd == Constants.CLEAR)
+            {
+                Debug.Log("clearing scene");
+                try {                   
+                    // remove all play objects and background objects from scene, hide highlight
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                        this.ClearScene(); 
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError(ex);
+                }
+        	}
+            
+			else if (cmd == Constants.LOAD_OBJECT)
+            {
+                // load the specified game object
+                if(props == null) {
+                    Debug.Log("was told to load an object, but got no properties!");
+                }
+                else
+                {
+	                SceneObjectProperties sops = (SceneObjectProperties)props;
+	                
+	                // load new background image with the specified properties
+	                if(sops.Tag().Equals(Constants.TAG_BACKGROUND) ||
+	                    sops.Tag().Equals(Constants.TAG_FOREGROUND)) {
+	                    Debug.Log("background");
+	                    MainGameController.ExecuteOnMainThread.Enqueue(() => {
+	                        this.InstantiateBackground((BackgroundObjectProperties)sops);
+	                    }); 
+	                }
+	                // or instantiate new playobject with the specified properties
+	                else if(sops.Tag().Equals(Constants.TAG_PLAY_OBJECT)) {
+	                    Debug.Log("play object");
+	                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+	                        this.InstantiatePlayObject((PlayObjectProperties)sops);
+	                    });
+	                }
+                }
+            }
+            
+        
+			else if (cmd == Constants.MOVE_OBJECT)
+            {
+                if(props == null) {
+                    Debug.Log("Was told to move an object but did not " +
+                              "get name of which one or position to move to.");
+                    return;
+                }
+                MoveObject mo = (MoveObject)props;
+                // use LeanTween to move object from curr_posn to new_posn
+                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    GameObject go = GameObject.Find(mo.name);
+                    if(go != null)
+                        LeanTween.move(go, mo.destination, 2.0f).setEase(
+                            LeanTweenType.easeOutSine);    
+                });
+            }
+            
+			else if (cmd == Constants.FADE_SCREEN)
+            {
+                Debug.LogWarning("Action fade screen not tested yet!");
+                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    this.fader.SetActive(true);
+                });
+            }
+                
+			else if (cmd == Constants.UNFADE_SCREEN)
+            {
+                Debug.LogWarning("Action unfade screen not tested yet!");
+                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    this.fader.SetActive(false);
+                });
+            }
+                
+			else if (cmd == Constants.NEXT_PAGE)
+            {
+            	Debug.LogWarning("Action next page not tested yet!");
+            	MainGameController.ExecuteOnMainThread.Enqueue(() => {
+            		this.gestureManager.ChangePage(Constants.NEXT);
+            		});
+            }
+			else if (cmd == Constants.PREV_PAGE)
+			{
+				Debug.LogWarning("Action next page not tested yet!");
+				MainGameController.ExecuteOnMainThread.Enqueue(() => {
+					this.gestureManager.ChangePage(Constants.PREVIOUS);
+				});
+			}
+            
+            else
+	        {
+	            Debug.LogWarning("Got a message that doesn't match any we expect!");
+	            
+        	}
         }
     
     #region utilities
@@ -742,6 +866,7 @@ namespace opal
             }
         }
         
+        
     
         /// <summary>
         /// Logs the state of the current scene and sends as a ROS message
@@ -802,6 +927,7 @@ namespace opal
         void HandleLogEvent (object sender, LogEvent logme)
         {
             if (this.demo) return;
+            if (this.story) return; //TODO log story stuff
         
             switch(logme.type) {
             case LogEvent.EventType.Action:

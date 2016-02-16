@@ -144,9 +144,9 @@ namespace opal
         void Start()
         {
             // set up rosbridge websocket client
-            // note: does not attempt to reconnect if connection fails
+            // note: does not attempt to reconnect if connection fails!
             // TODO story network ros connection??
-            if(this.clientSocket == null && !this.demo && !this.story) {
+            if(this.clientSocket == null && !this.demo) {
                 // load file
                 if (this.gameConfig.server.Equals("") || this.gameConfig.port.Equals("")) {
                     Debug.LogWarning("Do not have websocket configuration... trying "
@@ -617,8 +617,9 @@ namespace opal
                 MainGameController.ExecuteOnMainThread.Enqueue(() => { 
                     this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
                         Constants.TAG_PLAY_OBJECT }, false);
-                    // and fade the screen
-                    this.fader.SetActive(true);
+                    // and fade the screen 
+                    // - actually no, don't, there's a separate message for that!
+                    //this.fader.SetActive(true);
                 });
             }
             
@@ -630,7 +631,8 @@ namespace opal
                     this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
                         Constants.TAG_PLAY_OBJECT }, true);
                     // and unfade the screen
-                    this.fader.SetActive(false);
+                    // no - we don't want to tie fade/touch together!
+                    //this.fader.SetActive(false);
                 });
             }
             

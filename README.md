@@ -63,6 +63,7 @@ To build and deploy the demo version, do the following:
 - Build and deploy. 
 
 ## TODO
+- Actions 'next page' and 'prev page' have been tested now and they work! Update comments and the "action hasn't been tested" note in code.
 - Move 'highlight' object with transformer2D, currently does not follow drag path very well
 - Log all log messages locally to tablet
 - Objects can leave the viewable screen on drag, changes margins (this is because we used TouchScript's Transformer2D for drag, which doesn't have the margins for where not to go)

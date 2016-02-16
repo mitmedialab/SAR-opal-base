@@ -55,6 +55,11 @@ Note that if you try to build this project, the Newtonsoft.Json dll appears to b
 
 - When adding new images to the project, make sure to set each image as 'Advanced' and check the 'read/write' box in the Unity editor. If you don't do this, when images are programatically loaded as PlayObjects, the polygon colliders won't be generated to properly fit the image's shape/outline. When deploying the app, you'll probably get the error "Sprite outline generation failed - could not read texture pixel data. Did you forget to make the texture readable?" whenever you dynamically add a polygon collider to an object. Something about textures/images not being readable by scripts by default, the polygon collider needing to read the texture to figure out the outline to make the collider the right shape, but not being able to, and thus the collider ending up the wrong shape and making collisions happen weird... 
 
+- Only a small set of "demo" graphics are included in this repository. The full set is available from the Personal Robots Group - email students in the group to inquire. Add the full set to the "Resources\/base\_images" folder. 
+
+## Version Notes
+The Year 3 SAR study was run using Opal version 1.0.3.
+
 ## Demo Version
 To build and deploy the demo version, do the following:
 - In Unity > Build Settings > Scenes in build, check all the demo scenes and uncheck basic-scene and all other non-demo scenes.
@@ -62,8 +67,11 @@ To build and deploy the demo version, do the following:
 - In the MainGameController, set the flag "demo" to true.
 - Build and deploy. 
 
+The demo version of the game requires some graphics that are not included in the demo. 
+
 ## TODO
 - Actions 'next page' and 'prev page' have been tested now and they work! Update comments and the "action hasn't been tested" note in code.
+- Create demo version of the game that only uses graphics that are checked in to the repository.
 - Move 'highlight' object with transformer2D, currently does not follow drag path very well
 - Log all log messages locally to tablet
 - Objects can leave the viewable screen on drag, changes margins (this is because we used TouchScript's Transformer2D for drag, which doesn't have the margins for where not to go)
@@ -74,6 +82,10 @@ To build and deploy the demo version, do the following:
 - If you try to send a message with sar\_opal\_sender to move an object but send a json file that doesn't have the right stuff in it for a move command, throws error, need to fix. More generally: we don't check that the command number matches the arguments in the json file. Should probably do that during message decoding.
 - Figure out how to put all graphics in a folder outside of the compiled app \(right now they are in the 'Resources' folder so Unity knows where they are more easily\), so that we can add new graphics more easily. 
 - Change config file name from 'websocket\_config' to something generic since it's not just for websocket setup anymore
+- Update to load images and audio from folders on the tablet's sdcard (currently, must load from the Resources folder, which gets compiled in to the Unity app)
+- Add capability to load an image on the "top left" or "bottom right" of the screen without specifying exact coordinates. Adjust the loaded image's position until no collisions are detected so it does not overlap with other images.
+- Adapt to different tablet screen sizes (currently size of images is hard-coded, not scaling)
+- Look into ROS .NET for C#. Possible replacement for websocket connection?
 
 
 

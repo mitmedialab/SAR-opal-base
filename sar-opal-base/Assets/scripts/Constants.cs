@@ -120,7 +120,7 @@ namespace opal
         
         /** Websocket config file path */
         // if playing in unity on desktop:
-        public const string WEBSOCKET_CONFIG = "websocket_config.txt";
+        public const string WEBSOCKET_CONFIG = "opal_config.txt";
         public const string CONFIG_PATH_OSX = @"/Resources/";
         // if playing on tablet:
         public const string CONFIG_PATH_ANDROID = "mnt/sdcard/edu.mit.media.prg.sar.opal.base/";

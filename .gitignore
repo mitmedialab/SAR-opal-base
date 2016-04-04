@@ -33,17 +33,21 @@ ehthumbs.db
 # === #
 *.swp
 *.swo
-# ======================== #
-# ignore packaged app also #
-# ======================== #
+# =================== #
+# ignore packaged app #
+# =================== #
 *.apk
+# ============= #
+# version notes #
+# ============= #
+version-notes.txt
 # ============================================================= #
 # config files since they change so much, except for an example
 # ============================================================= #
 sar-opal-base/Assets/Resources/*.txt
 sar-opal-base/Assets/Resources/*.txt.meta
-!sar-opal-base/Assets/Resources/websocket_config.example.txt
-!sar-opal-base/Assets/Resources/websocket_config.example.txt.meta
+!sar-opal-base/Assets/Resources/opal_config.example.txt
+!sar-opal-base/Assets/Resources/opal_config.example.txt.meta
 # ======================================================== #
 # app content - images and audio - except for some samples
 # ======================================================== #

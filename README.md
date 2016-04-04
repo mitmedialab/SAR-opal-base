@@ -172,7 +172,6 @@ these tablets. Thus, Opal cannot be deployed to tablets with tegra boards.
 - Right now, the sidekick configuration is a simple true/false; you can't start out without a sidekick and add it in later. Consider adding a sar\_opal\_msg that enables or disables the sidekick, so that it can appear or disappear as needed.
 - If you try to send a message with sar\_opal\_sender to move an object but send a json file that doesn't have the right stuff in it for a move command, throws error, need to fix. More generally: we don't check that the command number matches the arguments in the json file. Should do that during message decoding.
 - Figure out how to put all graphics and sounds in a folder outside of the compiled app \(right now they are in the 'Resources' folder so Unity knows where they are more easily\), so that we can add new graphics and sounds more easily. 
-- Change config file name from 'websocket\_config' to something generic since it's not just for websocket setup anymore
 - Update to load images and audio from folders on the tablet's sdcard (currently, must load from the Resources folder, which gets compiled in to the Unity app)
 - Add capability to load an image on the "top left" or "bottom right" of the screen without specifying exact coordinates. Adjust the loaded image's position until no collisions are detected so it does not overlap with other images.
 - Adapt to different tablet screen sizes (currently size of images is hard-coded, not scaling)

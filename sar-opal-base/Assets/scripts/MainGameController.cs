@@ -56,12 +56,12 @@ namespace opal
             
             // find the config file
             #if UNITY_ANDROID
-            path = Constants.CONFIG_PATH_ANDROID + Constants.WEBSOCKET_CONFIG;
+            path = Constants.CONFIG_PATH_ANDROID + Constants.OPAL_CONFIG;
             Debug.Log("trying android path: " + path);
             #endif
             
             #if UNITY_EDITOR
-            path = Application.dataPath + Constants.CONFIG_PATH_OSX + Constants.WEBSOCKET_CONFIG;
+            path = Application.dataPath + Constants.CONFIG_PATH_OSX + Constants.OPAL_CONFIG;
             Debug.Log("trying os x path: " + path);
             #endif
             
@@ -145,11 +145,10 @@ namespace opal
         {
             // set up rosbridge websocket client
             // note: does not attempt to reconnect if connection fails!
-            // TODO story network ros connection??
             if(this.clientSocket == null && !this.demo) {
                 // load file
                 if (this.gameConfig.server.Equals("") || this.gameConfig.port.Equals("")) {
-                    Debug.LogWarning("Do not have websocket configuration... trying "
+                    Debug.LogWarning("Do not have opal configuration... trying "
                         + "hardcoded IP 18.85.38.35 and port 9090");
                     this.clientSocket = new RosbridgeWebSocketClient(
                     "18.85.38.35",// server, // can pass hostname or IP address

@@ -31,10 +31,12 @@ namespace opal
                                 Vector3 scale)
         {
             this.SetName(name);
-            this.SetInitPosition(initPosn);
+            this.SetTag(tag);
             this.draggable = draggable;
             this.audioFile = audioFile;
+            this.SetInitPosition(initPosn);
             this.scale = scale;
+            
         }
 
         /** set all properties - name of object, whether it is a draggable
@@ -44,9 +46,10 @@ namespace opal
                        string audioFile, Vector3 initPosn, Vector3 scale)
         {
             this.SetName(name);       
-            this.SetInitPosition(initPosn);
+            this.SetTag(tag);
             this.draggable = draggable;
             this.audioFile = audioFile;
+            this.SetInitPosition(initPosn);
             this.scale = scale;
         }
     

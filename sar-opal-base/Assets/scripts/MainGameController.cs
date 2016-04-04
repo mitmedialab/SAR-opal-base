@@ -305,7 +305,7 @@ namespace opal
                     audioSource.clip = Resources.Load(Constants.AUDIO_FILE_PATH + 
                         pops.AudioFile()) as AudioClip;
                 } catch(UnityException e) {
-                    Debug.Log("ERROR could not load audio: " + pops.AudioFile() + "\n" + e);
+                    Debug.LogError("Could not load audio: " + pops.AudioFile() + "\n" + e);
                 }
                 audioSource.loop = false;
                 audioSource.playOnAwake = false;
@@ -315,8 +315,26 @@ namespace opal
             SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
             Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + pops.Name());
             if(sprite == null)
-                Debug.Log("ERROR could not load sprite: " 
-                    + Constants.GRAPHICS_FILE_PATH + pops.Name());
+            {
+                Debug.LogWarning("Could not load sprite from Resources: " 
+                    + Constants.GRAPHICS_FILE_PATH + pops.Name() +
+                    "\nGoing to try file path...");
+                    
+                // TODO add filepath to pops! don't use Name
+                sprite = Utilities.LoadSpriteFromFile(pops.Name());
+                if(sprite == null)
+                {
+                    Debug.LogError("Could not load sprite from file path: " 
+                              + Constants.GRAPHICS_FILE_PATH + pops.Name());
+                    // still don't have image - failed to load!
+                    // delete game object and return
+                    Debug.LogError("Could not load sprite: " + pops.Name());
+                    GameObject.Destroy(go);
+                    return;
+                }
+            }
+            
+            // got sprite!
             spriteRenderer.sprite = sprite; 
 
             // set the scale/size of the sprite/image

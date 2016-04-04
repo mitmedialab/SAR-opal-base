@@ -578,7 +578,7 @@ namespace opal
             // we get an argument invalid exception). I hate to be the one who 
             // writes the "sometimes weird things happen :)" comment, but here it 
             // is, weird things happen.
-            // *** swapped switch for if else so this problem should be fixed. Leaving
+            // *** swapped switch for if-else so this problem should be fixed. Leaving
             // note as info in case someone in the future wants to switch to a switch.
             if (cmd == Constants.REQUEST_KEYFRAME)
             {
@@ -729,7 +729,6 @@ namespace opal
             
 			else if (cmd == Constants.FADE_SCREEN)
             {
-                Debug.LogWarning("Action fade screen not tested yet!");
                 MainGameController.ExecuteOnMainThread.Enqueue(() => { 
                     this.fader.SetActive(true);
                 });
@@ -737,7 +736,6 @@ namespace opal
                 
 			else if (cmd == Constants.UNFADE_SCREEN)
             {
-                Debug.LogWarning("Action unfade screen not tested yet!");
                 MainGameController.ExecuteOnMainThread.Enqueue(() => { 
                     this.fader.SetActive(false);
                 });
@@ -745,14 +743,12 @@ namespace opal
                 
 			else if (cmd == Constants.NEXT_PAGE)
             {
-            	Debug.LogWarning("Action next page not tested yet!");
             	MainGameController.ExecuteOnMainThread.Enqueue(() => {
             		this.gestureManager.ChangePage(Constants.NEXT);
             		});
             }
 			else if (cmd == Constants.PREV_PAGE)
 			{
-				Debug.LogWarning("Action next page not tested yet!");
 				MainGameController.ExecuteOnMainThread.Enqueue(() => {
 					this.gestureManager.ChangePage(Constants.PREVIOUS);
 				});

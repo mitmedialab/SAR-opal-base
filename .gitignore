@@ -28,6 +28,11 @@ sar-opal-base/*.sln*
 Icon?
 ehthumbs.db
 [Tt]humbs.db 
+# === #
+# vim #
+# === #
+*.swp
+*.swo
 # ======================== #
 # ignore packaged app also #
 # ======================== #

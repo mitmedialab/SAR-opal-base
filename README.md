@@ -157,12 +157,18 @@ You can use the Frog Where Are You book as an example for how to load your own s
 
 ## Bugs and problems
 
-Apps made with Unity 5 cannot be deployed to Android tablets that have tegra
-boards (such as Samsung Galaxy tablets), because Unity 5 no longer supports
-these tablets. Thus, Opal cannot be deployed to tablets with tegra boards. 
+Apps made with Unity 5 cannot be deployed to non-neon devices (i.e., Android
+tablets that have tegra boards, such as many of the older Samsung Galaxy
+tablets), because Unity 5 no longer supports these devices. Thus, Opal cannot
+be deployed to these devices.
 
 ## TODO
 
+- 'next page' appears to not work when touch disabled
+- Add filepath to SceneObjectProperties so objects can be loaded from outside build directory
+- LoadSpriteFromFile does not fail when a non-image file, such as a text file, is loaded, but should fail
+- Add guidelines for where to put images on tablet for loading images from outside build directory and test with tablet
+- Load sounds from a folder outside build directory
 - Create demo version of the game that only uses graphics that are checked in to the repository.
 - Move 'highlight' object with transformer2D, currently does not follow drag path very well
 - Log all log messages locally to tablet
@@ -171,10 +177,9 @@ these tablets. Thus, Opal cannot be deployed to tablets with tegra boards.
 - Add some way of easily seeing which objects in the scene are draggable or able to be interacted with; used to do the grow-shrink pulse motion, but that caused havoc with the collision detection
 - Right now, the sidekick configuration is a simple true/false; you can't start out without a sidekick and add it in later. Consider adding a sar\_opal\_msg that enables or disables the sidekick, so that it can appear or disappear as needed.
 - If you try to send a message with sar\_opal\_sender to move an object but send a json file that doesn't have the right stuff in it for a move command, throws error, need to fix. More generally: we don't check that the command number matches the arguments in the json file. Should do that during message decoding.
-- Figure out how to put all graphics and sounds in a folder outside of the compiled app \(right now they are in the 'Resources' folder so Unity knows where they are more easily\), so that we can add new graphics and sounds more easily. 
 - Update to load images and audio from folders on the tablet's sdcard (currently, must load from the Resources folder, which gets compiled in to the Unity app)
 - Add capability to load an image on the "top left" or "bottom right" of the screen without specifying exact coordinates. Adjust the loaded image's position until no collisions are detected so it does not overlap with other images.
 - Adapt to different tablet screen sizes (currently size of images is hard-coded, not scaling)
 - Look into ROS .NET for C#. Possible replacement for websocket connection?
-- Add demo and story options to config file so you don't have to recompile and redeploy
+- Add demo and story options to config file so you don't have to recompile and redeploy (and/or a start screen that lets you pick whether you want demo mode, story mode, etc when you start the app - use "load scene" function to pick the right one).
 

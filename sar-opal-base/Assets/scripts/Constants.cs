@@ -15,6 +15,13 @@ namespace opal
         public Vector3 destination;
     }
 
+    // objects to set correct/incorrect flags for
+    public struct SetCorrectObject
+    {
+        public string[] correct;
+        public string[] incorrect;
+    }
+    
     // configuration
     public struct GameConfig
     {
@@ -29,6 +36,10 @@ namespace opal
         public const string GRAPHICS_FILE_PATH = "graphics/base-images/";
         public const string AUDIO_FILE_PATH = "audio/";
         public const string FROG_FILE_PATH = "frogwhereareyou/";
+        public const string SOCIAL_STORY_FILE_PATH = "socialstories/";
+        public const string SS_SCENESLOT_PATH = "scene-slots/";
+        public const string SS_ANSWERS_PATH = "answer-slots/";
+        public const string SS_SCENES_PATH = "scenes";
 
         /// <summary>
         /// tag applied to all playobjects
@@ -94,6 +105,10 @@ namespace opal
         public const int UNFADE_SCREEN = 11;
         public const int NEXT_PAGE = 12;
         public const int PREV_PAGE = 13;
+        public const int EXIT = 14;
+        public const int SET_CORRECT = 15;
+        public const int SHOW_CORRECT = 16;
+        public const int HIDE_CORRECT = 17;
         
         /** next page and previous page */
         public const bool NEXT = true;
@@ -120,7 +135,7 @@ namespace opal
         
         /** Websocket config file path */
         // if playing in unity on desktop:
-        public const string WEBSOCKET_CONFIG = "opal_config.txt";
+        public const string OPAL_CONFIG = "opal_config.txt";
         public const string CONFIG_PATH_OSX = @"/Resources/";
         // if playing on tablet:
         public const string CONFIG_PATH_ANDROID = "mnt/sdcard/edu.mit.media.prg.sar.opal.base/";

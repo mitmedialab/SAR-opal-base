@@ -281,7 +281,8 @@ namespace opal
             // if the properties contain the tag "play object", we're loading a 
             // play object, so build up a properties object
             if(props.ContainsKey("tag") &&
-                ((string)props["tag"]).Equals(Constants.TAG_PLAY_OBJECT)) {
+                ((string)props["tag"]).Equals(Constants.TAG_PLAY_OBJECT)) 
+            {
                 PlayObjectProperties pops = new PlayObjectProperties();
             
                 pops.SetTag((string)props["tag"]);
@@ -302,7 +303,8 @@ namespace opal
                     Debug.LogError("Error! Could not get audio file: " + ex);
                 }
             
-                if(props.ContainsKey("position")) {
+                if(props.ContainsKey("position")) 
+                {
                     // this is the weird way of converting an object back into
                     // an int array .. not as straightforward as it should be!
                     try {
@@ -313,7 +315,8 @@ namespace opal
                     }
                 }
                 
-                if(props.ContainsKey("scale")) {
+                if(props.ContainsKey("scale")) 
+                {
                     // same weird way of converting an object back to int array
                     try {
                         int[] posn = ObjectToIntArray(props["scale"] as IEnumerable);
@@ -322,7 +325,7 @@ namespace opal
                         Debug.LogError("Error! Could not get initial position: " + ex);
                     }
                 }
-            
+                
                 // get end positions
                 // NOTE: We are not using the end position property!
                 // Leaving code here, commented out, in case we add it back...
@@ -340,8 +343,8 @@ namespace opal
                 properties = pops; // return the properties
                 Debug.Log(props);
             }
-        // if we are loading a background object, build up its properties instead
-        else if(props.ContainsKey("tag") && 
+            // if we are loading a background object, build up its properties instead
+            else if(props.ContainsKey("tag") && 
                 (((string)props["tag"]).Equals(Constants.TAG_BACKGROUND) ||
                 ((string)props["tag"]).Equals(Constants.TAG_FOREGROUND))) {
                 BackgroundObjectProperties bops = new BackgroundObjectProperties();
@@ -359,11 +362,12 @@ namespace opal
                         Debug.LogError("Error! Could not get initial position: " + ex);
                     }
                 }
-                properties = bops; // return the properties
+                properties = bops; // return the background object properties
             }
         
-        // if we are going to move an object to some destination, build a struct
-        else if(props.ContainsKey("destination")) {
+            // if we are going to move an object to some destination, build a struct
+            else if(props.ContainsKey("destination")) 
+            {
                 MoveObject mo = new MoveObject();
                 if(props.ContainsKey("name"))
                     mo.name = ((string)props["name"]);
@@ -377,8 +381,19 @@ namespace opal
                     mo.destination = new Vector3(posn[0], posn[1], posn[2]);
                 } catch(Exception ex) {
                     Debug.LogError("Error! Could not get destination: " + ex);
-                }
-                properties = mo;
+                } 
+                properties = mo; // return the move object properties
+            }
+            
+            // if we are setting objects as "correct" or "incorrect", build a struct
+            else if (props.ContainsKey("correct"))
+            {
+                SetCorrectObject sco = new SetCorrectObject();
+                sco.correct = ObjectToStringArray(props["correct"] as IEnumerable);
+                if (props.ContainsKey("incorrect"))
+                    sco.incorrect = ObjectToStringArray(props["incorrect"] as IEnumerable);
+                
+                properties = sco; // return the set correct object properties
             }
         
         }
@@ -395,14 +410,53 @@ namespace opal
             // IEnumerable so we can then convert each element of the
             // array to a number, so we can then make an array.....
             int[] posn = {0,0,0};
-            if(en != null) {
+            if(en != null) 
+            {
                 int count = 0;
-                foreach(object el in en) {
+                foreach(object el in en) 
+                {
                     posn[count] = Convert.ToInt32(el);
                     count++;
                 }
             }
             return posn;
+        }
+        
+        /// <summary>
+        /// convert object to a string array
+        /// </summary>
+        /// <returns>string array.</returns>
+        /// <param name="en">object that is secretly a string array</param>
+        private static string[] ObjectToStringArray (IEnumerable en)
+        {
+            // C# is weird about conversions from object to arrays
+            // so this is a hack way of converting an object into an
+            // IEnumerable so we can then convert each element of the
+            // array to a string, so we can then make an array.....
+            string[] s;
+            if (en != null)
+            {
+                // get length of array
+                int count = 0;
+                foreach(object el in en) 
+                {
+                    count++;
+                }
+                // make a destination array of the right size 
+                s = new string[count];
+                
+                // reset counter
+                count = 0;
+                
+                // convert each element to a string
+                foreach(object el in en) 
+                {
+                    s[count] = Convert.ToString(el);
+                    count++;
+                }
+                return s;
+            }
+            return null;
         }
     
     }

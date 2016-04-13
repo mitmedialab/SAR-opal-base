@@ -38,8 +38,11 @@ namespace opal
         private bool demo = false;
         
         // STORYBOOK VERSION
-        private bool story = true;
+        private bool story = false;
         public int pagesInStory = 0;
+        
+        // SOCIAL STORIES VERSION
+        private bool socialStories = true;
         
         // config
         private GameConfig gameConfig;
@@ -278,7 +281,7 @@ namespace opal
         /// Instantiate a new game object with the specified properties
         /// </summary>
         /// <param name="pops">properties of the play object.</param>
-        private void InstantiatePlayObject (PlayObjectProperties pops)
+        public void InstantiatePlayObject (PlayObjectProperties pops, Sprite spri)
         {
             GameObject go = new GameObject();
 
@@ -305,7 +308,7 @@ namespace opal
                     audioSource.clip = Resources.Load(Constants.AUDIO_FILE_PATH + 
                         pops.AudioFile()) as AudioClip;
                 } catch(UnityException e) {
-                    Debug.Log("ERROR could not load audio: " + pops.AudioFile() + "\n" + e);
+                    Debug.LogError("Could not load audio: " + pops.AudioFile() + "\n" + e);
                 }
                 audioSource.loop = false;
                 audioSource.playOnAwake = false;
@@ -313,11 +316,38 @@ namespace opal
 
             // load sprite/image for object
             SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
-            Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + pops.Name());
-            if(sprite == null)
-                Debug.Log("ERROR could not load sprite: " 
-                    + Constants.GRAPHICS_FILE_PATH + pops.Name());
-            spriteRenderer.sprite = sprite; 
+            // if we were not given a sprite for this object, try loading one
+            if (spri == null)
+            {
+                Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + pops.Name());
+                if(sprite == null)
+                {
+                    Debug.LogWarning("Could not load sprite from Resources: " 
+                        + Constants.GRAPHICS_FILE_PATH + pops.Name() +
+                        "\nGoing to try file path...");
+                        
+                    // TODO add filepath to pops! don't use Name
+                    sprite = Utilities.LoadSpriteFromFile(pops.Name());
+                    if(sprite == null)
+                    {
+                        Debug.LogError("Could not load sprite from file path: " 
+                                  + Constants.GRAPHICS_FILE_PATH + pops.Name());
+                        // still don't have image - failed to load!
+                        // delete game object and return
+                        Debug.LogError("Could not load sprite: " + pops.Name());
+                        GameObject.Destroy(go);
+                        return;
+                    }
+                }
+                
+                // got sprite!
+                spriteRenderer.sprite = sprite; 
+            }
+            // otherwise, we were given a sprite, try using that one
+            else
+            {
+                spriteRenderer.sprite = spri;
+            }
 
             // set the scale/size of the sprite/image
             go.transform.localScale = pops.Scale();
@@ -416,7 +446,7 @@ namespace opal
         /// Instantiates a background image object
         /// </summary>
         /// <param name="bops">properties of the background image object to load</param>
-        private void InstantiateBackground (BackgroundObjectProperties bops)
+        public void InstantiateBackground (BackgroundObjectProperties bops, Sprite spri)
         {
             // remove previous background if there was one
             this.DestroyObjectsByTag(new string[] {Constants.TAG_BACKGROUND});
@@ -454,11 +484,20 @@ namespace opal
 
             // load sprite/image for object
             SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
-            Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + bops.Name());
-            if(sprite == null)
-                Debug.Log("ERROR could not load sprite: " 
-                    + Constants.GRAPHICS_FILE_PATH + bops.Name());
-            spriteRenderer.sprite = sprite; 
+            // if we were not given a sprite, try loading one
+            if (spri == null)
+            {
+                Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + bops.Name());
+                if(sprite == null)
+                    Debug.Log("ERROR could not load sprite: " 
+                        + Constants.GRAPHICS_FILE_PATH + bops.Name());
+                spriteRenderer.sprite = sprite; 
+            }
+            // otherwise, use the sprite we were given
+            else
+            {
+                spriteRenderer.sprite = spri;
+            }
         
             // TODO should the scale be a parameter too?
             go.transform.localScale = new Vector3(100, 100, 100);
@@ -548,7 +587,7 @@ namespace opal
         {
             // find gesture manager
             this.gestureManager = (GestureManager)GameObject.FindGameObjectWithTag(
-            Constants.TAG_GESTURE_MAN).GetComponent<GestureManager>();
+                Constants.TAG_GESTURE_MAN).GetComponent<GestureManager>();
             if(this.gestureManager == null) {
                 Debug.Log("ERROR: Could not find gesture manager!");
             } else {
@@ -684,7 +723,7 @@ namespace opal
             {
                 // load the specified game object
                 if(props == null) {
-                    Debug.Log("was told to load an object, but got no properties!");
+                    Debug.LogWarning("Was told to load an object, but got no properties!");
                 }
                 else
                 {
@@ -695,24 +734,23 @@ namespace opal
 	                    sops.Tag().Equals(Constants.TAG_FOREGROUND)) {
 	                    Debug.Log("background");
 	                    MainGameController.ExecuteOnMainThread.Enqueue(() => {
-	                        this.InstantiateBackground((BackgroundObjectProperties)sops);
+	                        this.InstantiateBackground((BackgroundObjectProperties)sops, null);
 	                    }); 
 	                }
 	                // or instantiate new playobject with the specified properties
 	                else if(sops.Tag().Equals(Constants.TAG_PLAY_OBJECT)) {
 	                    Debug.Log("play object");
 	                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-	                        this.InstantiatePlayObject((PlayObjectProperties)sops);
+	                        this.InstantiatePlayObject((PlayObjectProperties)sops, null);
 	                    });
 	                }
                 }
             }
             
-        
 			else if (cmd == Constants.MOVE_OBJECT)
             {
                 if(props == null) {
-                    Debug.Log("Was told to move an object but did not " +
+                    Debug.LogWarning("Was told to move an object but did not " +
                               "get name of which one or position to move to.");
                     return;
                 }
@@ -728,6 +766,8 @@ namespace opal
             
 			else if (cmd == Constants.FADE_SCREEN)
             {
+                // places a white cloud-like object over the scene to give the
+                // appearance that the scene is faded out
                 MainGameController.ExecuteOnMainThread.Enqueue(() => { 
                     this.fader.SetActive(true);
                 });
@@ -735,6 +775,7 @@ namespace opal
                 
 			else if (cmd == Constants.UNFADE_SCREEN)
             {
+                // remove the fader so the scene is clearly visible again
                 MainGameController.ExecuteOnMainThread.Enqueue(() => { 
                     this.fader.SetActive(false);
                 });
@@ -742,17 +783,61 @@ namespace opal
                 
 			else if (cmd == Constants.NEXT_PAGE)
             {
+                // in a story game, goes to the next page in the story
             	MainGameController.ExecuteOnMainThread.Enqueue(() => {
             		this.gestureManager.ChangePage(Constants.NEXT);
             		});
             }
 			else if (cmd == Constants.PREV_PAGE)
 			{
+                // in a story game, goes to the previous page in the story
 				MainGameController.ExecuteOnMainThread.Enqueue(() => {
 					this.gestureManager.ChangePage(Constants.PREVIOUS);
 				});
 			}
-            
+            else if (cmd == Constants.EXIT)
+            {
+                // exit the program
+                MainGameController.ExecuteOnMainThread.Enqueue(() => {
+                    Application.Quit();
+                });
+            }
+            else if (cmd == Constants.SET_CORRECT)
+            {
+                // given two lists of object names, set as correct or incorrect
+                Debug.LogWarning("SET CORRECT hasn't been tested yet!");
+
+                // set object flags for correct or incorrect
+                if(props == null) {
+                    Debug.LogWarning("Was told to set objects as correct/incorrect, " +
+                    "but got no properties!");
+                }
+                else 
+                {
+                    SetCorrectObject sco = (SetCorrectObject)props;
+                    MainGameController.ExecuteOnMainThread.Enqueue(() => {
+                        this.SetCorrect(sco.correct, sco.incorrect);
+                    });
+                }
+            }
+            else if (cmd == Constants.SHOW_CORRECT)
+            {
+                // TODO implement show correct
+                // show all objects for visual feedback tagged 'correct' or 'incorrect'
+                Debug.LogWarning("SHOW CORRECT hasn't been tested yet!");
+                MainGameController.ExecuteOnMainThread.Enqueue(() => {
+                    this.ToggleCorrect(true);
+                });
+            }
+            else if (cmd == Constants.HIDE_CORRECT)
+            {
+                // TODO implement hide correct
+                // hide all objects for visual feedback tagged 'correct' or 'incorrect'
+                Debug.LogWarning("HIDE CORRECT hasn't been tested yet!");
+                MainGameController.ExecuteOnMainThread.Enqueue(() => {
+                    this.ToggleCorrect(false);
+                });
+            }
             else
 	        {
 	            Debug.LogWarning("Got a message that doesn't match any we expect!");
@@ -840,9 +925,9 @@ namespace opal
         }
         
         /// <summary>
-        /// Destroy objects with the specified tags
+        /// Change touch options for objects with the specified tags
         /// </summary>
-        /// <param name="tags">tags of objects to destroy</param>
+        /// <param name="tags">tags of objects to change</param>
         /// <param name="enabled">enable touch or disable touch</param>
         void SetTouch (string[] tags, bool enabled)
         {
@@ -861,7 +946,81 @@ namespace opal
             }
         }
         
+        /// <summary>
+        /// Sets the correct/incorrect properties for a set of game objectes
+        /// </summary>
+        /// <param name="correctGameObjects">Correct game objects.</param>
+        /// <param name="incorrectGameObjects">Incorrect game objects.</param>
+        private void SetCorrect(string[] correctGameObjects, string[] incorrectGameObjects)
+        {
+            if (correctGameObjects != null)
+            {
+                foreach(string cgo in correctGameObjects)
+                {
+                    // set correct flag
+                    GameObject go = GameObject.Find(cgo);
+                    if(ReferenceEquals(go.GetComponent<SavedProperties>(), null)) {
+                        Debug.LogWarning("Tried to set \"correct\" flag for " + cgo +
+                         " but could not find any saved properties.");
+                    } else {
+                        go.GetComponent<SavedProperties>().isCorrect = true;
+                    } 
+                }
+            }
+            
+            if (incorrectGameObjects != null)
+            {
+                foreach(string igo in incorrectGameObjects)
+                {
+                    // set incorrect flag
+                    GameObject go = GameObject.Find(igo);
+                    if(ReferenceEquals(go.GetComponent<SavedProperties>(), null)) {
+                        Debug.LogWarning("Tried to set \"incorrect\" flag for " + igo +
+                                         " but could not find any saved properties.");
+                    } else {
+                        go.GetComponent<SavedProperties>().isIncorrect = true;
+                    } 
+                }
+            }
+        }
         
+        /// <summary>
+        /// Show or hide visual feedback for correct and incorrect responses
+        /// </summary>
+        /// <param name="show">If set to <c>true</c> show.</param>
+        private void ToggleCorrect(bool show)
+        {
+            if (show)
+            {
+                //TODO show correct
+                // find objects that have property "correct" = true / "incorrect" = true
+                // first find all the play objects
+                GameObject[] gos = GameObject.FindGameObjectsWithTag(Constants.TAG_PLAY_OBJECT);
+                // then check their properties for flags
+                foreach (GameObject go in gos)
+                {
+                    if(ReferenceEquals(go.GetComponent<SavedProperties>(), null)) {
+                        Debug.LogWarning("Tried to check flags for " + go +
+                                         " but could not find any saved properties.");
+                    } else if (go.GetComponent<SavedProperties>().isCorrect)
+                    {
+                        // load correct visual feedback object at that object
+                        // make visible                   
+                    } else if (go.GetComponent<SavedProperties>().isIncorrect)
+                    {
+                        // load incorrect visual feedback object at that object
+                        // make visible  
+                    }
+                }
+                
+            }
+            else
+            {
+                // TODO hide correct
+                // find all visual feedback objects
+                // set visible=false OR destory?
+            }
+        }
     
         /// <summary>
         /// Logs the state of the current scene and sends as a ROS message

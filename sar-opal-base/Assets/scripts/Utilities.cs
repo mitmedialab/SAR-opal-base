@@ -65,6 +65,50 @@ namespace opal
             }
     
         }
+        
+        /// <summary>
+        /// Loads an image file from the specified filepath into a Texture2D, 
+        /// then creates a sprite from the texture.
+        /// </summary>
+        /// <returns>Sprite from the loaded image</returns>
+        /// <param name="filepath">Filepath to image</param>
+        public static Sprite LoadSpriteFromFile(string filepath)
+        {
+            try 
+            {        
+                // read the image in as a byte array
+                byte[] data = File.ReadAllBytes(filepath);
+                // does not matter what size this texture is, as loadimage replaces it
+                // with the actueal size of hte image
+                Texture2D texture = new Texture2D(2,2);
+                
+                if (texture.LoadImage(data))
+                {
+                    texture.name = Path.GetFileNameWithoutExtension(filepath);
+                    // transform texture into a sprite. Setting the rectangle position to 0,0 and
+                    // the size to the texture's size will put the whole image into the sprite.
+                    // The third vector is the pivot point, which is at the center of the image if
+                    // you use (.5,.5) 
+                    Sprite sp = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), 
+                        new Vector2(0.5f,0.5f));
+                        
+                    if (sp != null) return sp;
+                    else Debug.LogWarning("Could not create sprite for file: " + filepath);
+                }
+                else {
+                    Debug.LogWarning("Could not create texture from file: " + filepath);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Could not load image from file: " + filepath + "\nError: " + e.Message 
+                + e.StackTrace);
+            }
+            
+            return null;
+            // TODO This does not fail when a non-image file, such as a text file, is loaded
+            // not sure why - need to look into this
+        }
 
     }
 }

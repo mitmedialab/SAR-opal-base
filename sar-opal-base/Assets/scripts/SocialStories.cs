@@ -70,7 +70,7 @@ namespace opal
             // find the image files for the scenes
             Sprite[] sprites = Resources.LoadAll<Sprite>(Constants.GRAPHICS_FILE_PATH
                                                     + Constants.SOCIAL_STORY_FILE_PATH
-                                                    + Constants.SS_SCENES_PATH);
+                                                    + Constants.SS_SCENESLOT_PATH);
 
             int counter = 0;
             foreach (Sprite s in sprites)

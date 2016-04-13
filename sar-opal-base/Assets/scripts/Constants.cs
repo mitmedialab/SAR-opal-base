@@ -37,7 +37,7 @@ namespace opal
         public const string AUDIO_FILE_PATH = "audio/";
         public const string FROG_FILE_PATH = "frogwhereareyou/";
         public const string SOCIAL_STORY_FILE_PATH = "socialstories/";
-        public const string SS_SCENES_PATH = "scene-slots/";
+        public const string SS_SCENESLOT_PATH = "scene-slots/";
         public const string SS_ANSWERS_PATH = "answer-slots/";
         public const string SS_SCENES_PATH = "scenes";
 

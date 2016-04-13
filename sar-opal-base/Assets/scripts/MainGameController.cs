@@ -281,7 +281,7 @@ namespace opal
         /// Instantiate a new game object with the specified properties
         /// </summary>
         /// <param name="pops">properties of the play object.</param>
-        public void InstantiatePlayObject (PlayObjectProperties pops)
+        public void InstantiatePlayObject (PlayObjectProperties pops, Sprite spri)
         {
             GameObject go = new GameObject();
 
@@ -316,29 +316,38 @@ namespace opal
 
             // load sprite/image for object
             SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
-            Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + pops.Name());
-            if(sprite == null)
+            // if we were not given a sprite for this object, try loading one
+            if (spri == null)
             {
-                Debug.LogWarning("Could not load sprite from Resources: " 
-                    + Constants.GRAPHICS_FILE_PATH + pops.Name() +
-                    "\nGoing to try file path...");
-                    
-                // TODO add filepath to pops! don't use Name
-                sprite = Utilities.LoadSpriteFromFile(pops.Name());
+                Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + pops.Name());
                 if(sprite == null)
                 {
-                    Debug.LogError("Could not load sprite from file path: " 
-                              + Constants.GRAPHICS_FILE_PATH + pops.Name());
-                    // still don't have image - failed to load!
-                    // delete game object and return
-                    Debug.LogError("Could not load sprite: " + pops.Name());
-                    GameObject.Destroy(go);
-                    return;
+                    Debug.LogWarning("Could not load sprite from Resources: " 
+                        + Constants.GRAPHICS_FILE_PATH + pops.Name() +
+                        "\nGoing to try file path...");
+                        
+                    // TODO add filepath to pops! don't use Name
+                    sprite = Utilities.LoadSpriteFromFile(pops.Name());
+                    if(sprite == null)
+                    {
+                        Debug.LogError("Could not load sprite from file path: " 
+                                  + Constants.GRAPHICS_FILE_PATH + pops.Name());
+                        // still don't have image - failed to load!
+                        // delete game object and return
+                        Debug.LogError("Could not load sprite: " + pops.Name());
+                        GameObject.Destroy(go);
+                        return;
+                    }
                 }
+                
+                // got sprite!
+                spriteRenderer.sprite = sprite; 
             }
-            
-            // got sprite!
-            spriteRenderer.sprite = sprite; 
+            // otherwise, we were given a sprite, try using that one
+            else
+            {
+                spriteRenderer.sprite = spri;
+            }
 
             // set the scale/size of the sprite/image
             go.transform.localScale = pops.Scale();
@@ -437,7 +446,7 @@ namespace opal
         /// Instantiates a background image object
         /// </summary>
         /// <param name="bops">properties of the background image object to load</param>
-        public void InstantiateBackground (BackgroundObjectProperties bops)
+        public void InstantiateBackground (BackgroundObjectProperties bops, Sprite spri)
         {
             // remove previous background if there was one
             this.DestroyObjectsByTag(new string[] {Constants.TAG_BACKGROUND});
@@ -475,11 +484,20 @@ namespace opal
 
             // load sprite/image for object
             SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
-            Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + bops.Name());
-            if(sprite == null)
-                Debug.Log("ERROR could not load sprite: " 
-                    + Constants.GRAPHICS_FILE_PATH + bops.Name());
-            spriteRenderer.sprite = sprite; 
+            // if we were not given a sprite, try loading one
+            if (spri == null)
+            {
+                Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + bops.Name());
+                if(sprite == null)
+                    Debug.Log("ERROR could not load sprite: " 
+                        + Constants.GRAPHICS_FILE_PATH + bops.Name());
+                spriteRenderer.sprite = sprite; 
+            }
+            // otherwise, use the sprite we were given
+            else
+            {
+                spriteRenderer.sprite = spri;
+            }
         
             // TODO should the scale be a parameter too?
             go.transform.localScale = new Vector3(100, 100, 100);
@@ -716,14 +734,14 @@ namespace opal
 	                    sops.Tag().Equals(Constants.TAG_FOREGROUND)) {
 	                    Debug.Log("background");
 	                    MainGameController.ExecuteOnMainThread.Enqueue(() => {
-	                        this.InstantiateBackground((BackgroundObjectProperties)sops);
+	                        this.InstantiateBackground((BackgroundObjectProperties)sops, null);
 	                    }); 
 	                }
 	                // or instantiate new playobject with the specified properties
 	                else if(sops.Tag().Equals(Constants.TAG_PLAY_OBJECT)) {
 	                    Debug.Log("play object");
 	                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-	                        this.InstantiatePlayObject((PlayObjectProperties)sops);
+	                        this.InstantiatePlayObject((PlayObjectProperties)sops, null);
 	                    });
 	                }
                 }

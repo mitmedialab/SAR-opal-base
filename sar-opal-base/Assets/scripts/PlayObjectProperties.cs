@@ -60,7 +60,8 @@ namespace opal
         public void SetScale (Vector3 scale)
         {
             // TODO check if scale is reasonable?
-            this.scale = scale;
+            if (scale.x > 0 && scale.y > 0 && scale.z > 0)
+                this.scale = scale;
         }
    
         /** get end positions */

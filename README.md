@@ -157,12 +157,14 @@ You can use the Frog Where Are You book as an example for how to load your own s
 
 ## Bugs and problems
 
-Apps made with Unity 5 cannot be deployed to Android tablets that have tegra
-boards (such as Samsung Galaxy tablets), because Unity 5 no longer supports
-these tablets. Thus, Opal cannot be deployed to tablets with tegra boards. 
+Apps made with Unity 5 cannot be deployed to non-neon devices (i.e., Android
+tablets that have tegra boards, such as many of the older Samsung Galaxy
+tablets), because Unity 5 no longer supports these devices. Thus, Opal cannot
+be deployed to these devices.
 
 ## TODO
 
+- 'next page' appears to not work when touch disabled
 - Add filepath to SceneObjectProperties so objects can be loaded from outside build directory
 - LoadSpriteFromFile does not fail when a non-image file, such as a text file, is loaded, but should fail
 - Add guidelines for where to put images on tablet for loading images from outside build directory and test with tablet
@@ -179,5 +181,5 @@ these tablets. Thus, Opal cannot be deployed to tablets with tegra boards.
 - Add capability to load an image on the "top left" or "bottom right" of the screen without specifying exact coordinates. Adjust the loaded image's position until no collisions are detected so it does not overlap with other images.
 - Adapt to different tablet screen sizes (currently size of images is hard-coded, not scaling)
 - Look into ROS .NET for C#. Possible replacement for websocket connection?
-- Add demo and story options to config file so you don't have to recompile and redeploy
+- Add demo and story options to config file so you don't have to recompile and redeploy (and/or a start screen that lets you pick whether you want demo mode, story mode, etc when you start the app - use "load scene" function to pick the right one).
 

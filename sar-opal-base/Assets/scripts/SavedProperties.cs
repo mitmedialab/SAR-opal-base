@@ -15,13 +15,26 @@ namespace opal
         public Vector3 initialPosition = Vector3.zero;
         
 		/// <summary>
-		/// is this the first page of the story?
+		/// Is this the first page of the story?
 		/// </summary>
 		public bool isStartPage = false;
 		
 		/// <summary>
-		/// is this the first page of the story?
+		/// Is this the first page of the story?
 		/// </summary>
 		public bool isEndPage = false;
+        
+        /// <summary>
+        /// Is this a correct response?
+        /// Note that there are separate flags for correct and incorrect because
+        /// it is possible for an object to be neither.
+        /// </summary>
+        public bool isCorrect = false;
+        
+        /// <summary>
+        /// Is this an incorrect response?
+        /// </summary>
+        public bool isIncorrect = false;
+        
     }
 }

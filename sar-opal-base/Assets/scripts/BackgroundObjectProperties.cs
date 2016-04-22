@@ -13,7 +13,7 @@ namespace opal
         protected new Vector3 initPosn = new Vector3 (0,0,2);
     
         /** initial scale of the background image */
-        protected Vector3 scale = new Vector3(1,1,1);
+        protected Vector3 scale = new Vector3(100,100,100);
         
         /// <summary>
         /// Initializes a new instance of the <see cref="opal.BackgroundObjectProperties"/> class.

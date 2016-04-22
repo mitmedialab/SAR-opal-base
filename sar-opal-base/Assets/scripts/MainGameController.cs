@@ -35,7 +35,7 @@ namespace opal
         private GameObject fader = null; 
     
         // DEMO VERSION
-        private bool demo = false;
+        private bool demo = true;
         
         // STORYBOOK VERSION
         private bool story = false;
@@ -54,6 +54,7 @@ namespace opal
         {
             if (this.demo) Debug.Log("--- RUNNING IN DEMO MODE ---");
             if (this.story) Debug.Log ("--- RUNNING IN STORYBOOK MODE ---");
+            if (this.socialStories) Debug.Log("--- RUNNING IN SOCIAL STORIES MODE ---");
         
             string path = "";
             
@@ -148,7 +149,9 @@ namespace opal
         {
             // set up rosbridge websocket client
             // note: does not attempt to reconnect if connection fails!
-            if(this.clientSocket == null && !this.demo) {
+            // demo mode does not use ROS!
+            if(this.clientSocket == null && !this.demo)
+            {
                 // load file
                 if (this.gameConfig.server.Equals("") || this.gameConfig.port.Equals("")) {
                     Debug.LogWarning("Do not have opal configuration... trying "
@@ -349,9 +352,6 @@ namespace opal
                 spriteRenderer.sprite = spri;
             }
 
-            // set the scale/size of the sprite/image
-            go.transform.localScale = pops.Scale();
-
             if (pops.draggable)
             {
                 // add rigidbody if this is a draggable object
@@ -402,6 +402,9 @@ namespace opal
             PolygonCollider2D pc = go.AddComponent<PolygonCollider2D>();
             pc.isTrigger = true;
 
+            // set the scale/size of the sprite/image
+            go.transform.localScale = pops.Scale();
+            
             // add and subscribe to gestures
             if(this.gestureManager == null) {
                 Debug.Log("ERROR no gesture manager");
@@ -499,8 +502,8 @@ namespace opal
                 spriteRenderer.sprite = spri;
             }
         
-            // TODO should the scale be a parameter too?
-            go.transform.localScale = new Vector3(100, 100, 100);
+            // set scale
+            go.transform.localScale = bops.Scale();
         }
     
     

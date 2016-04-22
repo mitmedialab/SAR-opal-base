@@ -40,6 +40,7 @@ namespace opal
         public const string SS_SCENESLOT_PATH = "scene-slots/";
         public const string SS_ANSWERS_PATH = "answer-slots/";
         public const string SS_SCENES_PATH = "scenes";
+        public const string SS_SLOT_NAME = "slot";
 
         /// <summary>
         /// tag applied to all playobjects

@@ -17,9 +17,6 @@ namespace opal
         // allow touch? if false, doesn't react to touch events
         public bool allowTouch = true;
         
-        // if changing page
-        private bool changingpage = false;
-    
         // light for highlighting objects
         private GameObject highlight = null; 
         
@@ -364,8 +361,12 @@ namespace opal
                     // send the light the z position of the pressed object because
                     // the 'hit2d' point doesn't have the right z position (is always
                     // just zero)
-                    LightOn(1, new Vector3(hit2d.Point.x, hit2d.Point.y, 
-                        gesture.gameObject.transform.position.z));
+                    //LightOn(1, new Vector3(hit2d.Point.x, hit2d.Point.y, 
+                    //    gesture.gameObject.transform.position.z));
+                    
+                    // NEW trying out centering light behind the pressed object,
+                    // regardless of where on the pressed object the touch was
+                    LightOn(1, gesture.gameObject.transform.position);
                 }
                     
                 // trigger sound on press

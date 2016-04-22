@@ -29,7 +29,7 @@ namespace opal
             }
             
             // load background, story scene slots, and answer slots
-            SetupSocialStoryScene();
+            SetupSocialStoryScene(4, false, 5);
         }
        
         void OnEnable ()
@@ -48,7 +48,10 @@ namespace opal
         /// <summary>
         /// Sets up the social story scene.
         /// </summary>
-        void SetupSocialStoryScene()
+        /// <param name="num_scenes">Number of scenes in this story</param>
+        /// <param name="scenes_in_order">If set to <c>true</c> scenes are in order.</param>
+        /// <param name="num_answers">Number of answer options for this story</param>
+        void SetupSocialStoryScene(int num_scenes, bool scenes_in_order, int num_answers)
         {
             // set up camera sizes so the viewport is the size of the screen
             // TODO move to MainGameController, adapt all scaling etc throughout to scale
@@ -60,76 +63,86 @@ namespace opal
             
             // load background image
             Debug.Log ("Loading background");
-            Sprite bk = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + "WhiteBackground.png");
+            Sprite bk = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + "WhiteBackground");
             BackgroundObjectProperties bops = new BackgroundObjectProperties(
                 "WhiteBackground", Constants.TAG_BACKGROUND, 
-                new Vector3((float)Screen.width, (float)Screen.width, (float)Screen.width));
+                new Vector3((float) Screen.width / bk.bounds.size.x, 
+                        (float)Screen.width / bk.bounds.size.x, 
+                        (float)Screen.width / bk.bounds.size.x));
             mgc.InstantiateBackground(bops, bk);
-            
-            // load story scene slots
-            // find the image files for the scenes
-            Sprite[] sprites = Resources.LoadAll<Sprite>(Constants.GRAPHICS_FILE_PATH
-                                                    + Constants.SOCIAL_STORY_FILE_PATH
-                                                    + Constants.SS_SCENESLOT_PATH);
 
-            int counter = 0;
-            foreach (Sprite s in sprites)
+            // need to scale scene/answer slots to evenly fit in the screen
+            // they can be bigger if there are fewer slots
+            // but never make them taller than a one-third the screen height
+            float slot_width = (float) (Screen.width / num_scenes * 0.75);
+            if (slot_width > Screen.height / 3) slot_width = (float) (Screen.height / 3);
+            
+            // load the number of slots needed for this story
+            for (int i = 0; i < num_scenes; i++)
             {
+                Sprite s = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
+                                                       + Constants.SOCIAL_STORY_FILE_PATH
+                                                       + Constants.SS_SCENESLOT_PATH
+                                                       + Constants.SS_SLOT_NAME
+                                                       + (scenes_in_order ? "" : (i+1).ToString()));
+                if (s == null)
+                {
+                    Debug.LogError("Could not load scene slot image!" );
+                    continue;
+                }
+                
                 PlayObjectProperties pops = new PlayObjectProperties(
-                    s.name, // name
+                    "scene" + i, // name
                     Constants.TAG_PLAY_OBJECT, // tag
                     false, // draggable
                     null, // audio
                     new Vector3 (
-                        // left edge + offset to first item + counter * width/count
-                        (-Screen.width/2) 
-                            + (Screen.width / (sprites.Length * 2)) 
-                            + (counter * Screen.width / (sprites.Length)),
-                        // near top of screen
-                        Screen.height * 0.6f, 0f),
-                    // scale to one portion of the screen width
-                    new Vector3(60,60,60) // TODO scale not perfect
+                    // left edge + offset to first item + counter * width/count
+                    (-Screen.width/2) 
+                    + (Screen.width / (num_scenes * 2)) 
+                    + (i * Screen.width / (num_scenes)),
+                    // near top of screen
+                    Screen.height * 0.25f, 0f),
+                    // scale slot to one portion of the screen width
+                    new Vector3(slot_width / s.bounds.size.x,
+                            slot_width / s.bounds.size.x,
+                            slot_width / s.bounds.size.x)
                     );
                 
                 // instantiate the scene slot
-                if (GameObject.Find (s.name) == null) // skip duplicates
-                {
-                    this.mgc.InstantiatePlayObject(pops, s);
-                }
-                counter++;
+                this.mgc.InstantiatePlayObject(pops, s);
             }
             
             // load answer slots
             // find the image files for the scenes
-            Sprite[] asprites = Resources.LoadAll<Sprite>(Constants.GRAPHICS_FILE_PATH
-                                                         + Constants.SOCIAL_STORY_FILE_PATH
-                                                         + Constants.SS_ANSWERS_PATH);
-                                                         
-            int acounter = 0;
-            foreach (Sprite s in asprites)
-            {
+            // load the number of answer slots needed for this story
+            // all answer slots look the same so load one graphic and reuse it
+            Sprite ans = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
+                                              + Constants.SOCIAL_STORY_FILE_PATH
+                                              + Constants.SS_ANSWERS_PATH
+                                              + Constants.SS_SLOT_NAME);
+            for (int i = 0; i < num_answers; i++)
+            {   
                 PlayObjectProperties pops = new PlayObjectProperties(
-                    s.name, // name
+                    "answer" + i, // name
                     Constants.TAG_PLAY_OBJECT, // tag
                     false, // draggable
                     null, // audio
                     new Vector3 (
                         // left edge + offset to first item + counter * width/count
                         (-Screen.width/2) 
-                        + (Screen.width / (asprites.Length * 2)) 
-                        + (acounter * Screen.width / (asprites.Length)),
+                        + (Screen.width / (num_answers * 2)) 
+                        + (i * Screen.width / (num_answers)),
                         // near botton of screen
-                        -Screen.height * 0.6f, 0f),
+                        -Screen.height * 0.25f, 0f),
                     // scale to one portion of the screen width
-                    new Vector3(60,60,60) // TODO scale not perfect
+                    new Vector3(slot_width / ans.bounds.size.x,
+                            slot_width / ans.bounds.size.x,
+                            slot_width / ans.bounds.size.x)
                     );
                 
                 // instantiate the scene slot
-                if (GameObject.Find (s.name) == null) // skip duplicates
-                {
-                    this.mgc.InstantiatePlayObject(pops, s);
-                }
-                acounter++;
+                this.mgc.InstantiatePlayObject(pops, ans);
             }
         }
     }

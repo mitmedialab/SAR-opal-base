@@ -43,6 +43,8 @@ namespace opal
         
         // SOCIAL STORIES VERSION
         private bool socialStories = true;
+        private List<GameObject> incorrectFeedback;
+        private GameObject correctFeedback;
         
         // config
         private GameConfig gameConfig;
@@ -294,6 +296,20 @@ namespace opal
 
             // set tag
             go.tag = pops.Tag();
+            
+            // if tag is FEEDBACK, keep reference and set as invisible
+            if (go.tag.Equals(Constants.TAG_CORRECT_FEEDBACK))
+            {
+                this.correctFeedback = go;
+                go.SetActive(false);
+            }
+            else if (go.tag.Equals(Constants.TAG_INCORRECT_FEEDBACK))
+            {
+                // this list is cleared when the scene is cleared
+                if (this.incorrectFeedback == null) this.incorrectFeedback = new List<GameObject>();
+                this.incorrectFeedback.Add(go);
+                go.SetActive(false);
+            }
             
             // set layer
             go.layer = (pops.draggable ? Constants.LAYER_MOVEABLES : Constants.LAYER_STATICS);
@@ -860,6 +876,9 @@ namespace opal
         
             // turn light off if it's not already
             this.gestureManager.LightOff();
+            
+            // make all feedback invisible if it's not already
+            this.ToggleCorrect(false);
 
             // move all play objects back to their initial positions
             ResetAllObjectsWithTag(new string[] {Constants.TAG_PLAY_OBJECT});
@@ -875,11 +894,16 @@ namespace opal
         
             // turn off the light if it's not already
             this.gestureManager.LightOff();
+            
+            // clear list of answer feedback objects and remove
+            this.incorrectFeedback.Clear();
         
             // remove all objects with specified tags
             this.DestroyObjectsByTag(new string[] {
                 Constants.TAG_BACKGROUND,
-                Constants.TAG_PLAY_OBJECT
+                Constants.TAG_PLAY_OBJECT,
+                Constants.TAG_CORRECT_FEEDBACK,
+                Constants.TAG_INCORRECT_FEEDBACK
             });
         }
     
@@ -991,37 +1015,84 @@ namespace opal
         /// Show or hide visual feedback for correct and incorrect responses
         /// </summary>
         /// <param name="show">If set to <c>true</c> show.</param>
-        private void ToggleCorrect(bool show)
+        public void ToggleCorrect(bool show)
         {
             if (show)
             {
-                //TODO show correct
+                //show which answer slot is correct
                 // find objects that have property "correct" = true / "incorrect" = true
                 // first find all the play objects
                 GameObject[] gos = GameObject.FindGameObjectsWithTag(Constants.TAG_PLAY_OBJECT);
                 // then check their properties for flags
+                int counter = 0;
                 foreach (GameObject go in gos)
                 {
-                    if(ReferenceEquals(go.GetComponent<SavedProperties>(), null)) {
+                    if(ReferenceEquals(go.GetComponent<SavedProperties>(), null)) 
+                    {
                         Debug.LogWarning("Tried to check flags for " + go +
                                          " but could not find any saved properties.");
-                    } else if (go.GetComponent<SavedProperties>().isCorrect)
+                    } 
+                    else if (go.GetComponent<SavedProperties>().isCorrect)
                     {
                         // load correct visual feedback object at that object
-                        // make visible                   
+                        // make visible
+                        if(this.correctFeedback != null) 
+                        {
+                            this.correctFeedback.SetActive(true);
+                            // make sure feedback is shown in the correct position
+                            // this is necessary even though the feedback graphics are
+                            // loaded on top of the slots, because we do not check when
+                            // loading the feedback graphics *which* slots are correct
+                            // or incorrect, so we probably have to swap around which 
+                            // slots these graphics are shown over
+                            this.correctFeedback.transform.position = 
+                                new Vector3(go.transform.position.x, go.transform.position.y, 
+                                go.transform.position.z - 1);
+                        } 
+                        else 
+                        {
+                            Debug.LogError("Tried to make correct feedback visible, but feedback "
+                                + "object is null!");
+                        }
+                          
                     } else if (go.GetComponent<SavedProperties>().isIncorrect)
                     {
+                       
                         // load incorrect visual feedback object at that object
-                        // make visible  
+                        // and make visible  
+                        if(this.incorrectFeedback[counter] != null) 
+                        {
+                            this.incorrectFeedback[counter].SetActive(true);
+                            this.incorrectFeedback[counter].transform.position = 
+                                new Vector3(go.transform.position.x, go.transform.position.y, 
+                                            go.transform.position.z - 1);
+                        } 
+                        else 
+                        {
+                            Debug.LogError("Tried to make incorrect feedback visible, but feedback "
+                                      + "object is null!");
+                        }
                     }
+                    counter++;
                 }
                 
             }
             else
             {
-                // TODO hide correct
-                // find all visual feedback objects
-                // set visible=false OR destory?
+                // hide visual feedback by setting inactive
+                if (this.correctFeedback != null)
+                {
+                    this.correctFeedback.SetActive(false);
+                }
+                else 
+                {
+                    Debug.LogError("Tried to make correct feedback invisible, but object"
+                        + " was null!");
+                }
+                foreach (GameObject go in this.incorrectFeedback)
+                {
+                    go.SetActive(false);
+                }
             }
         }
     

@@ -41,7 +41,10 @@ namespace opal
         public const string SS_ANSWERS_PATH = "answer-slots/";
         public const string SS_SCENES_PATH = "scenes";
         public const string SS_SLOT_NAME = "slot";
-
+        public const string SS_FEEDBACK_PATH = "feedback/";
+        public const string SS_CORRECT_FEEDBACK_NAME = "pos-feedback2";
+        public const string SS_INCORRECT_FEEDBACK_NAME = "neg-feedback2";
+        
         /// <summary>
         /// tag applied to all playobjects
         /// </summary>
@@ -58,6 +61,8 @@ namespace opal
         public const string TAG_DIRECTOR = "Director";
         public const string TAG_CAMERA = "MainCamera";
         public const string TAG_GO_NEXT = "GoNext";
+        public const string TAG_CORRECT_FEEDBACK = "CorrectFeedback";
+        public const string TAG_INCORRECT_FEEDBACK = "IncorrectFeedback";
     
         // DEMO - scene numbers (by index -- see list of scenes in build settings)
         public const int SCENE_DEMO_INTRO = 0;

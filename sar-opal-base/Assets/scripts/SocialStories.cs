@@ -30,6 +30,7 @@ namespace opal
             
             // load background, story scene slots, and answer slots
             SetupSocialStoryScene(4, false, 5);
+            this.mgc.ToggleCorrect(true);
         }
        
         void OnEnable ()
@@ -121,8 +122,20 @@ namespace opal
                                               + Constants.SOCIAL_STORY_FILE_PATH
                                               + Constants.SS_ANSWERS_PATH
                                               + Constants.SS_SLOT_NAME);
+                                              
+            Sprite feedc = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
+                                                + Constants.SOCIAL_STORY_FILE_PATH
+                                                + Constants.SS_FEEDBACK_PATH
+                                                + Constants.SS_CORRECT_FEEDBACK_NAME);  
+                                                
+            Sprite feedic = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
+                                                  + Constants.SOCIAL_STORY_FILE_PATH
+                                                  + Constants.SS_FEEDBACK_PATH
+                                                  + Constants.SS_INCORRECT_FEEDBACK_NAME);                                       
+                                              
             for (int i = 0; i < num_answers; i++)
             {   
+                // create answer slot
                 PlayObjectProperties pops = new PlayObjectProperties(
                     "answer" + i, // name
                     Constants.TAG_PLAY_OBJECT, // tag
@@ -143,7 +156,38 @@ namespace opal
                 
                 // instantiate the scene slot
                 this.mgc.InstantiatePlayObject(pops, ans);
+                
+                // also load answer feedback graphics for answer slots
+                // we know only one answer will be correct, so load 1 correct, x incorrect
+                // like with the highlight, keep reference to the answer feedback graphics
+                // but set them as not visible
+                PlayObjectProperties pobps = new PlayObjectProperties(
+                    (i < num_answers - 1 ? "feedback-incorrect" + i : "feedback-correct"), // name
+                    (i < num_answers - 1 ? Constants.TAG_INCORRECT_FEEDBACK : 
+                        Constants.TAG_CORRECT_FEEDBACK), // tag
+                    false, // draggable
+                    null, // audio
+                    new Vector3 (
+                    // left edge + offset to first item + counter * width/count
+                    (-Screen.width/2) 
+                    + (Screen.width / (num_answers * 2)) 
+                    + (i * Screen.width / (num_answers)),
+                    // near botton of screen
+                    -Screen.height * 0.25f, -1f),
+                    // scale to one portion of the screen width
+                    new Vector3(slot_width / (i < num_answers - 1 ? feedic : feedc).bounds.size.x,
+                        slot_width / (i < num_answers - 1 ? feedic : feedc).bounds.size.x,
+                        slot_width / (i < num_answers - 1 ? feedic : feedc).bounds.size.x)
+                    );
+                
+                // instantiate the scene slot
+                this.mgc.InstantiatePlayObject(pobps, (i < num_answers - 1 ? feedic : feedc));
             }
+            
+            
+           
+            
+            
         }
     }
 }

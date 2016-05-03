@@ -10,7 +10,7 @@ namespace opal
     public class BackgroundObjectProperties : SceneObjectProperties
     {
         /** initial position in the world */
-        protected new Vector3 initPosn = new Vector3 (0,0,2);
+        protected new Vector3 initPosn = new Vector3 (0,0,Constants.Z_BACKGROUND);
     
         /** initial scale of the background image */
         protected Vector3 scale = new Vector3(100,100,100);
@@ -47,8 +47,7 @@ namespace opal
             // negative numbers are toward the camera, in front of the background
             // so we want to make sure play objects are in front of the background plane
             // so we set the background plane as a positive number
-            if(posn.z <= 0)
-                this.initPosn = new Vector3(posn.x, posn.y, 2);
+            this.initPosn = new Vector3(posn.x, posn.y, Constants.Z_BACKGROUND);
         }
         
         public void SetScale(Vector3 scale)

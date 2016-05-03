@@ -30,7 +30,6 @@ namespace opal
             
             // load background, story scene slots, and answer slots
             SetupSocialStoryScene(4, false, 5);
-            this.mgc.ToggleCorrect(true);
         }
        
         void OnEnable ()
@@ -64,9 +63,10 @@ namespace opal
             
             // load background image
             Debug.Log ("Loading background");
-            Sprite bk = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + "WhiteBackground");
+            Sprite bk = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + "SSBackground");
             BackgroundObjectProperties bops = new BackgroundObjectProperties(
-                "WhiteBackground", Constants.TAG_BACKGROUND, 
+                "SSBackground", Constants.TAG_BACKGROUND, 
+                // scale background to size of screen
                 new Vector3((float) Screen.width / bk.bounds.size.x, 
                         (float)Screen.width / bk.bounds.size.x, 
                         (float)Screen.width / bk.bounds.size.x));
@@ -77,6 +77,8 @@ namespace opal
             // but never make them taller than a one-third the screen height
             float slot_width = (float) (Screen.width / num_scenes * 0.75);
             if (slot_width > Screen.height / 3) slot_width = (float) (Screen.height / 3);
+            // save slot width so we can load scenes of the right size later
+            mgc.slot_width = slot_width;
             
             // load the number of slots needed for this story
             for (int i = 0; i < num_scenes; i++)
@@ -93,7 +95,7 @@ namespace opal
                 }
                 
                 PlayObjectProperties pops = new PlayObjectProperties(
-                    "scene" + i, // name
+                    Constants.SCENE_SLOT + i, // name
                     Constants.TAG_PLAY_OBJECT, // tag
                     false, // draggable
                     null, // audio
@@ -103,11 +105,11 @@ namespace opal
                     + (Screen.width / (num_scenes * 2)) 
                     + (i * Screen.width / (num_scenes)),
                     // near top of screen
-                    Screen.height * 0.25f, 0f),
+                    Screen.height * 0.25f, Constants.Z_SLOT),
                     // scale slot to one portion of the screen width
                     new Vector3(slot_width / s.bounds.size.x,
-                            slot_width / s.bounds.size.x,
-                            slot_width / s.bounds.size.x)
+                            slot_width / s.bounds.size.y,
+                            slot_width / s.bounds.size.z)
                     );
                 
                 // instantiate the scene slot
@@ -137,7 +139,7 @@ namespace opal
             {   
                 // create answer slot
                 PlayObjectProperties pops = new PlayObjectProperties(
-                    "answer" + i, // name
+                    Constants.ANSWER_SLOT + i, // name
                     Constants.TAG_PLAY_OBJECT, // tag
                     false, // draggable
                     null, // audio
@@ -147,7 +149,7 @@ namespace opal
                         + (Screen.width / (num_answers * 2)) 
                         + (i * Screen.width / (num_answers)),
                         // near botton of screen
-                        -Screen.height * 0.25f, 0f),
+                    -Screen.height * 0.25f, Constants.Z_SLOT),
                     // scale to one portion of the screen width
                     new Vector3(slot_width / ans.bounds.size.x,
                             slot_width / ans.bounds.size.x,
@@ -173,7 +175,7 @@ namespace opal
                     + (Screen.width / (num_answers * 2)) 
                     + (i * Screen.width / (num_answers)),
                     // near botton of screen
-                    -Screen.height * 0.25f, -1f),
+                    -Screen.height * 0.25f, Constants.Z_FEEDBACK),
                     // scale to one portion of the screen width
                     new Vector3(slot_width / (i < num_answers - 1 ? feedic : feedc).bounds.size.x,
                         slot_width / (i < num_answers - 1 ? feedic : feedc).bounds.size.x,
@@ -182,12 +184,7 @@ namespace opal
                 
                 // instantiate the scene slot
                 this.mgc.InstantiatePlayObject(pobps, (i < num_answers - 1 ? feedic : feedc));
-            }
-            
-            
-           
-            
-            
+            }  
         }
     }
 }

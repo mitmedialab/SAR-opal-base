@@ -74,15 +74,16 @@ namespace opal
         /** checks that the position is within the screen */
         protected Vector3 CheckOnScreen (Vector3 posn)
         {
-            // check if position is on the screen
-            if(posn.x > Constants.RIGHT_SIDE)
-                posn.x = Constants.RIGHT_SIDE;
-            else if(posn.x < Constants.LEFT_SIDE)
-                posn.x = Constants.LEFT_SIDE;
-            if(posn.y > Constants.TOP_SIDE)
-                posn.y = Constants.TOP_SIDE;
-            else if(posn.y < Constants.BOTTOM_SIDE)
-                posn.y = Constants.BOTTOM_SIDE;
+            // check if x,y position is on the screen
+            // center of screen is 0,0
+            if(posn.x > Screen.width / 2)
+                posn.x = Screen.width / 2;
+            else if(posn.x < -Screen.width / 2)
+                posn.x = -Screen.width / 2;
+            if(posn.y > Screen.height / 2)
+                posn.y = Screen.height / 2;
+            else if(posn.y < -Screen.height / 2)
+                posn.y = -Screen.height / 2;
             return posn;
         }
     }

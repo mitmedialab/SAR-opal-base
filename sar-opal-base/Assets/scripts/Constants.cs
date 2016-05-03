@@ -89,8 +89,20 @@ namespace opal
         public const int LAYER_MOVEABLES = 10;
         public const int LAYER_STATICS = 8;
     
+        // z positions
+        public const int Z_BACKGROUND = 2;
+        public const int Z_FOREGROUND = -4;
+        public const int Z_PLAY_OBJECT = 0;
+        public const int Z_FEEDBACK = -1;
+        public const int Z_SLOT = 1;
+    
+        // for social story game, slot names
+        public const string SCENE_SLOT = "scene-slot";
+        public const string ANSWER_SLOT = "answer-slot";
+    
         // edges of screen - used to make sure objects aren't dragged off the screen
         // screen is 1280x768, minus the menu bar
+        // TODO this needs to scale to the size of the screen - use Screen.width etc!
         public const int LEFT_SIDE = -620; // -640
         public const int RIGHT_SIDE = 620; //640
         public const int TOP_SIDE = 360; //384
@@ -139,7 +151,7 @@ namespace opal
         public static string[] DEMO_SIDEKICK_SPEECH = new string[] { "ImAToucan", 
             "ImFromSpain", "AdiosSeeYouNext", ""};
         
-        /** Websocket config file path */
+        /** config file path */
         // if playing in unity on desktop:
         public const string OPAL_CONFIG = "opal_config.txt";
         public const string CONFIG_PATH_OSX = @"/Resources/";

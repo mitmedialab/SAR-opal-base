@@ -45,6 +45,7 @@ namespace opal
         private bool socialStories = true;
         private List<GameObject> incorrectFeedback;
         private GameObject correctFeedback;
+        public float slot_width;
         
         // config
         private GameConfig gameConfig;
@@ -282,6 +283,8 @@ namespace opal
             }
         }
 
+        #region Instantiate game objects
+
         /// <summary>
         /// Instantiate a new game object with the specified properties
         /// </summary>
@@ -314,25 +317,6 @@ namespace opal
             // set layer
             go.layer = (pops.draggable ? Constants.LAYER_MOVEABLES : Constants.LAYER_STATICS);
 
-            // move object to initial position 
-            go.transform.position = pops.InitPosition();
-
-            // load audio - add an audio source component to the object if there
-            // is an audio file to load
-            if(pops.AudioFile() != null) {
-                AudioSource audioSource = go.AddComponent<AudioSource>();
-                try {
-                    // to load a sound file this way, the sound file needs to be in an existing 
-                    // Assets/Resources folder or subfolder 
-                    audioSource.clip = Resources.Load(Constants.AUDIO_FILE_PATH + 
-                        pops.AudioFile()) as AudioClip;
-                } catch(UnityException e) {
-                    Debug.LogError("Could not load audio: " + pops.AudioFile() + "\n" + e);
-                }
-                audioSource.loop = false;
-                audioSource.playOnAwake = false;
-            }
-
             // load sprite/image for object
             SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
             // if we were not given a sprite for this object, try loading one
@@ -342,15 +326,15 @@ namespace opal
                 if(sprite == null)
                 {
                     Debug.LogWarning("Could not load sprite from Resources: " 
-                        + Constants.GRAPHICS_FILE_PATH + pops.Name() +
-                        "\nGoing to try file path...");
-                        
+                                     + Constants.GRAPHICS_FILE_PATH + pops.Name() +
+                                     "\nGoing to try file path...");
+                    
                     // TODO add filepath to pops! don't use Name
                     sprite = Utilities.LoadSpriteFromFile(pops.Name());
                     if(sprite == null)
                     {
                         Debug.LogError("Could not load sprite from file path: " 
-                                  + Constants.GRAPHICS_FILE_PATH + pops.Name());
+                                       + Constants.GRAPHICS_FILE_PATH + pops.Name());
                         // still don't have image - failed to load!
                         // delete game object and return
                         Debug.LogError("Could not load sprite: " + pops.Name());
@@ -367,7 +351,65 @@ namespace opal
             {
                 spriteRenderer.sprite = spri;
             }
+            
+            // if a slot number was assigned and we're in a social stories game,
+            // use that slot to figure out where to put the object
+            if (pops.Slot() != -1 && this.socialStories)
+            {
+                // get either the scene slot or answer slot object
+                GameObject slot = GameObject.Find((pops.answerSlot ? Constants.ANSWER_SLOT : 
+                    Constants.SCENE_SLOT) + (pops.Slot() - 1)); // slots 1-indexed
+                if (slot != null)
+                {
+                    go.transform.position = new Vector3(slot.transform.position.x,
+                                                        slot.transform.position.y,
+                                                        Constants.Z_PLAY_OBJECT);
+                    
+                    // set scale of sprite
+                    // scale slot to one portion of the screen width, using the saved
+                    // width of a slot 
+                    go.transform.localScale = new Vector3(
+                            slot_width / spriteRenderer.sprite.bounds.size.x,
+                            slot_width / spriteRenderer.sprite.bounds.size.y,
+                            slot_width / spriteRenderer.sprite.bounds.size.z);
+                }
+                else
+                {
+                    Debug.LogError("Tried to get position of scene or answer slot but slot was null!");
+                }
+            }
+            else
+            {
+                // move object to specified initial position 
+                go.transform.position = pops.InitPosition();
 
+                // set the scale of the sprite to the specified scale
+                go.transform.localScale = pops.Scale();
+            }
+            
+            // save the initial position in case we need to reset this object later
+            // can save other stuff in these properties too!
+            SavedProperties sp = go.AddComponent<SavedProperties>();
+            sp.initialPosition = go.transform.position;
+            
+            
+
+            // load audio - add an audio source component to the object if there
+            // is an audio file to load
+            if(pops.AudioFile() != null) {
+                AudioSource audioSource = go.AddComponent<AudioSource>();
+                try {
+                    // to load a sound file this way, the sound file needs to be in an existing 
+                    // Assets/Resources folder or subfolder 
+                    audioSource.clip = Resources.Load(Constants.AUDIO_FILE_PATH + 
+                        pops.AudioFile()) as AudioClip;
+                } catch(UnityException e) {
+                    Debug.LogError("Could not load audio: " + pops.AudioFile() + "\n" + e);
+                }
+                audioSource.loop = false;
+                audioSource.playOnAwake = false;
+            }
+            
             if (pops.draggable)
             {
                 // add rigidbody if this is a draggable object
@@ -417,9 +459,6 @@ namespace opal
             // trigger so enter/exit events fire when this collider is hit
             PolygonCollider2D pc = go.AddComponent<PolygonCollider2D>();
             pc.isTrigger = true;
-
-            // set the scale/size of the sprite/image
-            go.transform.localScale = pops.Scale();
             
             // add and subscribe to gestures
             if(this.gestureManager == null) {
@@ -437,15 +476,11 @@ namespace opal
             }
            
             // add pulsing behavior (draws attention to actionable objects)
-            go.AddComponent<GrowShrinkBehavior>();
+            // go.AddComponent<GrowShrinkBehavior>();
             // Removing this because it messes with collision detection when
             // objects are close to each other (continuously colliding/uncolliding)
             // go.GetComponent<GrowShrinkBehavior>().StartPulsing();
         
-            // save the initial position in case we need to reset this object later
-            SavedProperties sp = go.AddComponent<SavedProperties>();
-            sp.initialPosition = pops.InitPosition();   
-            
             // HACK to get drag to work right after object is loaded
             // for some reason if we disable then enable the Transformer2D 
             // component, drag will work. if we don't, then the Transformer2D 
@@ -489,14 +524,16 @@ namespace opal
             if (bops.Tag().Equals(Constants.TAG_BACKGROUND))
             {
                 if(bops.InitPosition().z <= 0)
-                    go.transform.position = new Vector3(bops.InitPosition().x, bops.InitPosition().y, 2);
+                    go.transform.position = new Vector3(bops.InitPosition().x, 
+                        bops.InitPosition().y, Constants.Z_BACKGROUND);
                 else                
                    go.transform.position = bops.InitPosition();
             }
             else if (bops.Tag().Equals(Constants.TAG_FOREGROUND))
             {
                 if(bops.InitPosition().z >= -3)
-                    go.transform.position = new Vector3(bops.InitPosition().x, bops.InitPosition().y, -4);
+                    go.transform.position = new Vector3(bops.InitPosition().x, 
+                        bops.InitPosition().y, Constants.Z_FOREGROUND);
                 else                
                     go.transform.position = bops.InitPosition();
             }
@@ -599,7 +636,7 @@ namespace opal
             
         }
         
-        
+        #endregion
         
         /** Find the gesture manager */ 
         private void FindGestureManager ()
@@ -751,14 +788,14 @@ namespace opal
 	                // load new background image with the specified properties
 	                if(sops.Tag().Equals(Constants.TAG_BACKGROUND) ||
 	                    sops.Tag().Equals(Constants.TAG_FOREGROUND)) {
-	                    Debug.Log("background");
+	                    //Debug.Log("background");
 	                    MainGameController.ExecuteOnMainThread.Enqueue(() => {
 	                        this.InstantiateBackground((BackgroundObjectProperties)sops, null);
 	                    }); 
 	                }
 	                // or instantiate new playobject with the specified properties
 	                else if(sops.Tag().Equals(Constants.TAG_PLAY_OBJECT)) {
-	                    Debug.Log("play object");
+	                    //Debug.Log("play object");
 	                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
 	                        this.InstantiatePlayObject((PlayObjectProperties)sops, null);
 	                    });
@@ -1015,7 +1052,7 @@ namespace opal
         /// Show or hide visual feedback for correct and incorrect responses
         /// </summary>
         /// <param name="show">If set to <c>true</c> show.</param>
-        public void ToggleCorrect(bool show)
+        private void ToggleCorrect(bool show)
         {
             if (show)
             {
@@ -1047,7 +1084,7 @@ namespace opal
                             // slots these graphics are shown over
                             this.correctFeedback.transform.position = 
                                 new Vector3(go.transform.position.x, go.transform.position.y, 
-                                go.transform.position.z - 1);
+                                    Constants.Z_FEEDBACK);
                         } 
                         else 
                         {
@@ -1065,7 +1102,7 @@ namespace opal
                             this.incorrectFeedback[counter].SetActive(true);
                             this.incorrectFeedback[counter].transform.position = 
                                 new Vector3(go.transform.position.x, go.transform.position.y, 
-                                            go.transform.position.z - 1);
+                                            Constants.Z_FEEDBACK);
                         } 
                         else 
                         {

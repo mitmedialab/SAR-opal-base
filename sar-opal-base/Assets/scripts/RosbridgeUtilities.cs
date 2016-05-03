@@ -286,21 +286,24 @@ namespace opal
                 PlayObjectProperties pops = new PlayObjectProperties();
             
                 pops.SetTag((string)props["tag"]);
+                
                 if(props.ContainsKey("name"))
                     pops.SetName((string)props["name"]);
+                
                 try {
                     if(props.ContainsKey("draggable"))
-                        pops.draggable = 
-                Convert.ToBoolean(props["draggable"]);
+                        pops.draggable = Convert.ToBoolean(props["draggable"]);
                 } catch(Exception ex) {
                     Debug.LogError("Error! Could not determine if draggable: " + ex);
                 }
         
-                try {
-                    if(props.ContainsKey("audioFile"))
+                if(props.ContainsKey("audioFile"))
+                {
+                    try {
                         pops.SetAudioFile((string)props["audioFile"]);
-                } catch(Exception ex) {
-                    Debug.LogError("Error! Could not get audio file: " + ex);
+                    } catch(Exception ex) {
+                        Debug.LogError("Error! Could not get audio file: " + ex);
+                    }
                 }
             
                 if(props.ContainsKey("position")) 
@@ -323,6 +326,25 @@ namespace opal
                         pops.SetScale(new Vector3(posn[0], posn[1], posn[2]));
                     } catch(Exception ex) {
                         Debug.LogError("Error! Could not get initial position: " + ex);
+                    }
+                }
+                
+                if(props.ContainsKey("slot"))
+                {
+                    try {
+                        pops.SetSlot(Convert.ToInt32(props["slot"]));
+                    }
+                    catch(Exception ex) {
+                        Debug.LogError("Error! Could not get slot number: " + ex);
+                    }
+                }
+            
+                if(props.ContainsKey("answerSlot"))
+                {
+                    try {
+                        pops.answerSlot = Convert.ToBoolean(props["answerSlot"]);
+                    } catch(Exception ex) {
+                        Debug.LogError("Error! Could not determine if slot is answer or scene: " + ex);
                     }
                 }
                 

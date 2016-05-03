@@ -117,6 +117,13 @@ namespace opal
                 
                 // instantiate the scene slot
                 this.mgc.InstantiatePlayObject(pops, s);
+                
+                // change name and size to make smaller version that we will use
+                // to detect collisions during out-of-order games
+                if (!scenesInOrder)
+                {
+                    // TODO load smaller version!
+                }
             }
             
             // load answer slots

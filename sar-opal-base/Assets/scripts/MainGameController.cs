@@ -358,7 +358,7 @@ namespace opal
             if (pops.Slot() != -1 && this.socialStories)
             {
                 // get either the scene slot or answer slot object
-                GameObject slot = GameObject.Find((pops.answerSlot ? Constants.ANSWER_SLOT : 
+                GameObject slot = GameObject.Find((pops.isAnswerSlot ? Constants.ANSWER_SLOT : 
                     Constants.SCENE_SLOT) + (pops.Slot() - 1)); // slots 1-indexed
                 if (slot != null)
                 {
@@ -393,7 +393,12 @@ namespace opal
             SavedProperties sp = go.AddComponent<SavedProperties>();
             sp.initialPosition = go.transform.position;
             
-            
+            if (this.socialStories)
+            {
+                sp.correctSlot = pops.CorrectSlot();
+                sp.isCorrect = pops.isCorrect;
+                sp.isIncorrect = pops.isIncorrect;
+            }
 
             // load audio - add an audio source component to the object if there
             // is an audio file to load
@@ -428,6 +433,8 @@ namespace opal
                 CollisionManager cm = go.AddComponent<CollisionManager>();
                 // subscribe to log events from the collision manager
                 cm.logEvent += new LogEventHandler(HandleLogEvent);
+                // pass on info about whether scenes are in order or not
+                cm.scenesInOrder = this.scenesInOrder;
                 
                 // and add transformer so it automatically moves on drag
                 // note that the AddAndSubscribeToGestures function also

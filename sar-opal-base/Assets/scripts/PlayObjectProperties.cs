@@ -25,13 +25,34 @@ namespace opal
         /// This value is -1 if no slot is assigned. 
         /// Slots are 1-indexed.
         /// </summary>
-        private int slot = -1;
+        private int slot;
+        
+        /// <summary>
+        /// For social stories, sometimes the story scenes are presented out of order.
+        /// If so, this value indicates which scene number is correct for this object
+        /// (e.g., is it scene 1, scene 2, etc?)
+        /// </summary>
+        private int correctSlot;
+        
+        /// <summary>
+        /// Is this a correct response? (social stories)
+        /// Note that there are separate flags for correct and incorrect because
+        /// it is possible for an object to be neither.
+        /// </summary>
+        public bool isCorrect;
+        
+        /// <summary>
+        /// Is this an incorrect response? (social stories)
+        /// Note that there are separate flags for correct and incorrect because
+        /// it is possible for an object to be neither.
+        /// </summary>
+        public bool isIncorrect;
         
         /// <summary>
         /// for social stories, whether the slot is an answer or scene
         /// true if answer, false if scene
         /// </summary>
-        public bool answerSlot;
+        public bool isAnswerSlot;
 
         /** constructor */
         public PlayObjectProperties()
@@ -56,7 +77,12 @@ namespace opal
             this.draggable = draggable;
             this.audioFile = audioFile;
             this.SetInitPosition(initPosn);
-            this.scale = scale;            
+            this.scale = scale;
+            this.correctSlot = -1;
+            this.slot = -1;
+            this.isAnswerSlot = false;   
+            this.isCorrect = false;
+            this.isIncorrect = false;   
         }
         
         /// <summary>
@@ -72,7 +98,8 @@ namespace opal
         /// <param name="answerSlot">If <c>true</c> answer slot; if <c>false</c> scene slot.</param>
         public PlayObjectProperties(string name, string tag, bool draggable, 
                                 string audioFile, Vector3 initPosn, 
-                                Vector3 scale, int slot, bool answerSlot)
+                                Vector3 scale, int slot, bool answerSlot,
+                                bool isCorrect, bool isIncorrect)
         {
             this.SetName(name);
             this.SetTag(tag);
@@ -80,9 +107,42 @@ namespace opal
             this.audioFile = audioFile;
             this.SetInitPosition(initPosn);
             this.scale = scale;
-            this.slot = slot;
-            this.answerSlot = answerSlot;
+            this.SetSlot(slot);
+            this.isAnswerSlot = answerSlot;
+            this.correctSlot = -1;
+            this.isCorrect = isCorrect;
+            this.isIncorrect = isIncorrect;
             
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="opal.PlayObjectProperties"/> class.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="tag">Tag.</param>
+        /// <param name="draggable">If set to <c>true</c> draggable.</param>
+        /// <param name="audioFile">Audio file.</param>
+        /// <param name="initPosn">Init posn.</param>
+        /// <param name="scale">Scale.</param>
+        /// <param name="slot">Slot.</param>
+        /// <param name="answerSlot">If <c>true</c> answer slot; if <c>false</c> scene slot.</param>
+        /// <param name="correctSlot">Correct slot.</param>
+        public PlayObjectProperties(string name, string tag, bool draggable, 
+                                    string audioFile, Vector3 initPosn, 
+                                    Vector3 scale, int slot, bool answerSlot,
+                                    int correctSlot, bool isCorrect, bool isIncorrect)
+        {
+            this.SetName(name);
+            this.SetTag(tag);
+            this.draggable = draggable;
+            this.audioFile = audioFile;
+            this.SetInitPosition(initPosn);
+            this.scale = scale;
+            this.SetSlot(slot);
+            this.isAnswerSlot = answerSlot;
+            this.SetCorrectSlot(correctSlot);
+            this.isCorrect = isCorrect;
+            this.isIncorrect = isIncorrect;
         }
         
         /// <summary>
@@ -95,16 +155,44 @@ namespace opal
         /// <param name="slot">Slot.</param>
         /// <param name="answerSlot">If <c>true</c> answer slot; if <c>false</c> scene slot.</param>
         public PlayObjectProperties(string name, string tag, bool draggable,
-            string audioFile, int slot, bool answerSlot)
+                                    string audioFile, int slot, bool answerSlot, 
+                                    bool isCorrect, bool isIncorrect)
         {
             this.SetName(name);
             this.SetTag(tag);
             this.draggable = draggable;
             this.audioFile = audioFile;
-            this.slot = slot;
-            this.answerSlot = answerSlot;
+            this.SetSlot(slot);
+            this.isAnswerSlot = answerSlot;
+            this.correctSlot = -1;
+            this.isCorrect = isCorrect;
+            this.isIncorrect = isIncorrect;
         }
         
+        /// <summary>
+        /// Initializes a new instance of the <see cref="opal.PlayObjectProperties"/> class.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="tag">Tag.</param>
+        /// <param name="draggable">If set to <c>true</c> draggable.</param>
+        /// <param name="audioFile">Audio file.</param>
+        /// <param name="slot">Slot.</param>
+        /// <param name="answerSlot">If <c>true</c> answer slot; if <c>false</c> scene slot.</param>
+        /// <param name="correctSlot">Correct slot.</param>
+        public PlayObjectProperties(string name, string tag, bool draggable,
+                                    string audioFile, int slot, bool answerSlot,
+                                    int correctSlot, bool isCorrect, bool isIncorrect)
+        {
+            this.SetName(name);
+            this.SetTag(tag);
+            this.draggable = draggable;
+            this.audioFile = audioFile;
+            this.SetSlot(slot);
+            this.isAnswerSlot = answerSlot;
+            this.SetCorrectSlot(correctSlot);
+            this.isCorrect = isCorrect;
+            this.isIncorrect = isIncorrect;
+        }
 
         /// <summary>
         /// Set all properties - name of object, whether it is a draggable
@@ -121,7 +209,8 @@ namespace opal
         /// <param name="answerSlot">If <c>true</c> answer slot; if <c>false</c> scene slot.</param>
         public void setAll (string name, string tag, bool draggable, 
                             string audioFile, Vector3 initPosn, Vector3 scale,
-                            int slot, bool answerSlot)
+                            int slot, bool answerSlot, int correctSlot,
+                            bool isCorrect, bool isIncorrect)
         {
             this.SetName(name);       
             this.SetTag(tag);
@@ -129,9 +218,11 @@ namespace opal
             this.audioFile = audioFile;
             this.SetInitPosition(initPosn);
             this.scale = scale;
-            this.slot = slot;
-            this.answerSlot = answerSlot;
-            
+            this.SetSlot(slot);
+            this.isAnswerSlot = answerSlot;
+            this.SetCorrectSlot(correctSlot);
+            this.isCorrect = isCorrect;
+            this.isIncorrect = isIncorrect;
         }
     
          /// <summary>
@@ -199,6 +290,29 @@ namespace opal
         public int Slot()
         {
             return this.slot;
+        }
+        
+        /// <summary>
+        /// Set the slot number that's the correct position for this
+        /// object in the story
+        /// </summary>
+        /// <param name="slot">Correct slot.</param>
+        public void SetCorrectSlot(int slot)
+        {
+            // slots are positive integers
+            // but we store it 0-indexed instead of 1-indexed
+            if (slot > 0) 
+                this.correctSlot = slot-1;
+            else
+                this.correctSlot = -1;
+        }
+        
+        /// <summary>
+        /// get slot
+        /// </summary>
+        public int CorrectSlot()
+        {
+            return this.correctSlot;
         }
     }
 }

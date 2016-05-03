@@ -342,11 +342,22 @@ namespace opal
                 if(props.ContainsKey("answerSlot"))
                 {
                     try {
-                        pops.answerSlot = Convert.ToBoolean(props["answerSlot"]);
+                        pops.isAnswerSlot = Convert.ToBoolean(props["answerSlot"]);
                     } catch(Exception ex) {
                         Debug.LogError("Error! Could not determine if slot is answer or scene: " + ex);
                     }
                 }
+                
+                if(props.ContainsKey("correctSlot"))
+                {
+                    try {
+                        pops.SetSlot(Convert.ToInt32(props["correctSlot"]));
+                    }
+                    catch(Exception ex) {
+                        Debug.LogError("Error! Could not get correct slot number: " + ex);
+                    }
+                }
+                
                 
                 // get end positions
                 // NOTE: We are not using the end position property!

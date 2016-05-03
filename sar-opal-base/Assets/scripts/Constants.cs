@@ -99,6 +99,7 @@ namespace opal
         // for social story game, slot names
         public const string SCENE_SLOT = "scene-slot";
         public const string ANSWER_SLOT = "answer-slot";
+        public const string SCENE_COLLIDE_SLOT = "scene-collide-slot";
     
         // edges of screen - used to make sure objects aren't dragged off the screen
         // screen is 1280x768, minus the menu bar

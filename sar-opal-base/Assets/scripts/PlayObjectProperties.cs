@@ -269,6 +269,7 @@ namespace opal
                     // the default.
                     ((posn.z != Constants.Z_PLAY_OBJECT &&
                     posn.z != Constants.Z_SLOT &&
+                    posn.z != Constants.Z_COLLIDE_SLOT &&
                     posn.z != Constants.Z_FEEDBACK) ? Constants.Z_PLAY_OBJECT : posn.z)));
         }
         

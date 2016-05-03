@@ -103,12 +103,12 @@ namespace opal
                     false, // draggable
                     null, // audio
                     new Vector3 (
-                    // left edge + offset to first item + counter * width/count
-                    (-Screen.width/2) 
-                    + (Screen.width / (numScenes * 2)) 
-                    + (i * Screen.width / (numScenes)),
-                    // near top of screen
-                    Screen.height * 0.25f, Constants.Z_SLOT),
+                        // left edge + offset to first item + counter * width/count
+                        (-Screen.width/2) 
+                        + (Screen.width / (numScenes * 2)) 
+                        + (i * Screen.width / (numScenes)),
+                        // near top of screen
+                        Screen.height * 0.25f, Constants.Z_SLOT),
                     // scale slot to one portion of the screen width
                     new Vector3(slot_width / s.bounds.size.x,
                             slot_width / s.bounds.size.y,
@@ -122,7 +122,15 @@ namespace opal
                 // to detect collisions during out-of-order games
                 if (!scenesInOrder)
                 {
-                    // TODO load smaller version!
+                   pops.SetName(Constants.SCENE_COLLIDE_SLOT + i);
+                    pops.SetInitPosition(new Vector3(pops.InitPosition().x,
+                        pops.InitPosition().y, Constants.Z_COLLIDE_SLOT));
+                    pops.SetScale(new Vector3(pops.Scale().x / 3, 
+                        pops.Scale().y / 3, 
+                        pops.Scale().z) / 3);
+                        
+                    // instantiate smaller scene collision object
+                    this.mgc.InstantiatePlayObject(pops, s);
                 }
             }
             

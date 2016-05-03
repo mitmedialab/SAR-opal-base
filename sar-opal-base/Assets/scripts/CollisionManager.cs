@@ -50,12 +50,11 @@ namespace opal
                     + " but could not find any saved properties.");
                 } 
                 // does the collided-with other's name contain the number of our slot?
-                // and is it a scene slot?
-                else if (other.name.Contains(sp.correctSlot) 
-                        // TODO if other smaller object for collisions, change name we check
-                        && other.name.Contains(Constants.SCENE_SLOT))
-                        // TODO set up 2nd smaller object as collision detector
-                        // since barely have to touch to officially collide
+                // and is it a scene collision slot? (we have a second smaller object
+                // that is not the slot that we use to detect collision with the slot,
+                // since you barely have to touch an object to officially collide
+                else if (other.name.Contains(sp.correctSlot.ToString()) 
+                        && other.name.Contains(Constants.SCENE_COLLIDE_SLOT))
                 {
                     // if so, yay! we've collided with the correct slot!
                     

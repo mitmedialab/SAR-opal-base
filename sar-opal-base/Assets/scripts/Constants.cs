@@ -90,11 +90,12 @@ namespace opal
         public const int LAYER_STATICS = 8;
     
         // z positions
-        public const int Z_BACKGROUND = 2;
+        public const int Z_BACKGROUND = 3;
         public const int Z_FOREGROUND = -4;
         public const int Z_PLAY_OBJECT = 0;
         public const int Z_FEEDBACK = -1;
         public const int Z_SLOT = 1;
+        public const int Z_COLLIDE_SLOT = 2;
     
         // for social story game, slot names
         public const string SCENE_SLOT = "scene-slot";

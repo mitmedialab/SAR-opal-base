@@ -374,8 +374,8 @@ namespace opal
                     }
                 }*/
                 properties = pops; // return the properties
-                Debug.Log(props);
             }
+            
             // if we are loading a background object, build up its properties instead
             else if(props.ContainsKey("tag") && 
                 (((string)props["tag"]).Equals(Constants.TAG_BACKGROUND) ||
@@ -429,6 +429,42 @@ namespace opal
                 properties = sco; // return the set correct object properties
             }
         
+            // if we are going to set up a story scene, build a struct
+            else if (props.ContainsKey("numScenes"))
+            {
+                SetupStorySceneObject ssso = new SetupStorySceneObject();
+                
+                // get the number of scenes in the story
+                try {
+                    ssso.numScenes = Convert.ToInt32(props["numScenes"]);
+                }
+                catch(Exception ex) {
+                    Debug.LogError("Error! Could not get number of scenes: " + ex);
+                }
+            
+                // are the scenes presented in order or out of order
+                if(props.ContainsKey("scenesInorder"))
+                {
+                    try {
+                        ssso.scenesInOrder = Convert.ToBoolean(props["scenesInOrder"]);
+                    } catch(Exception ex) {
+                        Debug.LogError("Error! Could not determine if scenes i norder: " + ex);
+                    }
+                }
+                
+                // get the number of answers for questions asked about the story
+                if(props.ContainsKey("numAnswers"))
+                {
+                    try {
+                        ssso.numAnswers = Convert.ToInt32(props["numAnswers"]);
+                    }
+                    catch(Exception ex) {
+                        Debug.LogError("Error! Could not get number of answers: " + ex);
+                    }
+                }
+                
+                properties = ssso; // return the setup story scene properties
+            }
         }
     
         /// <summary>

@@ -15,11 +15,19 @@ namespace opal
         public Vector3 destination;
     }
 
-    // objects to set correct/incorrect flags for
+    // objects to set correct/incorrect flags for social stories answer options
     public struct SetCorrectObject
     {
         public string[] correct;
         public string[] incorrect;
+    }
+    
+    // object with info for setting up a social stories scene
+    public struct SetupStorySceneObject
+    {
+        public int numScenes;
+        public int numAnswers;
+        public bool scenesInOrder;
     }
     
     // configuration
@@ -129,6 +137,7 @@ namespace opal
         public const int SET_CORRECT = 15;
         public const int SHOW_CORRECT = 16;
         public const int HIDE_CORRECT = 17;
+        public const int SETUP_STORY_SCENE = 18;
         
         /** next page and previous page */
         public const bool NEXT = true;

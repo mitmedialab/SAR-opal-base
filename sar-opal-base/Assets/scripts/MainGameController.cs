@@ -45,7 +45,8 @@ namespace opal
         private bool socialStories = true;
         private List<GameObject> incorrectFeedback;
         private GameObject correctFeedback;
-        public float slot_width;
+        public float slotWidth;
+        public bool scenesInOrder = true;
         
         // config
         private GameConfig gameConfig;
@@ -369,9 +370,9 @@ namespace opal
                     // scale slot to one portion of the screen width, using the saved
                     // width of a slot 
                     go.transform.localScale = new Vector3(
-                            slot_width / spriteRenderer.sprite.bounds.size.x,
-                            slot_width / spriteRenderer.sprite.bounds.size.y,
-                            slot_width / spriteRenderer.sprite.bounds.size.z);
+                            slotWidth / spriteRenderer.sprite.bounds.size.x,
+                            slotWidth / spriteRenderer.sprite.bounds.size.y,
+                            slotWidth / spriteRenderer.sprite.bounds.size.z);
                 }
                 else
                 {

@@ -1,7 +1,6 @@
 # SAR-opal-base 
 
-A generalized Unity game template designed for use in a child-robot interaction
-that helps the child learn a second language.
+Opal is a generalized Unity game builder designed for use in child-robot interactions. Easily load different graphics for games requiring similar mechanics, all using ROS.
 
 ## Build and Run
 This tablet app was built and tested with Unity 5.0.0 and MonoDevelop 4.0.1.
@@ -179,7 +178,7 @@ be deployed to these devices.
 - If you try to send a message with sar\_opal\_sender to move an object but send a json file that doesn't have the right stuff in it for a move command, throws error, need to fix. More generally: we don't check that the command number matches the arguments in the json file. Should do that during message decoding.
 - Update to load images and audio from folders on the tablet's sdcard (currently, must load from the Resources folder, which gets compiled in to the Unity app)
 - Add capability to load an image on the "top left" or "bottom right" of the screen without specifying exact coordinates. Adjust the loaded image's position until no collisions are detected so it does not overlap with other images.
-- Adapt to different tablet screen sizes (currently size of images is hard-coded, not scaling)
+- Adapt to different screen sizes (currently size of images in most apps is hard-coded, not scaling - social stories game is the only one that scales properly)
 - Look into ROS .NET for C#. Possible replacement for websocket connection?
 - Add demo and story options to config file so you don't have to recompile and redeploy (and/or a start screen that lets you pick whether you want demo mode, story mode, etc when you start the app - use "load scene" function to pick the right one).
 

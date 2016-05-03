@@ -51,8 +51,11 @@ namespace opal
         /// <param name="num_scenes">Number of scenes in this story</param>
         /// <param name="scenes_in_order">If set to <c>true</c> scenes are in order.</param>
         /// <param name="num_answers">Number of answer options for this story</param>
-        void SetupSocialStoryScene(int num_scenes, bool scenes_in_order, int num_answers)
+        void SetupSocialStoryScene(int numScenes, bool scenesInOrder, int numAnswers)
         {
+            // save whether we are showing a social story in order or not in order
+            mgc.scenesInOrder = scenesInOrder;
+        
             // set up camera sizes so the viewport is the size of the screen
             // TODO move to MainGameController, adapt all scaling etc throughout to scale
             // propertly for screen size....
@@ -75,19 +78,19 @@ namespace opal
             // need to scale scene/answer slots to evenly fit in the screen
             // they can be bigger if there are fewer slots
             // but never make them taller than a one-third the screen height
-            float slot_width = (float) (Screen.width / num_scenes * 0.75);
+            float slot_width = (float) (Screen.width / numScenes * 0.75);
             if (slot_width > Screen.height / 3) slot_width = (float) (Screen.height / 3);
             // save slot width so we can load scenes of the right size later
-            mgc.slot_width = slot_width;
+            mgc.slotWidth = slot_width;
             
             // load the number of slots needed for this story
-            for (int i = 0; i < num_scenes; i++)
+            for (int i = 0; i < numScenes; i++)
             {
                 Sprite s = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
                                                        + Constants.SOCIAL_STORY_FILE_PATH
                                                        + Constants.SS_SCENESLOT_PATH
                                                        + Constants.SS_SLOT_NAME
-                                                       + (scenes_in_order ? "" : (i+1).ToString()));
+                                                       + (scenesInOrder ? "" : (i+1).ToString()));
                 if (s == null)
                 {
                     Debug.LogError("Could not load scene slot image!" );
@@ -102,8 +105,8 @@ namespace opal
                     new Vector3 (
                     // left edge + offset to first item + counter * width/count
                     (-Screen.width/2) 
-                    + (Screen.width / (num_scenes * 2)) 
-                    + (i * Screen.width / (num_scenes)),
+                    + (Screen.width / (numScenes * 2)) 
+                    + (i * Screen.width / (numScenes)),
                     // near top of screen
                     Screen.height * 0.25f, Constants.Z_SLOT),
                     // scale slot to one portion of the screen width
@@ -135,7 +138,7 @@ namespace opal
                                                   + Constants.SS_FEEDBACK_PATH
                                                   + Constants.SS_INCORRECT_FEEDBACK_NAME);                                       
                                               
-            for (int i = 0; i < num_answers; i++)
+            for (int i = 0; i < numAnswers; i++)
             {   
                 // create answer slot
                 PlayObjectProperties pops = new PlayObjectProperties(
@@ -146,8 +149,8 @@ namespace opal
                     new Vector3 (
                         // left edge + offset to first item + counter * width/count
                         (-Screen.width/2) 
-                        + (Screen.width / (num_answers * 2)) 
-                        + (i * Screen.width / (num_answers)),
+                        + (Screen.width / (numAnswers * 2)) 
+                        + (i * Screen.width / (numAnswers)),
                         // near botton of screen
                     -Screen.height * 0.25f, Constants.Z_SLOT),
                     // scale to one portion of the screen width
@@ -164,26 +167,26 @@ namespace opal
                 // like with the highlight, keep reference to the answer feedback graphics
                 // but set them as not visible
                 PlayObjectProperties pobps = new PlayObjectProperties(
-                    (i < num_answers - 1 ? "feedback-incorrect" + i : "feedback-correct"), // name
-                    (i < num_answers - 1 ? Constants.TAG_INCORRECT_FEEDBACK : 
+                    (i < numAnswers - 1 ? "feedback-incorrect" + i : "feedback-correct"), // name
+                    (i < numAnswers - 1 ? Constants.TAG_INCORRECT_FEEDBACK : 
                         Constants.TAG_CORRECT_FEEDBACK), // tag
                     false, // draggable
                     null, // audio
                     new Vector3 (
                     // left edge + offset to first item + counter * width/count
                     (-Screen.width/2) 
-                    + (Screen.width / (num_answers * 2)) 
-                    + (i * Screen.width / (num_answers)),
+                    + (Screen.width / (numAnswers * 2)) 
+                    + (i * Screen.width / (numAnswers)),
                     // near botton of screen
                     -Screen.height * 0.25f, Constants.Z_FEEDBACK),
                     // scale to one portion of the screen width
-                    new Vector3(slot_width / (i < num_answers - 1 ? feedic : feedc).bounds.size.x,
-                        slot_width / (i < num_answers - 1 ? feedic : feedc).bounds.size.x,
-                        slot_width / (i < num_answers - 1 ? feedic : feedc).bounds.size.x)
+                    new Vector3(slot_width / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x,
+                        slot_width / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x,
+                        slot_width / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x)
                     );
                 
                 // instantiate the scene slot
-                this.mgc.InstantiatePlayObject(pobps, (i < num_answers - 1 ? feedic : feedc));
+                this.mgc.InstantiatePlayObject(pobps, (i < numAnswers - 1 ? feedic : feedc));
             }  
         }
     }

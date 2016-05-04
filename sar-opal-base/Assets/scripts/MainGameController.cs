@@ -35,7 +35,7 @@ namespace opal
         private GameObject fader = null; 
     
         // DEMO VERSION
-        private bool demo = true;
+        private bool demo = false;
         
         // STORYBOOK VERSION
         private bool story = false;
@@ -107,7 +107,7 @@ namespace opal
 	                    
 	                    // get sidekick's script
 	                    this.sidekickScript = (Sidekick)sidekick.GetComponent<Sidekick>();
-	                    if(ReferenceEquals)this.sidekickScript, null)) 
+	                    if(this.sidekickScript == null) 
                         {
 	                        Debug.LogError("ERROR: Could not get sidekick script!");
 	                    } else {
@@ -442,7 +442,7 @@ namespace opal
                 // checks to add a transformer if there isn't one if the 
                 // object is supposed to be draggable
                 Transformer2D t2d = go.GetComponent<Transformer2D>();
-                if (ReferenceEquals(t2d, null)) 
+                if (t2d == null) 
                 {
                     t2d = go.AddComponent<Transformer2D>();
                     t2d.Speed = 30;
@@ -872,8 +872,6 @@ namespace opal
             else if (cmd == Constants.SET_CORRECT)
             {
                 // given two lists of object names, set as correct or incorrect
-                Debug.LogWarning("SET CORRECT hasn't been tested yet!");
-
                 // set object flags for correct or incorrect
                 if(props == null) {
                     Debug.LogWarning("Was told to set objects as correct/incorrect, " +
@@ -890,7 +888,6 @@ namespace opal
             else if (cmd == Constants.SHOW_CORRECT)
             {
                 // show all objects for visual feedback tagged 'correct' or 'incorrect'
-                Debug.LogWarning("SHOW CORRECT hasn't been tested yet!");
                 MainGameController.ExecuteOnMainThread.Enqueue(() => {
                     this.ToggleCorrect(true);
                 });
@@ -898,15 +895,13 @@ namespace opal
             else if (cmd == Constants.HIDE_CORRECT)
             {
                 // hide all objects for visual feedback tagged 'correct' or 'incorrect'
-                Debug.LogWarning("HIDE CORRECT hasn't been tested yet!");
                 MainGameController.ExecuteOnMainThread.Enqueue(() => {
                     this.ToggleCorrect(false);
                 });
             }
             else if (cmd == Constants.SETUP_STORY_SCENE)
             {
-                // TODO add setup story scene message
-                Debug.LogWarning("SETUP STORY SCENE hasn't been tested yet!");
+                // setup story scene
                 SetupStorySceneObject ssso = (SetupStorySceneObject)props;
                 MainGameController.ExecuteOnMainThread.Enqueue(() => {
                     this.SetupSocialStoryScene(ssso.numScenes, ssso.scenesInOrder, 
@@ -934,7 +929,8 @@ namespace opal
             this.gestureManager.LightOff();
             
             // make all feedback invisible if it's not already
-            this.ToggleCorrect(false);
+            if (this.socialStories)
+                this.ToggleCorrect(false);
 
             // move all play objects back to their initial positions
             ResetAllObjectsWithTag(new string[] {Constants.TAG_PLAY_OBJECT});
@@ -952,7 +948,8 @@ namespace opal
             this.gestureManager.LightOff();
             
             // clear list of answer feedback objects and remove
-            this.incorrectFeedback.Clear();
+            if (this.incorrectFeedback != null)
+                this.incorrectFeedback.Clear();
         
             // remove all objects with specified tags
             this.DestroyObjectsByTag(new string[] {
@@ -979,7 +976,7 @@ namespace opal
                     Debug.Log("moving " + go.name);
                     // if the initial position was saved, move to it
                     SavedProperties spop = go.GetComponent<SavedProperties>();
-                    if(ReferenceEquals(spop, null)) {
+                    if(spop == null) {
                         Debug.LogWarning("Tried to reset " + go.name + " but could not find " +
                             " any saved properties.");
                     } else {
@@ -1042,7 +1039,8 @@ namespace opal
                 {
                     // set correct flag
                     GameObject go = GameObject.Find(cgo);
-                    if(ReferenceEquals(go.GetComponent<SavedProperties>(), null)) {
+                    if(go == null || go.GetComponent<SavedProperties>() == null) 
+                    {
                         Debug.LogWarning("Tried to set \"correct\" flag for " + cgo +
                          " but could not find any saved properties.");
                     } else {
@@ -1057,7 +1055,8 @@ namespace opal
                 {
                     // set incorrect flag
                     GameObject go = GameObject.Find(igo);
-                    if(ReferenceEquals(go.GetComponent<SavedProperties>(), null)) {
+                    if(go == null || go.GetComponent<SavedProperties>() == null) 
+                    {
                         Debug.LogWarning("Tried to set \"incorrect\" flag for " + igo +
                                          " but could not find any saved properties.");
                     } else {
@@ -1083,7 +1082,7 @@ namespace opal
                 int counter = 0;
                 foreach (GameObject go in gos)
                 {
-                    if(ReferenceEquals(go.GetComponent<SavedProperties>(), null)) 
+                    if(go.GetComponent<SavedProperties>() == null) 
                     {
                         Debug.LogWarning("Tried to check flags for " + go +
                                          " but could not find any saved properties.");
@@ -1107,7 +1106,7 @@ namespace opal
                         } 
                         else 
                         {
-                            Debug.LogError("Tried to make correct feedback visible, but feedback "
+                            Debug.LogWarning("Tried to make correct feedback visible, but feedback "
                                 + "object is null!");
                         }
                           
@@ -1115,21 +1114,29 @@ namespace opal
                     {
                        
                         // load incorrect visual feedback object at that object
-                        // and make visible  
-                        if(this.incorrectFeedback[counter] != null) 
+                        // and make visible
+                        // note that if there are more objects marked correct or incorrect
+                        // than there are answer slots, some won't get marked, since we 
+                        // assume that there are only as many correct or incorrect options
+                        // as there are answer slots
+                        if(this.incorrectFeedback != null && 
+                           this.incorrectFeedback.Count > counter)
                         {
                             this.incorrectFeedback[counter].SetActive(true);
                             this.incorrectFeedback[counter].transform.position = 
                                 new Vector3(go.transform.position.x, go.transform.position.y, 
                                             Constants.Z_FEEDBACK);
+                            counter++;
                         } 
                         else 
                         {
-                            Debug.LogError("Tried to make incorrect feedback visible, but feedback "
+                            Debug.LogWarning("Tried to make incorrect feedback visible, but feedback "
                                       + "object is null!");
                         }
                     }
-                    counter++;
+                    // there may be some game objects that are not correct and not incorrect
+                    // so we just skip over them
+                    
                 }
                 
             }
@@ -1142,12 +1149,20 @@ namespace opal
                 }
                 else 
                 {
-                    Debug.LogError("Tried to make correct feedback invisible, but object"
+                    Debug.LogWarning("Tried to make correct feedback invisible, but object"
                         + " was null!");
                 }
-                foreach (GameObject go in this.incorrectFeedback)
+                if (this.incorrectFeedback != null)
                 {
-                    go.SetActive(false);
+                    foreach (GameObject go in this.incorrectFeedback)
+                    {
+                        go.SetActive(false);
+                    }
+                }
+                else 
+                {
+                    Debug.LogWarning("Tried to make incorrect feedback invisible, but object"
+                                   + " was null!");
                 }
             }
         }
@@ -1160,6 +1175,9 @@ namespace opal
         /// <param name="num_answers">Number of answer options for this story</param>
         public void SetupSocialStoryScene(int numScenes, bool scenesInOrder, int numAnswers)
         {
+            // clear scene
+            this.ClearScene();
+            
             // save whether we are showing a social story in order or not in order
             this.scenesInOrder = scenesInOrder;
             

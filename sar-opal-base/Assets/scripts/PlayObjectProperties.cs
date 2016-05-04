@@ -25,34 +25,34 @@ namespace opal
         /// This value is -1 if no slot is assigned. 
         /// Slots are 1-indexed.
         /// </summary>
-        private int slot;
+        private int slot = -1;
         
         /// <summary>
         /// For social stories, sometimes the story scenes are presented out of order.
         /// If so, this value indicates which scene number is correct for this object
         /// (e.g., is it scene 1, scene 2, etc?)
         /// </summary>
-        private int correctSlot;
+        private int correctSlot = -1;
         
         /// <summary>
         /// Is this a correct response? (social stories)
         /// Note that there are separate flags for correct and incorrect because
         /// it is possible for an object to be neither.
         /// </summary>
-        public bool isCorrect;
+        public bool isCorrect = false;
         
         /// <summary>
         /// Is this an incorrect response? (social stories)
         /// Note that there are separate flags for correct and incorrect because
         /// it is possible for an object to be neither.
         /// </summary>
-        public bool isIncorrect;
+        public bool isIncorrect = false;
         
         /// <summary>
         /// for social stories, whether the slot is an answer or scene
         /// true if answer, false if scene
         /// </summary>
-        public bool isAnswerSlot;
+        public bool isAnswerSlot = false;
 
         /** constructor */
         public PlayObjectProperties()
@@ -78,11 +78,6 @@ namespace opal
             this.audioFile = audioFile;
             this.SetInitPosition(initPosn);
             this.scale = scale;
-            this.correctSlot = -1;
-            this.slot = -1;
-            this.isAnswerSlot = false;   
-            this.isCorrect = false;
-            this.isIncorrect = false;   
         }
         
         /// <summary>
@@ -109,7 +104,6 @@ namespace opal
             this.scale = scale;
             this.SetSlot(slot);
             this.isAnswerSlot = answerSlot;
-            this.correctSlot = -1;
             this.isCorrect = isCorrect;
             this.isIncorrect = isIncorrect;
             
@@ -164,7 +158,6 @@ namespace opal
             this.audioFile = audioFile;
             this.SetSlot(slot);
             this.isAnswerSlot = answerSlot;
-            this.correctSlot = -1;
             this.isCorrect = isCorrect;
             this.isIncorrect = isIncorrect;
         }

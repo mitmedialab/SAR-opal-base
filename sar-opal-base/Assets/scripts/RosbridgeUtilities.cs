@@ -81,7 +81,8 @@ namespace opal
         /// <param name="distance">Position of the object</param>
         /// <param name="timestamp">Time of the action</param>
         public static string GetROSJsonPublishActionMsg (string topic, string objectName,
-            string objectTwoName, string action, float[] position, float[] positionTwo)
+            string objectTwoName, string action, float[] position, float[] positionTwo,
+            string message)
         {
             // build a dictionary of things to include in the message
             Dictionary<string,object> rosPublish = new Dictionary<string, object>();
@@ -92,6 +93,7 @@ namespace opal
             rosMessage.Add("objectTwoName", objectTwoName);
             rosMessage.Add("position", position);
             rosMessage.Add("positionTwo", positionTwo);
+            rosMessage.Add("message", message);
             rosMessage.Add("action", action);
             rosPublish.Add("msg", rosMessage);
         
@@ -125,6 +127,9 @@ namespace opal
                 objd.Add("scale",objects[i].scale);
                 objd.Add("draggable", objects[i].draggable);
                 objd.Add("audioFile", objects[i].audio);
+                objd.Add("correctSlot", objects[i].correctSlot);
+                objd.Add("isCorrect", objects[i].isCorrect);
+                objd.Add("isIncorrect", objects[i].isIncorrect);
                 objs[i] = Json.Serialize(objd);
             }     
         

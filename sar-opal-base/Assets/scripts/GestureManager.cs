@@ -341,18 +341,38 @@ namespace opal
             // get info about where the hit object was located when the gesture was
             // recognized - i.e., where on the object (in screen dimensions) did
             // the press occur?
-            if(gesture.GetTargetHitResult(out hit)) {
+            if(gesture.GetTargetHitResult(out hit)) 
+            {
                 // want the info as a 2D point 
                 ITouchHit2D hit2d = (ITouchHit2D)hit; 
                 Debug.Log("PRESS on " + gesture.gameObject.name + " at " + hit2d.Point);
             
                 // fire event to logger to log this action
-                if(this.logEvent != null) {
-                    // log the press
-                    this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+                if(this.logEvent != null) 
+                {
+                    // if this is a social stories game, log additional info about
+                    // what object was pressed
+                    if (this.story)
+                    {
+                        // log the press plus whether or not the pressed object was a YES or NO
+                        // button, or whether the object was a CORRECT or INCORRECT object
+                        this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+                            gesture.gameObject.name, "press", hit2d.Point,
+                            (gesture.gameObject.name.Contains("YES_BUTTON") ? "YES" 
+                            : (gesture.gameObject.name.Contains("NO_BUTTON") ? "NO"
+                            : (gesture.gameObject.GetComponent<SavedProperties>().isCorrect ? "CORRECT"
+                            : (gesture.gameObject.GetComponent<SavedProperties>().isIncorrect ? "INCORRECT"
+                            : ""))))));
+                    }
+                    else
+                    {
+                        // log the press
+                        this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
                             gesture.gameObject.name, "press", hit2d.Point));
+                    }
                 }
             
+                
 				
                 // move highlighting light and set active
                 // don't highlight touches in a story

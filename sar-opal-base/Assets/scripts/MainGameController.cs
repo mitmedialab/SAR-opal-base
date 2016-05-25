@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections.Generic;
 using TouchScript.Gestures;
@@ -1341,6 +1341,8 @@ namespace opal
             // find all game objects currently in scene
             GameObject[] gos = GameObject.FindGameObjectsWithTag(Constants.TAG_PLAY_OBJECT);
             
+            // TODO find any other game objects with other tags?
+            
             // make array of scene objects plus one for the background
             sceneObjects = new LogEvent.SceneObject[gos.Length + ((backg != null) ? 1 : 0)];
             // add background image if it exists
@@ -1363,7 +1365,8 @@ namespace opal
             // though strictly speaking tag isn't necessary unless we're building an
             // array of stuff that's not just play objects - which may be the case
             // later! so we're keeping it as a field anyway
-            for(int i = 0; i < gos.Length; i++) {
+            for(int i = 0; i < gos.Length; i++) 
+            {
                 LogEvent.SceneObject so = new LogEvent.SceneObject();
                 so.name = gos[i].name;
                 so.position = new float[] { gos[i].transform.position.x,
@@ -1376,6 +1379,14 @@ namespace opal
                 // get audio clip name
                 AudioSource auds = gos[i].GetComponent<AudioSource>();
                 if(auds != null && auds.clip != null) { so.audio = auds.clip.name; }
+                // get saved properties
+                SavedProperties sp = gos[i].GetComponent<SavedProperties>();
+                if (sp != null)
+                {
+                    so.correctSlot = sp.correctSlot;
+                    so.isCorrect = sp.isCorrect;
+                    so.isIncorrect = sp.isIncorrect;
+                }
                 sceneObjects[i] = so;
             }
         }
@@ -1389,21 +1400,22 @@ namespace opal
         void HandleLogEvent (object sender, LogEvent logme)
         {
             if (this.demo) return;
-            if (this.story) return; //TODO log story stuff
         
-            switch(logme.type) {
+            switch(logme.type) 
+            {
             case LogEvent.EventType.Action:
                 // note that for some gestures, the 2d Point returned by the gesture
                 // library does not include z position and sets z to 0 by default, so
                 // the z position may not be accurate (but it also doesn't really matter)
                 this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishActionMsg(
-                Constants.ACTION_ROSTOPIC, logme.name, logme.nameTwo, logme.action, 
-                (logme.position.HasValue ? new float[] 
-                {logme.position.Value.x, logme.position.Value.y,
-                logme.position.Value.z} : new float[] {}),
+                    Constants.ACTION_ROSTOPIC, logme.name, logme.nameTwo, logme.action, 
+                    (logme.position.HasValue ? new float[] 
+                    {logme.position.Value.x, logme.position.Value.y,
+                    logme.position.Value.z} : new float[] {}),
                     (logme.positionTwo.HasValue ? new float[] 
                     {logme.positionTwo.Value.x, logme.position.Value.y,
-                    logme.positionTwo.Value.z} : new float[] {})));
+                    logme.positionTwo.Value.z} : new float[] {}),
+                    logme.message));
                 break;
             
             case LogEvent.EventType.Scene:
@@ -1415,7 +1427,7 @@ namespace opal
             case LogEvent.EventType.Message:
                 // send string message
                 this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
-            Constants.LOG_ROSTOPIC, logme.state));
+            Constants.LOG_ROSTOPIC, logme.message));
                 break;
             }
         }

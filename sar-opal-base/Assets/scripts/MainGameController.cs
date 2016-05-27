@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TouchScript.Gestures;
 using TouchScript.Hit;
 using TouchScript.Behaviors;
+using System.IO;
 
 namespace opal
 {
@@ -45,7 +46,7 @@ namespace opal
         private bool socialStories = true;
         private List<GameObject> incorrectFeedback;
         private GameObject correctFeedback;
-        public float slotWidth;
+        public float slotWidth = 1;
         public bool scenesInOrder = true;
         
         // config
@@ -296,7 +297,8 @@ namespace opal
             GameObject go = new GameObject();
 
             // set object name
-            go.name = (pops.Name() != "") ? pops.Name() : UnityEngine.Random.value.ToString();
+            go.name = (pops.Name() != "") ? Path.GetFileNameWithoutExtension(pops.Name()) 
+                : UnityEngine.Random.value.ToString();
             Debug.Log("Creating new play object: " + pops.Name());
 
             // set tag
@@ -324,7 +326,9 @@ namespace opal
             // if we were not given a sprite for this object, try loading one
             if (spri == null)
             {
-                Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + pops.Name());
+                // don't need file extension to load from resources folder -- strip if it exists
+                Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH 
+                    + Path.ChangeExtension(pops.Name(), null));
                 if(sprite == null)
                 {
                     Debug.LogWarning("Could not load sprite from Resources: " 
@@ -377,7 +381,11 @@ namespace opal
                 }
                 else
                 {
-                    Debug.LogError("Tried to get position of scene or answer slot but slot was null!");
+                    Debug.LogError("Tried to get position and scale of scene or answer slot so we"
+                        + " could load an object at that position, but slot was null! Defaulting"
+                        + " to position (0,0,0) and scale (1,1,1).");
+                        go.transform.position = Vector3.zero;
+                        go.transform.localScale = new Vector3(1,1,1);
                 }
             }
             else

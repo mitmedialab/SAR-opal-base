@@ -358,8 +358,8 @@ namespace opal
                         // button, or whether the object was a CORRECT or INCORRECT object
                         this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
                             gesture.gameObject.name, "press", hit2d.Point,
-                            (gesture.gameObject.name.Contains("YES_BUTTON") ? "YES" 
-                            : (gesture.gameObject.name.Contains("NO_BUTTON") ? "NO"
+                            (gesture.gameObject.name.Contains("yes_button") ? "YES" 
+                            : (gesture.gameObject.name.Contains("no_button") ? "NO"
                             : (gesture.gameObject.GetComponent<SavedProperties>().isCorrect ? "CORRECT"
                             : (gesture.gameObject.GetComponent<SavedProperties>().isIncorrect ? "INCORRECT"
                             : ""))))));

@@ -34,6 +34,9 @@ namespace opal
         public bool story = false;
         public int pagesInStory = 0;
         
+        // SOCIAL STORIES VERSION
+        public bool socialStories = true;
+        
         /// <summary>
         /// Called on start, use to initialize stuff
         /// </summary>
@@ -352,7 +355,7 @@ namespace opal
                 {
                     // if this is a social stories game, log additional info about
                     // what object was pressed
-                    if (this.story)
+                    if (this.socialStories)
                     {
                         // log the press plus whether or not the pressed object was a YES or NO
                         // button, or whether the object was a CORRECT or INCORRECT object

@@ -181,7 +181,7 @@ namespace opal
             this.position = position;
             this.positionTwo = positionTwo;
             this.nameTwo = nameTwo;
-            this.message = message
+            this.message = message;
         }
 
     }

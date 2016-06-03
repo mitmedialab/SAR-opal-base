@@ -88,12 +88,11 @@ namespace opal
             this.gestureManager.logEvent += new LogEventHandler(HandleLogEvent);
             this.logEvent += new LogEventHandler(HandleLogEvent);
             
-            // if demo, tell everyone else
+            // share flags with everyone else
             this.gestureManager.demo = this.demo;
-            
-            // if story, tell everyone else
             this.gestureManager.story = this.story;
-            
+            this.gestureManager.socialStories = this.socialStories;
+                        
             // find our sidekick
             if (!this.story)
             {

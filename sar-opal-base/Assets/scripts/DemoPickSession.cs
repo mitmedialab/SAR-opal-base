@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using System;
 using TouchScript.Gestures;
 using TouchScript.Gestures.Simple;
@@ -134,35 +135,35 @@ namespace opal
             {
             case Constants.NAME_1_PACK:
                 Debug.Log(">> Loading packing scene");
-                Application.LoadLevel(Constants.SCENE_1_PACK); // load next scene
+                SceneManager.LoadScene(Constants.SCENE_1_PACK); // load next scene
                 break;
             case Constants.NAME_2_ZOO:
                 Debug.Log(">> Loading zoo scene");
-                Application.LoadLevel(Constants.SCENE_2_ZOO); // load next scene
+                SceneManager.LoadScene(Constants.SCENE_2_ZOO); // load next scene
                 break;
             case Constants.NAME_3_PICNIC:
                 Debug.Log(">> Loading picnic scene");
-                Application.LoadLevel(Constants.SCENE_3_PICNIC); // load next scene
+                SceneManager.LoadScene(Constants.SCENE_3_PICNIC); // load next scene
                 break;
             case Constants.NAME_4_PARK:
                 Debug.Log (">> Loading park scene");
-                Application.LoadLevel(Constants.SCENE_4_PARK);
+                SceneManager.LoadScene(Constants.SCENE_4_PARK);
                 break;
             case Constants.NAME_5_ROOM:
                 Debug.Log (">> Loading room scene");
-                Application.LoadLevel(Constants.SCENE_5_ROOM);
+                SceneManager.LoadScene(Constants.SCENE_5_ROOM);
                 break;
             case Constants.NAME_6_BATH:
                 Debug.Log (">> Loading bath scene");
-                Application.LoadLevel(Constants.SCENE_6_BATH);
+                SceneManager.LoadScene(Constants.SCENE_6_BATH);
                 break;
             case Constants.NAME_7_PARTY:
                 Debug.Log (">> Loading party scene");
-                Application.LoadLevel(Constants.SCENE_7_PARTY);
+                SceneManager.LoadScene(Constants.SCENE_7_PARTY);
                 break;
             case Constants.NAME_8_BYE:
                 Debug.Log (">> Loading goodbye scene");
-                Application.LoadLevel(Constants.SCENE_8_BYE);
+                SceneManager.LoadScene(Constants.SCENE_8_BYE);
                 break;
                 
             }

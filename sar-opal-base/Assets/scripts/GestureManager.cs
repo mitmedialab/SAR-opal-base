@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using System;
 using TouchScript.Gestures;
 using TouchScript.Gestures.Simple;
@@ -301,7 +302,7 @@ namespace opal
                 // go back to the demo intro scene
                 else if(this.demo && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
                 {
-                    Application.LoadLevel(Constants.SCENE_DEMO_INTRO);
+                    SceneManager.LoadScene(Constants.SCENE_DEMO_INTRO);
                 }
  
                 // if this is a demo app, play sidekick animation if it is touched

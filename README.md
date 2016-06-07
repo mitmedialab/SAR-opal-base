@@ -3,26 +3,26 @@
 Opal is a generalized Unity game builder designed for use in child-robot interactions. Easily load different graphics for games requiring similar mechanics, all using ROS.
 
 ## Build and Run
-This tablet app was built and tested with Unity 5.0.0 and MonoDevelop 4.0.1.
+This game was built and tested with Unity 5.3.5 and MonoDevelop 5.9.6.
 
 ## Configuration
 
-The app uses configuration options listed in the websocket\_config file. There
+The gaem uses configuration options listed in the websocket\_config file. There
 is an example file located in Assets/Resources/.
 
 ### On OS X
 
-When running the app on OS X from the Unity editor, the app will check for
+When running the game on OS X from the Unity editor, the game will check for
 "Assets/Resources/websocket\_config.txt".
 
 ### On Android
 
-When running the game on Android (e.g., on a tablet), the app will first check
+When running the game on Android (e.g., on a tablet), the game will first check
 for "mnt/sdcard/edu.mit.media.prg.sar.opal.base/websocket\_config.txt". This is
-    because once the app is packaged up for Android, you can't change stuff in
+    because once the game is packaged up for Android, you can't change stuff in
     the package, so we needed a location for the config file that could be
-    easily edited after the app is installed. If that file doesn't exist, or
-    connecting fails with the values listed in that file, the app will try the
+    easily edited after the game is installed. If that file doesn't exist, or
+    connecting fails with the values listed in that file, the game will try the
     file packaged in "Assets/Resources/websocket\_config.txt". 
 
 ### Configuration options 
@@ -31,7 +31,7 @@ for "mnt/sdcard/edu.mit.media.prg.sar.opal.base/websocket\_config.txt". This is
 - port: [string] port number to use
 - toucan: [boolean] whether or not you want a toucan sidekick in the game
 
-#### Server & port On startup, the app will try to connect to the specified IP
+#### Server & port On startup, the game will try to connect to the specified IP
 
 address or host name with the specified port. The server listed should be the
 IP address or hostname of the machine running roscore and the
@@ -121,11 +121,22 @@ comments on the github gist page added in.
 
 ## Miscellaneous Notes
 
-- If you are using Unity 4.6.2: When adding new audio to the project, make sure each audio clip is set as a 2D sound. This will ensure it plays without the default volume rolloff that 3D sounds have (and thus, is audible when played). Note that the Force2DAudio script in Assets/Editor will automatically set any audio files that Unity imports from the Assets folder as 2D sounds, so you probably won't have to worry about this. (This isn't an issue in Unity 5.0.0.)
+- When adding new images to the project, make sure to set each image as
+  'Advanced' and check the 'read/write' box in the Unity editor. If you don't
+  do this, when images are programatically loaded as PlayObjects, the polygon
+      colliders won't be generated to properly fit the image's shape/outline.
+      When deploying the game, you'll probably get the error "Sprite outline
+      generation failed - could not read texture pixel data. Did you forget to
+      make the texture readable?" whenever you dynamically add a polygon
+      collider to an object. Something about textures/images not being readable
+      by scripts by default, the polygon collider needing to read the texture
+      to figure out the outline to make the collider the right shape, but not
+      being able to, and thus the collider ending up the wrong shape and making
+      collisions happen weird... 
 
-- When adding new images to the project, make sure to set each image as 'Advanced' and check the 'read/write' box in the Unity editor. If you don't do this, when images are programatically loaded as PlayObjects, the polygon colliders won't be generated to properly fit the image's shape/outline. When deploying the app, you'll probably get the error "Sprite outline generation failed - could not read texture pixel data. Did you forget to make the texture readable?" whenever you dynamically add a polygon collider to an object. Something about textures/images not being readable by scripts by default, the polygon collider needing to read the texture to figure out the outline to make the collider the right shape, but not being able to, and thus the collider ending up the wrong shape and making collisions happen weird... 
-
-- Only a small set of "demo" graphics are included in this repository. The full set is available from the Personal Robots Group - email students in the group to inquire. Add the full set to the "Resources\/base\_images" folder. 
+- Only a small set of "demo" graphics are included in this repository. The full
+  set is available from the Personal Robots Group - email students in the group
+  to inquire. Add the full set to the "Resources\/base\_images" folder. 
 
 ## Version Notes
 
@@ -137,7 +148,7 @@ The Cyber4 study was run using Opal version 2.0.0.
 
 To build and deploy the demo version, do the following:
 1. In Unity > Build Settings > Scenes in build, check all the demo scenes and uncheck basic-scene and all other non-demo scenes.
-2. In Unity > Build Settings > Player Settings, change the deployed name of the app to be "SAR Opal Demo" and the bundle identifier to be "demo" instead of "base".
+2. In Unity > Build Settings > Player Settings, change the deployed name of the game to be "SAR Opal Demo" and the bundle identifier to be "demo" instead of "base".
 3. In the MainGameController, set the flag "demo" to true.
 4. Build and deploy. 
 
@@ -148,15 +159,15 @@ The demo version of the game requires some graphics that are not included in the
 To build and deploy the Frog Where Are You storybook, do the following:
 1. Get the Frog Where Are You graphics and put them in the "Resources/graphics/base-images/frogwhereareyou/" directory.
 1. In Unity > Build Settings > Scenes in build, check the frog-where-are-you scene and uncheck the other scenes.
-2. In Unity > Build Settings > Player Settings, change the deployed name of the app to be "Frog Where Are You" and the bundle identifier to be "fway" instead of "base".
+2. In Unity > Build Settings > Player Settings, change the deployed name of the game to be "Frog Where Are You" and the bundle identifier to be "fway" instead of "base".
 3. In the MainGameController, set the flag "story" to true.
 4. Build and deploy.
 
 You can use the Frog Where Are You book as an example for how to load your own set of images for a storybook.
 
-## Bugs and problems
+## Bugs and known issues
 
-Apps made with Unity 5 cannot be deployed to non-neon devices (i.e., Android
+Games made with Unity 5 cannot be deployed to non-neon devices (i.e., Android
 tablets that have tegra boards, such as many of the older Samsung Galaxy
 tablets), because Unity 5 no longer supports these devices. Thus, Opal cannot
 be deployed to these devices.
@@ -176,9 +187,9 @@ be deployed to these devices.
 - Add some way of easily seeing which objects in the scene are draggable or able to be interacted with; used to do the grow-shrink pulse motion, but that caused havoc with the collision detection
 - Right now, the sidekick configuration is a simple true/false; you can't start out without a sidekick and add it in later. Consider adding a sar\_opal\_msg that enables or disables the sidekick, so that it can appear or disappear as needed.
 - If you try to send a message with sar\_opal\_sender to move an object but send a json file that doesn't have the right stuff in it for a move command, throws error, need to fix. More generally: we don't check that the command number matches the arguments in the json file. Should do that during message decoding.
-- Update to load images and audio from folders on the tablet's sdcard (currently, must load from the Resources folder, which gets compiled in to the Unity app)
+- Update to load images and audio from folders on the tablet's sdcard (currently, must load from the Resources folder, which gets compiled in to the Unity game)
 - Add capability to load an image on the "top left" or "bottom right" of the screen without specifying exact coordinates. Adjust the loaded image's position until no collisions are detected so it does not overlap with other images.
-- Adapt to different screen sizes (currently size of images in most apps is hard-coded, not scaling - social stories game is the only one that scales properly)
+- Adapt to different screen sizes (currently size of images in most games is hard-coded, not scaling - social stories game is the only one that scales properly)
 - Look into ROS .NET for C#. Possible replacement for websocket connection?
-- Add demo and story options to config file so you don't have to recompile and redeploy (and/or a start screen that lets you pick whether you want demo mode, story mode, etc when you start the app - use "load scene" function to pick the right one).
+- Add demo and story options to config file so you don't have to recompile and redeploy (and/or a start screen that lets you pick whether you want demo mode, story mode, etc when you start the game - use "load scene" function to pick the right one).
 

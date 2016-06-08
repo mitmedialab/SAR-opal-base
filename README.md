@@ -67,6 +67,30 @@ The game publishes "/[sar\_opal\_msgs] (https://github.com/personal-robots/sar_o
 The game publishes "/std\_msgs/Bool" to the ROS topic "opal\_tablet\_audio", to
 indicate whether the sidekick character is done playing back an audio file.
 
+### OpalCommand LOAD\_OBJECT messages
+
+When Opal receives a LOAD\_OBJECT OpalCommand message, it will attempt to load
+a GameObject with the specified properties. As the
+[/sar\_opal\_msgs](https://github.com/personal-robots/sar_opal_msgs
+"/sar\_opal\_msgs") documentation states, one of the fields you provide when
+telling Opal to load an object is the name of the associated graphic to load.
+Opal tries to load the graphic from two places:
+
+1) "Assets/Resources/graphics/base-images" directory. If the game is a social
+stories game, Opal assumes all graphics loaded will be in the
+"Assets/Resources/graphics/base-images/socialstories" directory. Either the
+base-images or socialstories directories may have subdirectories, which
+shouldsocialstories be provided as part of the graphic name. E.g.,if you want
+to load the image "happy.png" that resides in the "base-images/emotions/"
+directory, you would need to list the name of the graphic to load as
+"emotions/happy.png".
+
+2) If loading from Resources fails, Opal assumes the graphic file name provided
+is actually a full file path to the desired image (that may or may not be in
+the Resource directory), and attempts to load the graphic from that full file
+path. If this fails, the graphic is not loaded and creation of the GameObject
+will fail.
+
 ## Submodules
 
 You don't need to pull in these submodules for the main project to run (the

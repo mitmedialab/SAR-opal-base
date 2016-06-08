@@ -46,8 +46,8 @@ namespace opal
         public const string FROG_FILE_PATH = "frogwhereareyou/";
         public const string SOCIAL_STORY_FILE_PATH = "socialstories/";
         public const string SS_SCENESLOT_PATH = "scene-slots/";
-        public const string SS_ANSWERS_PATH = "answer-slots/";
-        public const string SS_SCENES_PATH = "scenes";
+        public const string SS_ANSWER_SLOT_PATH = "answer-slots/";
+        public const string SS_SCENES_PATH = "scenes/";
         public const string SS_SLOT_NAME = "slot";
         public const string SS_FEEDBACK_PATH = "feedback/";
         public const string SS_CORRECT_FEEDBACK_NAME = "pos-feedback2";

@@ -325,6 +325,9 @@ namespace opal
             {
                 // don't need file extension to load from resources folder -- strip if it exists
                 Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH 
+                    // if this is a social stories game, load from the directory of
+                    // social stories graphics
+                    + (this.socialStories ? Constants.SOCIAL_STORY_FILE_PATH : "")
                     + Path.ChangeExtension(pops.Name(), null));
                 if(sprite == null)
                 {
@@ -337,7 +340,7 @@ namespace opal
                     if(sprite == null)
                     {
                         Debug.LogError("Could not load sprite from file path: " 
-                                       + Constants.GRAPHICS_FILE_PATH + pops.Name());
+                                        + pops.Name());
                         // still don't have image - failed to load!
                         // delete game object and return
                         Debug.LogError("Could not load sprite: " + pops.Name());
@@ -1270,7 +1273,7 @@ namespace opal
             // all answer slots look the same so load one graphic and reuse it
             Sprite ans = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
                                                 + Constants.SOCIAL_STORY_FILE_PATH
-                                                + Constants.SS_ANSWERS_PATH
+                                                + Constants.SS_ANSWER_SLOT_PATH
                                                 + Constants.SS_SLOT_NAME);
             
             Sprite feedc = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH

@@ -8,25 +8,25 @@ SceneSettings:
   m_PVSPortalsArray: []
   m_OcclusionBakeSettings:
     smallestOccluder: 5
-    smallestHole: .25
+    smallestHole: 0.25
     backfaceThreshold: 100
 --- !u!104 &2
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 6
   m_Fog: 0
-  m_FogColor: {r: .5, g: .5, b: .5, a: 1}
+  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_FogMode: 3
-  m_FogDensity: .00999999978
+  m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: .200000003, g: .200000003, b: .200000003, a: 1}
-  m_AmbientEquatorColor: {r: .200000003, g: .200000003, b: .200000003, a: 1}
-  m_AmbientGroundColor: {r: .200000003, g: .200000003, b: .200000003, a: 1}
+  m_AmbientSkyColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+  m_AmbientEquatorColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+  m_AmbientGroundColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_AmbientIntensity: 1
   m_AmbientMode: 3
   m_SkyboxMaterial: {fileID: 0}
-  m_HaloStrength: .5
+  m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
   m_HaloTexture: {fileID: 0}
@@ -37,13 +37,10 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
---- !u!127 &3
-LevelGameManager:
-  m_ObjectHideFlags: 0
 --- !u!157 &4
 LightmapSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 5
+  serializedVersion: 6
   m_GIWorkflowMode: 1
   m_LightmapsMode: 1
   m_GISettings:
@@ -68,7 +65,8 @@ LightmapSettings:
     m_TextureCompression: 0
     m_FinalGather: 0
     m_FinalGatherRayCount: 1024
-  m_LightmapSnapshot: {fileID: 0}
+    m_ReflectionCompression: 2
+  m_LightingDataAsset: {fileID: 0}
   m_RuntimeCPUUsage: 25
 --- !u!196 &5
 NavMeshSettings:
@@ -76,15 +74,15 @@ NavMeshSettings:
   m_ObjectHideFlags: 0
   m_BuildSettings:
     serializedVersion: 2
-    agentRadius: .5
+    agentRadius: 0.5
     agentHeight: 2
     agentSlope: 45
-    agentClimb: .400000006
+    agentClimb: 0.4
     ledgeDropHeight: 0
     maxJumpAcrossDistance: 0
     accuratePlacement: 0
     minRegionArea: 2
-    cellSize: .166666657
+    cellSize: 0.16666666
     manualCellSize: 0
   m_NavMeshData: {fileID: 0}
 --- !u!1 &74158687
@@ -117,10 +115,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   advancedProps: 0
+  manager: {fileID: 0}
   DisableOnMobilePlatforms: 1
   Tags:
     tagList:
-    - Mouse
+    - 4d6f757365
+  mousePointId: -1
+  fakeMousePointId: -1
+  mousePointPos: {x: 0, y: 0, z: 0}
 --- !u!114 &74158690
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -133,10 +135,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   advancedProps: 0
+  manager: {fileID: 0}
   DisableOnNonTouchPlatforms: 1
   Tags:
     tagList:
-    - Touch
+    - 546f756368
 --- !u!114 &74158691
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -164,6 +167,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 6
@@ -344,12 +348,13 @@ CircleCollider2D:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 450361072}
   m_Enabled: 1
+  m_Density: 1
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: .579999983
+  m_Radius: 0.58
 --- !u!212 &450361076
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -368,14 +373,18 @@ SpriteRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
   m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
-  m_AutoUVMaxDistance: .5
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: a02f0c7becaea41c3a8843247214a1b4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
 --- !u!4 &450361077
 Transform:
   m_ObjectHideFlags: 0
@@ -385,6 +394,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -409, y: -224, z: -3}
   m_LocalScale: {x: 70, y: 70, z: 70}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 9
@@ -433,7 +443,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 734616461}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 902259921, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
+  m_Script: {fileID: 11500000, guid: a2c791a2415314ea3b9f44592097a9d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Name: MoveablesCamera
@@ -471,14 +481,14 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: .192156866, g: .301960796, b: .474509805, a: .0196078438}
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0.019607844}
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
     y: 0
     width: 1
     height: 1
-  near clip plane: .300000012
+  near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
   orthographic: 1
@@ -490,10 +500,12 @@ Camera:
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
+  m_TargetEye: 3
   m_HDR: 0
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
-  m_StereoSeparation: .0219999999
+  m_StereoSeparation: 0.022
+  m_StereoMirrorMode: 0
 --- !u!4 &734616467
 Transform:
   m_ObjectHideFlags: 0
@@ -503,6 +515,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -1, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 10
@@ -532,6 +545,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
@@ -591,6 +605,7 @@ MonoBehaviour:
   demo: 0
   story: 0
   pagesInStory: 0
+  socialStories: 1
 --- !u!4 &1288011096
 Transform:
   m_ObjectHideFlags: 0
@@ -600,6 +615,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
@@ -639,6 +655,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
@@ -692,14 +709,14 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: .192156866, g: .301960796, b: .474509805, a: .0196078438}
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0.019607844}
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
     y: 0
     width: 1
     height: 1
-  near clip plane: .300000012
+  near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
   orthographic: 1
@@ -711,10 +728,12 @@ Camera:
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
+  m_TargetEye: 3
   m_HDR: 0
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
-  m_StereoSeparation: .0219999999
+  m_StereoSeparation: 0.022
+  m_StereoMirrorMode: 0
 --- !u!4 &1648052065
 Transform:
   m_ObjectHideFlags: 0
@@ -724,6 +743,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -1, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -735,7 +755,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1648052060}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 902259921, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
+  m_Script: {fileID: 11500000, guid: a2c791a2415314ea3b9f44592097a9d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Name: Main Camera
@@ -829,19 +849,21 @@ MonoBehaviour:
   scenesInOrder: 0
 --- !u!50 &1814297111
 Rigidbody2D:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1814297109}
+  m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDrag: 0
-  m_AngularDrag: .0500000007
+  m_AngularDrag: 0.05
   m_GravityScale: 0
-  m_FixedAngle: 0
   m_IsKinematic: 1
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 1
+  m_Constraints: 0
 --- !u!114 &1814297112
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -853,17 +875,30 @@ MonoBehaviour:
   m_Script: {fileID: 1235405773, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cachedTransform: {fileID: 0}
   advancedProps: 0
   combineTouches: 0
-  combineTouchesInterval: .300000012
+  combineTouchesInterval: 0.3
   useSendMessage: 0
   sendStateChangeMessages: 0
   sendMessageTarget: {fileID: 0}
   requireGestureToFail: {fileID: 0}
   friendlyGestures: []
+  friendlyGestureIds: 
+  gestureManagerInstance: {fileID: 0}
+  delayedStateChange: 0
+  requiredGestureFailed: 0
+  state: 0
+  cachedScreenPosition: {x: 0, y: 0}
+  cachedPreviousScreenPosition: {x: 0, y: 0}
+  <PreviousState>k__BackingField: 0
   numberOfTapsRequired: 1
   timeLimit: Infinity
   distanceLimit: Infinity
+  distanceLimitInPixelsSquared: 0
+  tapsDone: 0
+  startPosition: {x: 0, y: 0}
+  totalMovement: {x: 0, y: 0}
 --- !u!212 &1814297113
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -882,14 +917,18 @@ SpriteRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
   m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
-  m_AutoUVMaxDistance: .5
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 6734f48d95f3e4ac2a8d14728927a553, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
 --- !u!4 &1814297114
 Transform:
   m_ObjectHideFlags: 0
@@ -898,7 +937,8 @@ Transform:
   m_GameObject: {fileID: 1814297109}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 75, y: -100, z: 0}
-  m_LocalScale: {x: 137.7883, y: 137.788361, z: 137.788361}
+  m_LocalScale: {x: 137.7883, y: 137.78836, z: 137.78836}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 7
@@ -913,17 +953,33 @@ MonoBehaviour:
   m_Script: {fileID: 1423175855, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cachedTransform: {fileID: 0}
   advancedProps: 0
   combineTouches: 0
-  combineTouchesInterval: .100000001
+  combineTouchesInterval: 0.1
   useSendMessage: 0
   sendStateChangeMessages: 0
   sendMessageTarget: {fileID: 0}
   requireGestureToFail: {fileID: 0}
   friendlyGestures: []
+  friendlyGestureIds: 
+  gestureManagerInstance: {fileID: 0}
+  delayedStateChange: 0
+  requiredGestureFailed: 0
+  state: 0
+  cachedScreenPosition: {x: 0, y: 0}
+  cachedPreviousScreenPosition: {x: 0, y: 0}
+  <PreviousState>k__BackingField: 0
   projection: 0
   projectionNormal: {x: 0, y: 0, z: 1}
-  movementThreshold: .200000003
+  cachedCollider: {fileID: 0}
+  projectionLayer: {fileID: 0}
+  <PreviousWorldTransformCenter>k__BackingField: {x: 0, y: 0, z: 0}
+  <WorldTransformCenter>k__BackingField: {x: 0, y: 0, z: 0}
+  movementThreshold: 0.2
+  movementBuffer: {x: 0, y: 0}
+  isMoving: 0
+  <WorldDeltaPosition>k__BackingField: {x: 0, y: 0, z: 0}
 --- !u!114 &1814297116
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -935,14 +991,23 @@ MonoBehaviour:
   m_Script: {fileID: 1088824302, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cachedTransform: {fileID: 0}
   advancedProps: 0
   combineTouches: 0
-  combineTouchesInterval: .300000012
+  combineTouchesInterval: 0.3
   useSendMessage: 0
   sendStateChangeMessages: 0
   sendMessageTarget: {fileID: 0}
   requireGestureToFail: {fileID: 0}
   friendlyGestures: []
+  friendlyGestureIds: 
+  gestureManagerInstance: {fileID: 0}
+  delayedStateChange: 0
+  requiredGestureFailed: 0
+  state: 0
+  cachedScreenPosition: {x: 0, y: 0}
+  cachedPreviousScreenPosition: {x: 0, y: 0}
+  <PreviousState>k__BackingField: 0
   ignoreChildren: 0
 --- !u!114 &1814297117
 MonoBehaviour:
@@ -955,14 +1020,23 @@ MonoBehaviour:
   m_Script: {fileID: 438491968, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cachedTransform: {fileID: 0}
   advancedProps: 0
   combineTouches: 0
-  combineTouchesInterval: .300000012
+  combineTouchesInterval: 0.3
   useSendMessage: 0
   sendStateChangeMessages: 0
   sendMessageTarget: {fileID: 0}
   requireGestureToFail: {fileID: 0}
   friendlyGestures: []
+  friendlyGestureIds: 
+  gestureManagerInstance: {fileID: 0}
+  delayedStateChange: 0
+  requiredGestureFailed: 0
+  state: 0
+  cachedScreenPosition: {x: 0, y: 0}
+  cachedPreviousScreenPosition: {x: 0, y: 0}
+  <PreviousState>k__BackingField: 0
   ignoreChildren: 0
 --- !u!114 &1814297118
 MonoBehaviour:
@@ -975,9 +1049,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 037379eaac6224f988f36488ce820dfe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scaleUpBy: 1.10000002
-  scaleUpOnce: 1.29999995
-  scaleTime: .800000012
+  scaleUpBy: 1.1
+  scaleUpOnce: 1.3
+  scaleTime: 0.8
 --- !u!114 &1814297119
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1002,45 +1076,46 @@ PolygonCollider2D:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1814297109}
   m_Enabled: 1
+  m_Density: 1
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_Offset: {x: 0, y: 0}
   m_Points:
     m_Paths:
-    - - {x: .25, y: -.300000012}
-      - {x: .289999992, y: -.25999999}
-      - {x: .340000004, y: -.219999999}
-      - {x: .349999994, y: -.109999999}
-      - {x: .349999994, y: -.0599999987}
-      - {x: .330000013, y: .00999999978}
-      - {x: .389999986, y: .129999995}
-      - {x: .529999971, y: .180000007}
-      - {x: .529999971, y: .230000004}
-      - {x: .469999999, y: .280000001}
-      - {x: .469999999, y: .340000004}
-      - {x: .389999986, y: .449999988}
-      - {x: .310000002, y: .469999999}
-      - {x: .200000003, y: .469999999}
-      - {x: .140000001, y: .370000005}
-      - {x: .109999999, y: .300000012}
-      - {x: .0900000036, y: .200000003}
-      - {x: .0700000003, y: .109999999}
-      - {x: -.109999999, y: -.0599999987}
-      - {x: -.25999999, y: -.0900000036}
-      - {x: -.540000021, y: -.129999995}
-      - {x: -.579999983, y: -.170000002}
-      - {x: -.579999983, y: -.209999993}
-      - {x: -.519999981, y: -.25999999}
-      - {x: -.349999994, y: -.289999992}
-      - {x: -.239999995, y: -.360000014}
-      - {x: -.0599999987, y: -.400000006}
-      - {x: -.119999997, y: -.430000007}
-      - {x: -.109999999, y: -.479999989}
-      - {x: .109999999, y: -.479999989}
-      - {x: .129999995, y: -.409999996}
-      - {x: .0900000036, y: -.400000006}
-      - {x: .189999998, y: -.340000004}
+    - - {x: 0.25, y: -0.3}
+      - {x: 0.29, y: -0.26}
+      - {x: 0.34, y: -0.22}
+      - {x: 0.35, y: -0.11}
+      - {x: 0.35, y: -0.06}
+      - {x: 0.33, y: 0.01}
+      - {x: 0.39, y: 0.13}
+      - {x: 0.53, y: 0.18}
+      - {x: 0.53, y: 0.23}
+      - {x: 0.47, y: 0.28}
+      - {x: 0.47, y: 0.34}
+      - {x: 0.39, y: 0.45}
+      - {x: 0.31, y: 0.47}
+      - {x: 0.2, y: 0.47}
+      - {x: 0.14, y: 0.37}
+      - {x: 0.11, y: 0.3}
+      - {x: 0.09, y: 0.2}
+      - {x: 0.07, y: 0.11}
+      - {x: -0.11, y: -0.06}
+      - {x: -0.26, y: -0.09}
+      - {x: -0.54, y: -0.13}
+      - {x: -0.58, y: -0.17}
+      - {x: -0.58, y: -0.21}
+      - {x: -0.52, y: -0.26}
+      - {x: -0.35, y: -0.29}
+      - {x: -0.24, y: -0.36}
+      - {x: -0.06, y: -0.4}
+      - {x: -0.12, y: -0.43}
+      - {x: -0.11, y: -0.48}
+      - {x: 0.11, y: -0.48}
+      - {x: 0.13, y: -0.41}
+      - {x: 0.09, y: -0.4}
+      - {x: 0.19, y: -0.34}
 --- !u!114 &1814297121
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1054,6 +1129,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Speed: 10
   PanMultiplier: 1
+  localPositionToGo: {x: 0, y: 0, z: 0}
+  localScaleToGo: {x: 0, y: 0, z: 0}
+  localRotationToGo: {x: 0, y: 0, z: 0, w: 0}
+  lastLocalPosition: {x: 0, y: 0, z: 0}
+  lastLocalScale: {x: 0, y: 0, z: 0}
+  lastLocalRotation: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1001 &1899990904
 Prefab:
   m_ObjectHideFlags: 0
@@ -1169,14 +1250,18 @@ SpriteRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
   m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
-  m_AutoUVMaxDistance: .5
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 3acde28acf9b847caa9de4099ca741aa, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
 --- !u!4 &2051130754
 Transform:
   m_ObjectHideFlags: 0
@@ -1185,7 +1270,8 @@ Transform:
   m_GameObject: {fileID: 2051130752}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 200, y: 200, z: 0}
-  m_LocalScale: {x: 221.62558, y: 221.625671, z: 221.625671}
+  m_LocalScale: {x: 221.62558, y: 221.62567, z: 221.62567}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
@@ -1200,32 +1286,47 @@ MonoBehaviour:
   m_Script: {fileID: 1235405773, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cachedTransform: {fileID: 0}
   advancedProps: 0
   combineTouches: 0
-  combineTouchesInterval: .300000012
+  combineTouchesInterval: 0.3
   useSendMessage: 0
   sendStateChangeMessages: 0
   sendMessageTarget: {fileID: 0}
   requireGestureToFail: {fileID: 0}
   friendlyGestures: []
+  friendlyGestureIds: 
+  gestureManagerInstance: {fileID: 0}
+  delayedStateChange: 0
+  requiredGestureFailed: 0
+  state: 0
+  cachedScreenPosition: {x: 0, y: 0}
+  cachedPreviousScreenPosition: {x: 0, y: 0}
+  <PreviousState>k__BackingField: 0
   numberOfTapsRequired: 1
   timeLimit: Infinity
   distanceLimit: Infinity
+  distanceLimitInPixelsSquared: 0
+  tapsDone: 0
+  startPosition: {x: 0, y: 0}
+  totalMovement: {x: 0, y: 0}
 --- !u!50 &2051130757
 Rigidbody2D:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2051130752}
+  m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0
   m_GravityScale: 0
-  m_FixedAngle: 0
   m_IsKinematic: 1
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!114 &2051130758
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1237,17 +1338,33 @@ MonoBehaviour:
   m_Script: {fileID: 1423175855, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cachedTransform: {fileID: 0}
   advancedProps: 0
   combineTouches: 0
-  combineTouchesInterval: .300000012
+  combineTouchesInterval: 0.3
   useSendMessage: 0
   sendStateChangeMessages: 0
   sendMessageTarget: {fileID: 0}
   requireGestureToFail: {fileID: 0}
   friendlyGestures: []
+  friendlyGestureIds: 
+  gestureManagerInstance: {fileID: 0}
+  delayedStateChange: 0
+  requiredGestureFailed: 0
+  state: 0
+  cachedScreenPosition: {x: 0, y: 0}
+  cachedPreviousScreenPosition: {x: 0, y: 0}
+  <PreviousState>k__BackingField: 0
   projection: 0
   projectionNormal: {x: 0, y: 0, z: 1}
-  movementThreshold: .200000003
+  cachedCollider: {fileID: 0}
+  projectionLayer: {fileID: 0}
+  <PreviousWorldTransformCenter>k__BackingField: {x: 0, y: 0, z: 0}
+  <WorldTransformCenter>k__BackingField: {x: 0, y: 0, z: 0}
+  movementThreshold: 0.2
+  movementBuffer: {x: 0, y: 0}
+  isMoving: 0
+  <WorldDeltaPosition>k__BackingField: {x: 0, y: 0, z: 0}
 --- !u!82 &2051130759
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1263,6 +1380,7 @@ AudioSource:
   m_Pitch: 1
   Loop: 0
   Mute: 0
+  Spatialize: 0
   Priority: 128
   DopplerLevel: 1
   MinDistance: 1
@@ -1287,6 +1405,7 @@ AudioSource:
       tangentMode: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
+    m_RotationOrder: 4
   panLevelCustomCurve:
     serializedVersion: 2
     m_Curve:
@@ -1297,6 +1416,7 @@ AudioSource:
       tangentMode: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
+    m_RotationOrder: 4
   spreadCustomCurve:
     serializedVersion: 2
     m_Curve:
@@ -1307,6 +1427,7 @@ AudioSource:
       tangentMode: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
+    m_RotationOrder: 4
   reverbZoneMixCustomCurve:
     serializedVersion: 2
     m_Curve:
@@ -1317,6 +1438,7 @@ AudioSource:
       tangentMode: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!114 &2051130760
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1328,14 +1450,23 @@ MonoBehaviour:
   m_Script: {fileID: 1088824302, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cachedTransform: {fileID: 0}
   advancedProps: 0
   combineTouches: 0
-  combineTouchesInterval: .300000012
+  combineTouchesInterval: 0.3
   useSendMessage: 0
   sendStateChangeMessages: 0
   sendMessageTarget: {fileID: 0}
   requireGestureToFail: {fileID: 0}
   friendlyGestures: []
+  friendlyGestureIds: 
+  gestureManagerInstance: {fileID: 0}
+  delayedStateChange: 0
+  requiredGestureFailed: 0
+  state: 0
+  cachedScreenPosition: {x: 0, y: 0}
+  cachedPreviousScreenPosition: {x: 0, y: 0}
+  <PreviousState>k__BackingField: 0
   ignoreChildren: 0
 --- !u!114 &2051130761
 MonoBehaviour:
@@ -1348,14 +1479,23 @@ MonoBehaviour:
   m_Script: {fileID: 438491968, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cachedTransform: {fileID: 0}
   advancedProps: 0
   combineTouches: 0
-  combineTouchesInterval: .300000012
+  combineTouchesInterval: 0.3
   useSendMessage: 0
   sendStateChangeMessages: 0
   sendMessageTarget: {fileID: 0}
   requireGestureToFail: {fileID: 0}
   friendlyGestures: []
+  friendlyGestureIds: 
+  gestureManagerInstance: {fileID: 0}
+  delayedStateChange: 0
+  requiredGestureFailed: 0
+  state: 0
+  cachedScreenPosition: {x: 0, y: 0}
+  cachedPreviousScreenPosition: {x: 0, y: 0}
+  <PreviousState>k__BackingField: 0
   ignoreChildren: 0
 --- !u!114 &2051130762
 MonoBehaviour:
@@ -1368,9 +1508,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 037379eaac6224f988f36488ce820dfe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scaleUpBy: 1.10000002
-  scaleUpOnce: 1.29999995
-  scaleTime: .800000012
+  scaleUpBy: 1.1
+  scaleUpOnce: 1.3
+  scaleTime: 0.8
 --- !u!114 &2051130763
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1407,63 +1547,64 @@ PolygonCollider2D:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2051130752}
   m_Enabled: 1
+  m_Density: 1
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_Offset: {x: 0, y: 0}
   m_Points:
     m_Paths:
-    - - {x: .300000012, y: -.425000012}
-      - {x: .280000001, y: -.204999998}
-      - {x: .180000007, y: -.0649999976}
-      - {x: .119999997, y: .0149999997}
-      - {x: .159999996, y: .0949999988}
-      - {x: .200000003, y: .0149999997}
-      - {x: .319999993, y: .0350000001}
-      - {x: .389999986, y: .0549999997}
-      - {x: .620000005, y: .0850000009}
-      - {x: .639999986, y: .144999996}
-      - {x: .639999986, y: .174999997}
-      - {x: .579999983, y: .204999998}
-      - {x: .239999995, y: .405000001}
-      - {x: .109999999, y: .344999999}
-      - {x: .00999999978, y: .174999997}
-      - {x: -.119999997, y: .115000002}
-      - {x: -.100000001, y: .294999987}
-      - {x: -.0900000036, y: .535000026}
-      - {x: -.119999997, y: .574999988}
-      - {x: -.140000001, y: .574999988}
-      - {x: -.170000002, y: .564999998}
-      - {x: -.25, y: .535000026}
-      - {x: -.349999994, y: .574999988}
-      - {x: -.379999995, y: .574999988}
-      - {x: -.430000007, y: .495000005}
-      - {x: -.579999983, y: .395000011}
-      - {x: -.629999995, y: .314999998}
-      - {x: -.629999995, y: .215000004}
-      - {x: -.5, y: .135000005}
-      - {x: -.519999981, y: .0949999988}
-      - {x: -.5, y: .075000003}
-      - {x: -.449999988, y: .0649999976}
-      - {x: -.409999996, y: .0350000001}
-      - {x: -.50999999, y: -.0649999976}
-      - {x: -.519999981, y: -.115000002}
-      - {x: -.49000001, y: -.144999996}
-      - {x: -.439999998, y: -.254999995}
-      - {x: -.389999986, y: -.254999995}
-      - {x: -.360000014, y: -.245000005}
-      - {x: -.330000013, y: -.245000005}
-      - {x: -.310000002, y: -.414999992}
-      - {x: -.25, y: -.425000012}
-      - {x: -.180000007, y: -.425000012}
-      - {x: 0, y: -.36500001}
-      - {x: .150000006, y: -.354999989}
-      - {x: .170000002, y: -.504999995}
-      - {x: .25999999, y: -.584999979}
-      - {x: .479999989, y: -.584999979}
-      - {x: .50999999, y: -.535000026}
-      - {x: .519999981, y: -.465000004}
-      - {x: .449999988, y: -.425000012}
+    - - {x: 0.3, y: -0.425}
+      - {x: 0.28, y: -0.205}
+      - {x: 0.18, y: -0.065}
+      - {x: 0.12, y: 0.015}
+      - {x: 0.16, y: 0.095}
+      - {x: 0.2, y: 0.015}
+      - {x: 0.32, y: 0.035}
+      - {x: 0.39, y: 0.055}
+      - {x: 0.62, y: 0.085}
+      - {x: 0.64, y: 0.145}
+      - {x: 0.64, y: 0.175}
+      - {x: 0.58, y: 0.205}
+      - {x: 0.24, y: 0.405}
+      - {x: 0.11, y: 0.345}
+      - {x: 0.01, y: 0.175}
+      - {x: -0.12, y: 0.115}
+      - {x: -0.1, y: 0.295}
+      - {x: -0.09, y: 0.535}
+      - {x: -0.12, y: 0.575}
+      - {x: -0.14, y: 0.575}
+      - {x: -0.17, y: 0.565}
+      - {x: -0.25, y: 0.535}
+      - {x: -0.35, y: 0.575}
+      - {x: -0.38, y: 0.575}
+      - {x: -0.43, y: 0.495}
+      - {x: -0.58, y: 0.395}
+      - {x: -0.63, y: 0.315}
+      - {x: -0.63, y: 0.215}
+      - {x: -0.5, y: 0.135}
+      - {x: -0.52, y: 0.095}
+      - {x: -0.5, y: 0.075}
+      - {x: -0.45, y: 0.065}
+      - {x: -0.41, y: 0.035}
+      - {x: -0.51, y: -0.065}
+      - {x: -0.52, y: -0.115}
+      - {x: -0.49, y: -0.145}
+      - {x: -0.44, y: -0.255}
+      - {x: -0.39, y: -0.255}
+      - {x: -0.36, y: -0.245}
+      - {x: -0.33, y: -0.245}
+      - {x: -0.31, y: -0.415}
+      - {x: -0.25, y: -0.425}
+      - {x: -0.18, y: -0.425}
+      - {x: 0, y: -0.365}
+      - {x: 0.15, y: -0.355}
+      - {x: 0.17, y: -0.505}
+      - {x: 0.26, y: -0.585}
+      - {x: 0.48, y: -0.585}
+      - {x: 0.51, y: -0.535}
+      - {x: 0.52, y: -0.465}
+      - {x: 0.45, y: -0.425}
 --- !u!114 &2051130766
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1477,3 +1618,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Speed: 10
   PanMultiplier: 1
+  localPositionToGo: {x: 0, y: 0, z: 0}
+  localScaleToGo: {x: 0, y: 0, z: 0}
+  localRotationToGo: {x: 0, y: 0, z: 0, w: 0}
+  lastLocalPosition: {x: 0, y: 0, z: 0}
+  lastLocalScale: {x: 0, y: 0, z: 0}
+  lastLocalRotation: {x: 0, y: 0, z: 0, w: 0}

@@ -1,8 +1,6 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
-using TouchScript.Gestures;
-using TouchScript.Hit;
 using TouchScript.Behaviors;
 using System.IO;
 
@@ -36,7 +34,7 @@ namespace opal
         private GameObject fader = null; 
     
         // DEMO VERSION
-        private bool demo = false;
+        private bool demo = true;
         
         // STORYBOOK VERSION
         private bool story = false;
@@ -448,12 +446,11 @@ namespace opal
                 // note that the AddAndSubscribeToGestures function also
                 // checks to add a transformer if there isn't one if the 
                 // object is supposed to be draggable
-                Transformer2D t2d = go.GetComponent<Transformer2D>();
-                if (t2d == null) 
+                Transformer trans = go.GetComponent<Transformer>();
+                if (trans == null) 
                 {
-                    t2d = go.AddComponent<Transformer2D>();
-                    t2d.Speed = 30;
-                    t2d.enabled = true;
+                    trans = go.AddComponent<Transformer>();
+                    trans.enabled = true;
                 }
             }
             // if the object is not draggable, then we don't need a rigidbody because
@@ -503,13 +500,14 @@ namespace opal
             // component, drag will work. if we don't, then the Transformer2D 
             // component will be enabled but dragging will do nothing. not 
             // sure why...
-            if (go.GetComponent<Transformer2D>() != null)
+            // TODO is this still needed? trying without!
+            //if (go.GetComponent<Transformer>() != null)
+            //{
+            //    go.GetComponent<Transformer>().enabled = false;
+            //}
+            if (go.GetComponent<Transformer>() != null)
             {
-                go.GetComponent<Transformer2D>().enabled = false;
-            }
-            if (go.GetComponent<Transformer2D>() != null)
-            {
-                go.GetComponent<Transformer2D>().enabled = true;
+                go.GetComponent<Transformer>().enabled = true;
             }
         }
     
@@ -1024,10 +1022,10 @@ namespace opal
                 if(objs.Length == 0)
                     continue;
                 foreach(GameObject go in objs) {
-                    if (go.GetComponent<Transformer2D>() != null)
+                    if (go.GetComponent<Transformer>() != null)
                     {
                         Debug.Log("touch " + (enabled ? "enabled" : "disabled") + " for " + go.name);
-                        go.GetComponent<Transformer2D>().enabled = enabled;
+                        go.GetComponent<Transformer>().enabled = enabled;
                     }
                 }
             }
@@ -1382,7 +1380,7 @@ namespace opal
                 so.scale = new float[] { gos[i].transform.localScale.x,
                     gos[i].transform.localScale.y, gos[i].transform.localScale.z };
                 // is this object draggable?
-                so.draggable = (gos[i].GetComponent<PanGesture>() != null);
+                so.draggable = (gos[i].GetComponent<Transformer>() != null);
                 // get audio clip name
                 AudioSource auds = gos[i].GetComponent<AudioSource>();
                 if(auds != null && auds.clip != null) { so.audio = auds.clip.name; }

@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
 using TouchScript.Gestures;
-using TouchScript.Gestures.Simple;
 using TouchScript.Behaviors;
 using TouchScript.Hit;
 
@@ -128,11 +127,11 @@ namespace opal
                     tg.Tapped -= tappedHandler;
                     Debug.Log(go.name + " unsubscribed from tap events");
                 }
-                PanGesture pg = go.GetComponent<PanGesture>();
-                if(pg != null) {
-                    pg.Panned -= pannedHandler;
-                    pg.PanCompleted -= panCompleteHandler;
-                    pg.PanStarted -= panStartedHandler;
+                TransformGesture trg = go.GetComponent<TransformGesture>();
+                if(trg != null) {
+                    trg.Transformed -= transformedHandler;
+                    trg.TransformCompleted -= transformCompleteHandler;
+                    trg.TransformStarted -= transformStartedHandler;
                     Debug.Log(go.name + " unsubscribed from pan events");
                 }
                 PressGesture prg = go.GetComponent<PressGesture>();
@@ -200,23 +199,23 @@ namespace opal
             // if this object is draggable, handle pan events
             if(draggable) {
                 // add pan gesture component if one doesn't exist yet
-                PanGesture pg = go.GetComponent<PanGesture>();
-                if(pg == null) {
-                    pg = go.AddComponent<PanGesture>();
+                TransformGesture trg = go.GetComponent<TransformGesture>();
+                if(trg == null) {
+                    trg = go.AddComponent<TransformGesture>();
+                    trg.Type = TouchScript.Gestures.Base.TransformGestureBase.TransformType.Translation;
                 }
-                if(pg != null) {
-                    pg.CombineTouchesInterval = 0.2f;
-                    pg.PanStarted += panStartedHandler;
-                    pg.Panned += pannedHandler;
-                    pg.PanCompleted += panCompleteHandler;
+                if(trg != null) {
+                    trg.CombineTouchesInterval = 0.2f;
+                    trg.TransformStarted += transformStartedHandler;
+                    trg.Transformed -= transformedHandler;
+                    trg.TransformCompleted += transformCompleteHandler;
                     Debug.Log(go.name + " subscribed to pan events");
                 }
                 
                 // make sure we do have a transformer if we're draggable
-                Transformer2D t2d = go.GetComponent<Transformer2D>();
-                if (t2d == null) {
-                    t2d = go.AddComponent<Transformer2D>();
-                    t2d.Speed = 30;
+                Transformer tr = go.GetComponent<Transformer>();
+                if (tr == null) {
+                    tr = go.AddComponent<Transformer>();
                 }
             }
            
@@ -271,22 +270,20 @@ namespace opal
             // get the gesture that was sent to us
             // this gesture will tell us what object was touched
             TapGesture gesture = sender as TapGesture;
-            ITouchHit hit;
+            TouchHit hit;
             // get info about where the hit object was located when the gesture was
             // recognized - i.e., where on the object (in screen dimensions) did
             // the tap occur?
             if(gesture.GetTargetHitResult(out hit)) {
                 // want the info as a 2D point 
-                ITouchHit2D hit2d = (ITouchHit2D)hit; 
-                //Debug.Log("TAP registered on " + gesture.gameObject.name + " at " + hit2d.Point);
+                Debug.Log("TAP registered on " + gesture.gameObject.name + " at " + hit.Point);
             
                 // fire event indicating that we received a message
                 if(this.logEvent != null) {
                     // only send subset of msg that is actual message
                     this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                    gesture.gameObject.name, "tap", hit2d.Point));
+                    gesture.gameObject.name, "tap", hit.Point));
                 }
-                
                 
 				// if this is a story, use arrows to go next/back in pages
 				if(this.story && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
@@ -341,15 +338,13 @@ namespace opal
             // get the gesture that was sent to us, which will tell us 
             // which object was pressed
             PressGesture gesture = sender as PressGesture;
-            ITouchHit hit;
+            TouchHit hit;
             // get info about where the hit object was located when the gesture was
             // recognized - i.e., where on the object (in screen dimensions) did
             // the press occur?
             if(gesture.GetTargetHitResult(out hit)) 
             {
-                // want the info as a 2D point 
-                ITouchHit2D hit2d = (ITouchHit2D)hit; 
-                Debug.Log("PRESS on " + gesture.gameObject.name + " at " + hit2d.Point);
+                Debug.Log("PRESS on " + gesture.gameObject.name + " at " + hit.Point);
             
                 // fire event to logger to log this action
                 if(this.logEvent != null) 
@@ -361,7 +356,7 @@ namespace opal
                         // log the press plus whether or not the pressed object was a YES or NO
                         // button, or whether the object was a CORRECT or INCORRECT object
                         this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                            gesture.gameObject.name, "press", hit2d.Point,
+                            gesture.gameObject.name, "press", hit.Point,
                             (gesture.gameObject.name.Contains("yes_button") ? "YES" 
                             : (gesture.gameObject.name.Contains("no_button") ? "NO"
                             : (gesture.gameObject.GetComponent<SavedProperties>().isCorrect ? "CORRECT"
@@ -372,7 +367,7 @@ namespace opal
                     {
                         // log the press
                         this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                            gesture.gameObject.name, "press", hit2d.Point));
+                            gesture.gameObject.name, "press", hit.Point));
                     }
                 }
             
@@ -433,38 +428,34 @@ namespace opal
         /// </summary>
         /// <param name="sender">Sender.</param>
         /// <param name="e">E.</param>
-        private void panStartedHandler (object sender, EventArgs e)
+        private void transformStartedHandler (object sender, EventArgs e)
         {
             // get the gesture that was sent to us, which will tell us 
             // which object was being dragged
-            PanGesture gesture = sender as PanGesture;
-            ITouchHit hit;
+            TransformGesture gesture = sender as TransformGesture;
+            TouchHit hit;
             // get info about where the hit object was located when the gesture was
             // recognized - i.e., where on the object (in screen dimensions) did
             // the drag occur?
             if(gesture.GetTargetHitResult(out hit)) {
-                // want the info as a 2D point 
-                ITouchHit2D hit2d = (ITouchHit2D)hit; 
-                Debug.Log("PAN STARTED on " + gesture.gameObject.name + " at " + hit2d.Point);
+                Debug.Log("PAN STARTED on " + gesture.gameObject.name + " at " + hit.Point);
                 // move this game object with the drag
                 // note that hit2d.Point sets the z position to 0! does not keep
                 // track what the z position actually was! so we adjust for this when
                 // we check the allowed moves
                 if(this.allowTouch)
                 {
-                   // the transformer2D component moves object on pan events
-                    // send the light the z position of the panned object because
-                    // the 'hit2d' point doesn't have the right z position (is always
-                    // just zero)
-                    LightOn(1, new Vector3(hit2d.Point.x, hit2d.Point.y, 
+                   // the transformer component moves object on pan events
+                    // send the light the z position of the panned object so it
+                    // shows up in the right plane 
+                    LightOn(1, new Vector3(hit.Point.x, hit.Point.y, 
                                            gesture.gameObject.transform.position.z));
                 }
                 // fire event indicating that we received a message
                 if(this.logEvent != null) {
                     // only send subset of msg that is actual message
-                    // note that the hit2d.Point may not have the correct z position
                     this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                                                     gesture.gameObject.name, "pan", hit2d.Point));
+                                                     gesture.gameObject.name, "pan", hit.Point));
                 }
                 
             } else {
@@ -479,35 +470,26 @@ namespace opal
         /// </summary>
         /// <param name="sender">Sender.</param>
         /// <param name="e">E.</param>
-        private void pannedHandler (object sender, EventArgs e)
+        private void transformedHandler (object sender, EventArgs e)
         {
             // get the gesture that was sent to us, which will tell us 
             // which object was being dragged
-            PanGesture gesture = sender as PanGesture;
-            ITouchHit hit;
+            TransformGesture gesture = sender as TransformGesture;
+            TouchHit hit;
             // get info about where the hit object was located when the gesture was
             // recognized - i.e., where on the object (in screen dimensions) did
             // the drag occur?
             
             if(gesture.GetTargetHitResult(out hit)) {
-                // want the info as a 2D point 
-                ITouchHit2D hit2d = (ITouchHit2D)hit; 
-                Debug.Log("PAN on " + gesture.gameObject.name + " at " + hit2d.Point);
+                Debug.Log("PAN on " + gesture.gameObject.name + " at " + hit.Point);
                 // move this game object with the drag
-                // note that hit2d.Point sets the z position to 0! does not keep
-                // track what the z position actually was! so we adjust for this when
-                // we check the allowed moves
                 if(this.allowTouch)
                 {
-                    // the transformer2D component moves object on pan events
-                   // gesture.gameObject.transform.position = 
-                     //   CheckAllowedMoves(hit2d.Point, gesture.gameObject.transform.position.z);
-                    // move highlighting light and set active
-                    
-                    // send the light the z position of the panned object because
-                    // the 'hit2d' point doesn't have the right z position (is always
-                    // just zero)
-                    LightOn(1, new Vector3(hit2d.Point.x, hit2d.Point.y, 
+                    // the transformer component moves object on pan events
+
+                    // send the light the z position of the panned object so it shows
+                    // up in the right plane
+                    LightOn(1, new Vector3(hit.Point.x, hit.Point.y, 
                                            gesture.gameObject.transform.position.z));
                 // fire event indicating that we received a message
                 }
@@ -515,7 +497,7 @@ namespace opal
                     // only send subset of msg that is actual message
                     // note that the hit2d.Point may not have the correct z position
                     this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                        gesture.gameObject.name, "pan", hit2d.Point));
+                        gesture.gameObject.name, "pan", hit.Point));
                 }
 
             } else {
@@ -531,7 +513,7 @@ namespace opal
         /// </summary>
         /// <param name="sender">Sender.</param>
         /// <param name="e">E.</param>
-        private void panCompleteHandler (object sender, EventArgs e)
+        private void transformCompleteHandler (object sender, EventArgs e)
         {
             Debug.Log("PAN COMPLETE");
             LightOff();
@@ -555,20 +537,18 @@ namespace opal
 			// which object was flicked
 			FlickGesture gesture = sender as FlickGesture;
 			
-			ITouchHit hit;
+			TouchHit hit;
 			// get info about where the hit object was located when the gesture was
 			// recognized - i.e., where on the object (in screen dimensions) did
 			// the flick occur?
 			if(gesture.GetTargetHitResult(out hit)) {
-				// want the info as a 2D point 
-				ITouchHit2D hit2d = (ITouchHit2D)hit; 
-				Debug.Log("FLICK on " + gesture.gameObject.name + " at " + hit2d.Point);
+				Debug.Log("FLICK on " + gesture.gameObject.name + " at " + hit.Point);
 				
 				// fire event to logger to log this action
 				if(this.logEvent != null) {
 					// log the flick
 					this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-					              gesture.gameObject.name, "flick", hit2d.Point));
+					              gesture.gameObject.name, "flick", hit.Point));
 				}
 				
 				

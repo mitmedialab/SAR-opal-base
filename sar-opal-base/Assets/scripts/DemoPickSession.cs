@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
 using TouchScript.Gestures;
-using TouchScript.Gestures.Simple;
 using TouchScript.Behaviors;
 using TouchScript.Hit;
 
@@ -81,8 +80,8 @@ namespace opal
         void Update() 
         {
             // if user presses escape or 'back' button on android, exit program
-            if (Input.GetKeyDown (KeyCode.Escape))
-                Application.Quit ();
+            if (Input.GetKeyDown(KeyCode.Escape))
+                Application.Quit();
         }
         
         /// <summary>
@@ -95,14 +94,12 @@ namespace opal
             // get the gesture that was sent to us
             // this gesture will tell us what object was touched
             TapGesture gesture = sender as TapGesture;
-            ITouchHit hit;
+            TouchHit hit;
             // get info about where the hit object was located when the gesture was
             // recognized - i.e., where on the object (in screen dimensions) did
             // the tap occur?
             if(gesture.GetTargetHitResult(out hit)) {
-                // want the info as a 2D point 
-                ITouchHit2D hit2d = (ITouchHit2D)hit; 
-                Debug.Log("TAP registered on " + gesture.gameObject.name + " at " + hit2d.Point);
+                Debug.Log("TAP registered on " + gesture.gameObject.name + " at " + hit.Point);
                 
                 // load a scene if its object is touched
                 if (gesture.gameObject.tag.Contains(Constants.TAG_PLAY_OBJECT))

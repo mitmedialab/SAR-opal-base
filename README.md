@@ -91,14 +91,18 @@ to Contribute"). For 8.1, the steps are:
 - run `Build/package.sh`
 - import the generated TouchScript.unitypackage file in the Unity editor 
 
-Note that the MainCamera in the Unity scene needs a CameraLayer2D component
-attached. The camera layer is used to "see" which objects in the scene can be
-touched - see [Layers] (https://github.com/TouchScript/TouchScript/wiki/Layers
-"TouchScript Layers"). If you don't have a camera layer of some kind attached
-to the MainCamera, TouchScript will automatically add one, but the default is a
-CameraLayer that handles 3D objects and 3D colliders. Since Opal is a 2D game,
-we need to use the CameraLayer2D, which is for 2D objects and 2D colliders.
-(Emphasizing this extra because it can cause needless headache.)
+Note that the MainCamera and the Moveables Camera in the Unity scene each need
+a CameraLayer2D component attached. The camera layer is used to "see" which
+objects in the scene can be touched - see [Layers]
+(https://github.com/TouchScript/TouchScript/wiki/Layers "TouchScript Layers").
+If you don't have a camera layer of some kind attached to the MainCamera,
+TouchScript will automatically add one, but the default is a CameraLayer that
+handles 3D objects and 3D colliders. Since Opal is a 2D game, we need to use
+the CameraLayer2D, which is for 2D objects and 2D colliders.  (Emphasizing this
+extra because it can cause needless headache.)
+
+The TouchScript game object should have a Touch Manager component attached,
+which will list the different camera layers in the scene.
 
 ### LeanTween
 [LeanTween] (https://github.com/dentedpixel/LeanTween/ "LeanTween git") is a library for animating sprites ([docs here] (http://dentedpixel.com/LeanTweenDocumentation/classes/LeanTween.html "LeanTween docs")).

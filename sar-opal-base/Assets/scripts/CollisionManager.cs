@@ -61,7 +61,7 @@ namespace opal
                     // TODO show correct visual feedback for this slot briefly?
                     
                     // stop moving -- remove draggable and rigid body
-                    Destroy(this.GetComponent<TouchScript.Behaviors.Transformer2D>());
+                    Destroy(this.GetComponent<TouchScript.Behaviors.Transformer>());
                     Destroy(this.GetComponent<Rigidbody2D>());
                     
                     // Stop detecting collisions -- remove collision manager

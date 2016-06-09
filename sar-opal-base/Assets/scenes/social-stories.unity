@@ -93,9 +93,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 74158692}
-  - 114: {fileID: 74158690}
-  - 114: {fileID: 74158689}
-  - 114: {fileID: 74158691}
+  - 114: {fileID: 74158688}
   m_Layer: 0
   m_Name: TouchScript
   m_TagString: Untagged
@@ -103,7 +101,7 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &74158689
+--- !u!114 &74158688
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -111,47 +109,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 74158687}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -102971247, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  advancedProps: 0
-  manager: {fileID: 0}
-  DisableOnMobilePlatforms: 1
-  Tags:
-    tagList:
-    - 4d6f757365
-  mousePointId: -1
-  fakeMousePointId: -1
-  mousePointPos: {x: 0, y: 0, z: 0}
---- !u!114 &74158690
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 74158687}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 770742126, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  advancedProps: 0
-  manager: {fileID: 0}
-  DisableOnNonTouchPlatforms: 1
-  Tags:
-    tagList:
-    - 546f756368
---- !u!114 &74158691
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 74158687}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -409488130, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
+  m_Script: {fileID: 11500000, guid: 0dd4c394fe06f4ea49e03aaa5e7a8190, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   displayDevice: {fileID: 0}
+  shouldCreateCameraLayer: 1
+  shouldCreateStandardInput: 1
   useSendMessage: 0
   sendMessageEvents: 60
   sendMessageTarget: {fileID: 0}
@@ -341,6 +304,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 302e34e95607f46b4aee7f72076822ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  audioSource: {fileID: 0}
+  animator: {fileID: 0}
+  checkAudio: 0
+  checkAnim: 0
+  currAnim: 44656661756c74
+  playingAnim: 0
 --- !u!58 &450361074
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -446,11 +415,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2c791a2415314ea3b9f44592097a9d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Name: MoveablesCamera
-  layerMask:
-    serializedVersion: 2
-    m_Bits: 4294964424
+  Name: 4d6f766561626c657343616d657261
+  layerMask: {}
+  _camera: {fileID: 734616466}
   layerIds: 00000000
+  tmpHitTestList: []
 --- !u!81 &734616463
 AudioListener:
   m_ObjectHideFlags: 0
@@ -560,7 +529,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5315b0af36ac499b92d399a46b73901, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gestureManager: {fileID: 0}
+  sidekickScript: {fileID: 0}
+  fader: {fileID: 0}
+  demo: 1
+  story: 0
   pagesInStory: 0
+  socialStories: 1
+  incorrectFeedback: []
+  correctFeedback: {fileID: 0}
   slotWidth: 0
   scenesInOrder: 1
 --- !u!114 &950648935
@@ -574,6 +551,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02c261b21f1b948948841603b247267d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mgc: {fileID: 0}
 --- !u!1 &1288011094
 GameObject:
   m_ObjectHideFlags: 0
@@ -602,7 +580,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allowTouch: 1
+  highlight: {fileID: 0}
+  mainCam: {fileID: 0}
   demo: 0
+  demospeech: 0
   story: 0
   pagesInStory: 0
   socialStories: 1
@@ -758,11 +739,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2c791a2415314ea3b9f44592097a9d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Name: Main Camera
-  layerMask:
-    serializedVersion: 2
-    m_Bits: 4294966217
+  Name: 4d61696e2043616d657261
+  layerMask: {}
+  _camera: {fileID: 1648052064}
   layerIds: 00000000
+  tmpHitTestList: []
 --- !u!1001 &1802569877
 Prefab:
   m_ObjectHideFlags: 0
@@ -819,15 +800,14 @@ GameObject:
   - 4: {fileID: 1814297114}
   - 212: {fileID: 1814297113}
   - 50: {fileID: 1814297111}
-  - 114: {fileID: 1814297112}
   - 114: {fileID: 1814297115}
   - 114: {fileID: 1814297116}
-  - 114: {fileID: 1814297117}
   - 114: {fileID: 1814297118}
   - 114: {fileID: 1814297119}
   - 60: {fileID: 1814297120}
   - 114: {fileID: 1814297121}
   - 114: {fileID: 1814297110}
+  - 114: {fileID: 1814297112}
   m_Layer: 10
   m_Name: Bird
   m_TagString: PlayObject
@@ -872,11 +852,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1814297109}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1235405773, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
+  m_Script: {fileID: 11500000, guid: 11ea9930ecb674732bee27116520fad8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   cachedTransform: {fileID: 0}
   advancedProps: 0
+  minTouches: 0
+  maxTouches: 0
   combineTouches: 0
   combineTouchesInterval: 0.3
   useSendMessage: 0
@@ -884,7 +866,8 @@ MonoBehaviour:
   sendMessageTarget: {fileID: 0}
   requireGestureToFail: {fileID: 0}
   friendlyGestures: []
-  friendlyGestureIds: 
+  numTouches: 0
+  layer: {fileID: 0}
   gestureManagerInstance: {fileID: 0}
   delayedStateChange: 0
   requiredGestureFailed: 0
@@ -892,13 +875,26 @@ MonoBehaviour:
   cachedScreenPosition: {x: 0, y: 0}
   cachedPreviousScreenPosition: {x: 0, y: 0}
   <PreviousState>k__BackingField: 0
-  numberOfTapsRequired: 1
-  timeLimit: Infinity
-  distanceLimit: Infinity
-  distanceLimitInPixelsSquared: 0
-  tapsDone: 0
-  startPosition: {x: 0, y: 0}
-  totalMovement: {x: 0, y: 0}
+  <touchesNumState>k__BackingField: 0
+  minScreenPointsPixelDistance: 0
+  minScreenPointsPixelDistanceSquared: 0
+  screenTransformPixelThreshold: 0
+  screenTransformPixelThresholdSquared: 0
+  deltaPosition: {x: 0, y: 0, z: 0}
+  deltaRotation: 0
+  deltaScale: 0
+  screenPixelTranslationBuffer: {x: 0, y: 0}
+  screenPixelRotationBuffer: 0
+  angleBuffer: 0
+  screenPixelScalingBuffer: 0
+  scaleBuffer: 0
+  isTransforming: 0
+  type: 1
+  minScreenPointsDistance: 0.5
+  screenTransformThreshold: 0.1
+  projection: 0
+  projectionPlaneNormal: {x: 0, y: 0, z: 1}
+  projectionLayer: {fileID: 0}
 --- !u!212 &1814297113
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -950,19 +946,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 1814297109}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1423175855, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
+  m_Script: {fileID: 11500000, guid: 7a878a6ff128243dfb1d89ca0273f059, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   cachedTransform: {fileID: 0}
   advancedProps: 0
+  minTouches: 0
+  maxTouches: 0
   combineTouches: 0
-  combineTouchesInterval: 0.1
+  combineTouchesInterval: 0.3
   useSendMessage: 0
   sendStateChangeMessages: 0
   sendMessageTarget: {fileID: 0}
   requireGestureToFail: {fileID: 0}
   friendlyGestures: []
-  friendlyGestureIds: 
+  numTouches: 0
+  layer: {fileID: 0}
   gestureManagerInstance: {fileID: 0}
   delayedStateChange: 0
   requiredGestureFailed: 0
@@ -970,16 +969,15 @@ MonoBehaviour:
   cachedScreenPosition: {x: 0, y: 0}
   cachedPreviousScreenPosition: {x: 0, y: 0}
   <PreviousState>k__BackingField: 0
-  projection: 0
-  projectionNormal: {x: 0, y: 0, z: 1}
-  cachedCollider: {fileID: 0}
-  projectionLayer: {fileID: 0}
-  <PreviousWorldTransformCenter>k__BackingField: {x: 0, y: 0, z: 0}
-  <WorldTransformCenter>k__BackingField: {x: 0, y: 0, z: 0}
-  movementThreshold: 0.2
-  movementBuffer: {x: 0, y: 0}
-  isMoving: 0
-  <WorldDeltaPosition>k__BackingField: {x: 0, y: 0, z: 0}
+  <touchesNumState>k__BackingField: 0
+  numberOfTapsRequired: 1
+  timeLimit: Infinity
+  distanceLimit: Infinity
+  distanceLimitInPixelsSquared: 0
+  isActive: 0
+  tapsDone: 0
+  startPosition: {x: 0, y: 0}
+  totalMovement: {x: 0, y: 0}
 --- !u!114 &1814297116
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -988,11 +986,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1814297109}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1088824302, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
+  m_Script: {fileID: 11500000, guid: c6be551879cd14d739b0188844ef2c60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   cachedTransform: {fileID: 0}
   advancedProps: 0
+  minTouches: 0
+  maxTouches: 0
   combineTouches: 0
   combineTouchesInterval: 0.3
   useSendMessage: 0
@@ -1000,7 +1000,8 @@ MonoBehaviour:
   sendMessageTarget: {fileID: 0}
   requireGestureToFail: {fileID: 0}
   friendlyGestures: []
-  friendlyGestureIds: 
+  numTouches: 0
+  layer: {fileID: 0}
   gestureManagerInstance: {fileID: 0}
   delayedStateChange: 0
   requiredGestureFailed: 0
@@ -1008,35 +1009,7 @@ MonoBehaviour:
   cachedScreenPosition: {x: 0, y: 0}
   cachedPreviousScreenPosition: {x: 0, y: 0}
   <PreviousState>k__BackingField: 0
-  ignoreChildren: 0
---- !u!114 &1814297117
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1814297109}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 438491968, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cachedTransform: {fileID: 0}
-  advancedProps: 0
-  combineTouches: 0
-  combineTouchesInterval: 0.3
-  useSendMessage: 0
-  sendStateChangeMessages: 0
-  sendMessageTarget: {fileID: 0}
-  requireGestureToFail: {fileID: 0}
-  friendlyGestures: []
-  friendlyGestureIds: 
-  gestureManagerInstance: {fileID: 0}
-  delayedStateChange: 0
-  requiredGestureFailed: 0
-  state: 0
-  cachedScreenPosition: {x: 0, y: 0}
-  cachedPreviousScreenPosition: {x: 0, y: 0}
-  <PreviousState>k__BackingField: 0
+  <touchesNumState>k__BackingField: 0
   ignoreChildren: 0
 --- !u!114 &1814297118
 MonoBehaviour:
@@ -1124,17 +1097,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1814297109}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 645232165, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
+  m_Script: {fileID: 11500000, guid: 978a486d8ecf8437cbb87e8534908895, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Speed: 10
-  PanMultiplier: 1
-  localPositionToGo: {x: 0, y: 0, z: 0}
-  localScaleToGo: {x: 0, y: 0, z: 0}
-  localRotationToGo: {x: 0, y: 0, z: 0, w: 0}
-  lastLocalPosition: {x: 0, y: 0, z: 0}
-  lastLocalScale: {x: 0, y: 0, z: 0}
-  lastLocalRotation: {x: 0, y: 0, z: 0, w: 0}
+  cachedTransform: {fileID: 0}
 --- !u!1001 &1899990904
 Prefab:
   m_ObjectHideFlags: 0
@@ -1216,15 +1182,14 @@ GameObject:
   - 212: {fileID: 2051130753}
   - 50: {fileID: 2051130757}
   - 114: {fileID: 2051130755}
-  - 114: {fileID: 2051130758}
   - 82: {fileID: 2051130759}
-  - 114: {fileID: 2051130760}
   - 114: {fileID: 2051130761}
   - 114: {fileID: 2051130762}
   - 114: {fileID: 2051130763}
   - 114: {fileID: 2051130764}
   - 60: {fileID: 2051130765}
   - 114: {fileID: 2051130766}
+  - 114: {fileID: 2051130756}
   m_Layer: 10
   m_Name: Dragon
   m_TagString: PlayObject
@@ -1283,11 +1248,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 2051130752}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1235405773, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
+  m_Script: {fileID: 11500000, guid: 7a878a6ff128243dfb1d89ca0273f059, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   cachedTransform: {fileID: 0}
   advancedProps: 0
+  minTouches: 0
+  maxTouches: 0
   combineTouches: 0
   combineTouchesInterval: 0.3
   useSendMessage: 0
@@ -1295,7 +1262,8 @@ MonoBehaviour:
   sendMessageTarget: {fileID: 0}
   requireGestureToFail: {fileID: 0}
   friendlyGestures: []
-  friendlyGestureIds: 
+  numTouches: 0
+  layer: {fileID: 0}
   gestureManagerInstance: {fileID: 0}
   delayedStateChange: 0
   requiredGestureFailed: 0
@@ -1303,13 +1271,63 @@ MonoBehaviour:
   cachedScreenPosition: {x: 0, y: 0}
   cachedPreviousScreenPosition: {x: 0, y: 0}
   <PreviousState>k__BackingField: 0
+  <touchesNumState>k__BackingField: 0
   numberOfTapsRequired: 1
   timeLimit: Infinity
   distanceLimit: Infinity
   distanceLimitInPixelsSquared: 0
+  isActive: 0
   tapsDone: 0
   startPosition: {x: 0, y: 0}
   totalMovement: {x: 0, y: 0}
+--- !u!114 &2051130756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2051130752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74ae431eff8434b0897d3f7f1cff4311, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cachedTransform: {fileID: 0}
+  advancedProps: 0
+  minTouches: 0
+  maxTouches: 0
+  combineTouches: 0
+  combineTouchesInterval: 0.3
+  useSendMessage: 0
+  sendStateChangeMessages: 0
+  sendMessageTarget: {fileID: 0}
+  requireGestureToFail: {fileID: 0}
+  friendlyGestures: []
+  numTouches: 0
+  layer: {fileID: 0}
+  gestureManagerInstance: {fileID: 0}
+  delayedStateChange: 0
+  requiredGestureFailed: 0
+  state: 0
+  cachedScreenPosition: {x: 0, y: 0}
+  cachedPreviousScreenPosition: {x: 0, y: 0}
+  <PreviousState>k__BackingField: 0
+  <touchesNumState>k__BackingField: 0
+  minScreenPointsPixelDistance: 0
+  minScreenPointsPixelDistanceSquared: 0
+  screenTransformPixelThreshold: 0
+  screenTransformPixelThresholdSquared: 0
+  deltaPosition: {x: 0, y: 0, z: 0}
+  deltaRotation: 0
+  deltaScale: 0
+  screenPixelTranslationBuffer: {x: 0, y: 0}
+  screenPixelRotationBuffer: 0
+  angleBuffer: 0
+  screenPixelScalingBuffer: 0
+  scaleBuffer: 0
+  isTransforming: 0
+  type: 1
+  minScreenPointsDistance: 0.5
+  screenTransformThreshold: 0.1
 --- !u!50 &2051130757
 Rigidbody2D:
   serializedVersion: 2
@@ -1327,44 +1345,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!114 &2051130758
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 2051130752}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1423175855, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cachedTransform: {fileID: 0}
-  advancedProps: 0
-  combineTouches: 0
-  combineTouchesInterval: 0.3
-  useSendMessage: 0
-  sendStateChangeMessages: 0
-  sendMessageTarget: {fileID: 0}
-  requireGestureToFail: {fileID: 0}
-  friendlyGestures: []
-  friendlyGestureIds: 
-  gestureManagerInstance: {fileID: 0}
-  delayedStateChange: 0
-  requiredGestureFailed: 0
-  state: 0
-  cachedScreenPosition: {x: 0, y: 0}
-  cachedPreviousScreenPosition: {x: 0, y: 0}
-  <PreviousState>k__BackingField: 0
-  projection: 0
-  projectionNormal: {x: 0, y: 0, z: 1}
-  cachedCollider: {fileID: 0}
-  projectionLayer: {fileID: 0}
-  <PreviousWorldTransformCenter>k__BackingField: {x: 0, y: 0, z: 0}
-  <WorldTransformCenter>k__BackingField: {x: 0, y: 0, z: 0}
-  movementThreshold: 0.2
-  movementBuffer: {x: 0, y: 0}
-  isMoving: 0
-  <WorldDeltaPosition>k__BackingField: {x: 0, y: 0, z: 0}
 --- !u!82 &2051130759
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1439,35 +1419,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &2051130760
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 2051130752}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1088824302, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cachedTransform: {fileID: 0}
-  advancedProps: 0
-  combineTouches: 0
-  combineTouchesInterval: 0.3
-  useSendMessage: 0
-  sendStateChangeMessages: 0
-  sendMessageTarget: {fileID: 0}
-  requireGestureToFail: {fileID: 0}
-  friendlyGestures: []
-  friendlyGestureIds: 
-  gestureManagerInstance: {fileID: 0}
-  delayedStateChange: 0
-  requiredGestureFailed: 0
-  state: 0
-  cachedScreenPosition: {x: 0, y: 0}
-  cachedPreviousScreenPosition: {x: 0, y: 0}
-  <PreviousState>k__BackingField: 0
-  ignoreChildren: 0
 --- !u!114 &2051130761
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1476,27 +1427,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 2051130752}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 438491968, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
+  m_Script: {fileID: 11500000, guid: 978a486d8ecf8437cbb87e8534908895, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   cachedTransform: {fileID: 0}
-  advancedProps: 0
-  combineTouches: 0
-  combineTouchesInterval: 0.3
-  useSendMessage: 0
-  sendStateChangeMessages: 0
-  sendMessageTarget: {fileID: 0}
-  requireGestureToFail: {fileID: 0}
-  friendlyGestures: []
-  friendlyGestureIds: 
-  gestureManagerInstance: {fileID: 0}
-  delayedStateChange: 0
-  requiredGestureFailed: 0
-  state: 0
-  cachedScreenPosition: {x: 0, y: 0}
-  cachedPreviousScreenPosition: {x: 0, y: 0}
-  <PreviousState>k__BackingField: 0
-  ignoreChildren: 0
 --- !u!114 &2051130762
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1613,14 +1547,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 2051130752}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 645232165, guid: 20c2a163775f09b4cafa29b19d0c9204, type: 3}
+  m_Script: {fileID: 11500000, guid: c6be551879cd14d739b0188844ef2c60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Speed: 10
-  PanMultiplier: 1
-  localPositionToGo: {x: 0, y: 0, z: 0}
-  localScaleToGo: {x: 0, y: 0, z: 0}
-  localRotationToGo: {x: 0, y: 0, z: 0, w: 0}
-  lastLocalPosition: {x: 0, y: 0, z: 0}
-  lastLocalScale: {x: 0, y: 0, z: 0}
-  lastLocalRotation: {x: 0, y: 0, z: 0, w: 0}
+  cachedTransform: {fileID: 0}
+  advancedProps: 0
+  minTouches: 0
+  maxTouches: 0
+  combineTouches: 0
+  combineTouchesInterval: 0.3
+  useSendMessage: 0
+  sendStateChangeMessages: 0
+  sendMessageTarget: {fileID: 0}
+  requireGestureToFail: {fileID: 0}
+  friendlyGestures: []
+  numTouches: 0
+  layer: {fileID: 0}
+  gestureManagerInstance: {fileID: 0}
+  delayedStateChange: 0
+  requiredGestureFailed: 0
+  state: 0
+  cachedScreenPosition: {x: 0, y: 0}
+  cachedPreviousScreenPosition: {x: 0, y: 0}
+  <PreviousState>k__BackingField: 0
+  <touchesNumState>k__BackingField: 0
+  ignoreChildren: 0

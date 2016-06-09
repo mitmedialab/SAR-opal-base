@@ -34,7 +34,7 @@ namespace opal
         private GameObject fader = null; 
     
         // DEMO VERSION
-        private bool demo = true;
+        private bool demo = false;
         
         // STORYBOOK VERSION
         private bool story = false;
@@ -332,8 +332,9 @@ namespace opal
                 if(sprite == null)
                 {
                     Debug.LogWarning("Could not load sprite from Resources: " 
-                                     + Constants.GRAPHICS_FILE_PATH + pops.Name() +
-                                     "\nGoing to try file path...");
+                        + Constants.GRAPHICS_FILE_PATH + pops.Name() 
+                        + (this.socialStories ? Constants.SOCIAL_STORY_FILE_PATH : "")
+                        + "\nGoing to try file path...");
                     
                     // TODO add filepath to pops! don't use Name
                     sprite = Utilities.LoadSpriteFromFile(pops.Name());

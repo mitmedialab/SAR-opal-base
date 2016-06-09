@@ -15,6 +15,21 @@ namespace opal
         public Vector3 destination;
     }
 
+    // objects to set correct/incorrect flags for social stories answer options
+    public struct SetCorrectObject
+    {
+        public string[] correct;
+        public string[] incorrect;
+    }
+    
+    // object with info for setting up a social stories scene
+    public struct SetupStorySceneObject
+    {
+        public int numScenes;
+        public int numAnswers;
+        public bool scenesInOrder;
+    }
+    
     // configuration
     public struct GameConfig
     {
@@ -29,7 +44,15 @@ namespace opal
         public const string GRAPHICS_FILE_PATH = "graphics/base-images/";
         public const string AUDIO_FILE_PATH = "audio/";
         public const string FROG_FILE_PATH = "frogwhereareyou/";
-
+        public const string SOCIAL_STORY_FILE_PATH = "socialstories/";
+        public const string SS_SCENESLOT_PATH = "scene-slots/";
+        public const string SS_ANSWER_SLOT_PATH = "answer-slots/";
+        public const string SS_SCENES_PATH = "scenes/";
+        public const string SS_SLOT_NAME = "slot";
+        public const string SS_FEEDBACK_PATH = "feedback/";
+        public const string SS_CORRECT_FEEDBACK_NAME = "pos-feedback2";
+        public const string SS_INCORRECT_FEEDBACK_NAME = "neg-feedback2";
+        
         /// <summary>
         /// tag applied to all playobjects
         /// </summary>
@@ -46,6 +69,8 @@ namespace opal
         public const string TAG_DIRECTOR = "Director";
         public const string TAG_CAMERA = "MainCamera";
         public const string TAG_GO_NEXT = "GoNext";
+        public const string TAG_CORRECT_FEEDBACK = "CorrectFeedback";
+        public const string TAG_INCORRECT_FEEDBACK = "IncorrectFeedback";
     
         // DEMO - scene numbers (by index -- see list of scenes in build settings)
         public const int SCENE_DEMO_INTRO = 0;
@@ -72,8 +97,22 @@ namespace opal
         public const int LAYER_MOVEABLES = 10;
         public const int LAYER_STATICS = 8;
     
+        // z positions
+        public const int Z_BACKGROUND = 3;
+        public const int Z_FOREGROUND = -4;
+        public const int Z_PLAY_OBJECT = 0;
+        public const int Z_FEEDBACK = -1;
+        public const int Z_SLOT = 1;
+        public const int Z_COLLIDE_SLOT = 2;
+    
+        // for social story game, slot names
+        public const string SCENE_SLOT = "scene-slot";
+        public const string ANSWER_SLOT = "answer-slot";
+        public const string SCENE_COLLIDE_SLOT = "scene-collide-slot";
+    
         // edges of screen - used to make sure objects aren't dragged off the screen
         // screen is 1280x768, minus the menu bar
+        // TODO this needs to scale to the size of the screen - use Screen.width etc!
         public const int LEFT_SIDE = -620; // -640
         public const int RIGHT_SIDE = 620; //640
         public const int TOP_SIDE = 360; //384
@@ -94,6 +133,11 @@ namespace opal
         public const int UNFADE_SCREEN = 11;
         public const int NEXT_PAGE = 12;
         public const int PREV_PAGE = 13;
+        public const int EXIT = 14;
+        public const int SET_CORRECT = 15;
+        public const int SHOW_CORRECT = 16;
+        public const int HIDE_CORRECT = 17;
+        public const int SETUP_STORY_SCENE = 18;
         
         /** next page and previous page */
         public const bool NEXT = true;
@@ -118,9 +162,9 @@ namespace opal
         public static string[] DEMO_SIDEKICK_SPEECH = new string[] { "ImAToucan", 
             "ImFromSpain", "AdiosSeeYouNext", ""};
         
-        /** Websocket config file path */
+        /** config file path */
         // if playing in unity on desktop:
-        public const string WEBSOCKET_CONFIG = "websocket_config.txt";
+        public const string OPAL_CONFIG = "opal_config.txt";
         public const string CONFIG_PATH_OSX = @"/Resources/";
         // if playing on tablet:
         public const string CONFIG_PATH_ANDROID = "mnt/sdcard/edu.mit.media.prg.sar.opal.base/";

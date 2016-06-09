@@ -56,6 +56,7 @@ namespace opal
         /// <param name="objectName">Name of object that has current goal</param>
         /// <param name="distance">Distance to object's goal</param>
         /// <param name="timestamp">Time of the action</param>
+        // TODO this function isn't being used? remove it?
         public static string GetROSJsonPublishMetricsMsg (string topic, string objectName,
         float distance, double timestamp)
         {
@@ -81,7 +82,8 @@ namespace opal
         /// <param name="distance">Position of the object</param>
         /// <param name="timestamp">Time of the action</param>
         public static string GetROSJsonPublishActionMsg (string topic, string objectName,
-            string objectTwoName, string action, float[] position, float[] positionTwo)
+            string objectTwoName, string action, float[] position, float[] positionTwo,
+            string message)
         {
             // build a dictionary of things to include in the message
             Dictionary<string,object> rosPublish = new Dictionary<string, object>();
@@ -92,11 +94,17 @@ namespace opal
             rosMessage.Add("objectTwoName", objectTwoName);
             rosMessage.Add("position", position);
             rosMessage.Add("positionTwo", positionTwo);
+            rosMessage.Add("message", message);
             rosMessage.Add("action", action);
+            // add header to message
+            rosMessage.Add("header", GetROSHeader());
+            // add message content message
             rosPublish.Add("msg", rosMessage);
         
             return Json.Serialize(rosPublish);
         }
+
+       
     
         /// <summary>
         /// Builds a JSON scene 'keyframe' log message to publish over rosbridge
@@ -113,7 +121,7 @@ namespace opal
             rosPublish.Add("op", "publish");
             rosPublish.Add("topic", topic);
             Dictionary<string,object> rosMessage = new Dictionary<string, object>();
-            
+
             // make array of JSON strings from the SceneObjects to add
             string[] objs = new string[objects.Length];
             for(int i=0; i<objects.Length; i++) 
@@ -125,10 +133,15 @@ namespace opal
                 objd.Add("scale",objects[i].scale);
                 objd.Add("draggable", objects[i].draggable);
                 objd.Add("audioFile", objects[i].audio);
+                objd.Add("correctSlot", objects[i].correctSlot);
+                objd.Add("isCorrect", objects[i].isCorrect);
+                objd.Add("isIncorrect", objects[i].isIncorrect);
                 objs[i] = Json.Serialize(objd);
             }     
         
             rosMessage.Add("objects", objs);
+            // add header to message
+            rosMessage.Add("header", GetROSHeader());
             rosPublish.Add("msg", rosMessage);
         
             return Json.Serialize(rosPublish);
@@ -198,14 +211,18 @@ namespace opal
             // set up out objects
             command = -1;
             properties = null;
+            // there is also a header in the command message, but we aren't
+            // using it for anything
+            // 
             // parse data, see if it's valid
             //
             // messages might look like:
-            // {"topic": "/opal_command", "msg": {"command": 5, "properties": 
-            // "{\"draggable\": \"true\", \"initPosition\": {\"y\": \"300\", \"x\":
-            //  \"-300\", \"z\": \"0\"}, \"name\": \"ball2\", \"scale\": 
-            // "{\"y\": \"100\", \"x\": \"100\", \"z\": \"100\"}", \"audioFile\": 
-            // \"chimes\"}"}, "op": "publish"}
+            // {"topic": "/opal_command", "msg": {"header":{"stamp:{"secs":
+            // 1465502871, "nsecs":940923929}, "frame_id":", "seq":1}, {"command": 5,
+            // "properties": "{\"draggable\": \"true\", \"initPosition\": 
+            // {\"y\": \"300\", \"x\":  \"-300\", \"z\": \"0\"}, \"name\": \"ball2\", 
+            // \"scale\": "{\"y\": \"100\", \"x\": \"100\", \"z\": \"100\"}", 
+            // \"audioFile\": \"chimes\"}"}, "op": "publish"}
             //
             // or:
             // "topic": "/opal_command", "msg": {"command": 2, 
@@ -281,28 +298,33 @@ namespace opal
             // if the properties contain the tag "play object", we're loading a 
             // play object, so build up a properties object
             if(props.ContainsKey("tag") &&
-                ((string)props["tag"]).Equals(Constants.TAG_PLAY_OBJECT)) {
+                ((string)props["tag"]).Equals(Constants.TAG_PLAY_OBJECT)) 
+            {
                 PlayObjectProperties pops = new PlayObjectProperties();
             
                 pops.SetTag((string)props["tag"]);
+                
                 if(props.ContainsKey("name"))
                     pops.SetName((string)props["name"]);
+                
                 try {
                     if(props.ContainsKey("draggable"))
-                        pops.draggable = 
-                Convert.ToBoolean(props["draggable"]);
+                        pops.draggable = Convert.ToBoolean(props["draggable"]);
                 } catch(Exception ex) {
                     Debug.LogError("Error! Could not determine if draggable: " + ex);
                 }
         
-                try {
-                    if(props.ContainsKey("audioFile"))
+                if(props.ContainsKey("audioFile"))
+                {
+                    try {
                         pops.SetAudioFile((string)props["audioFile"]);
-                } catch(Exception ex) {
-                    Debug.LogError("Error! Could not get audio file: " + ex);
+                    } catch(Exception ex) {
+                        Debug.LogError("Error! Could not get audio file: " + ex);
+                    }
                 }
             
-                if(props.ContainsKey("position")) {
+                if(props.ContainsKey("position")) 
+                {
                     // this is the weird way of converting an object back into
                     // an int array .. not as straightforward as it should be!
                     try {
@@ -313,7 +335,8 @@ namespace opal
                     }
                 }
                 
-                if(props.ContainsKey("scale")) {
+                if(props.ContainsKey("scale")) 
+                {
                     // same weird way of converting an object back to int array
                     try {
                         int[] posn = ObjectToIntArray(props["scale"] as IEnumerable);
@@ -322,7 +345,37 @@ namespace opal
                         Debug.LogError("Error! Could not get initial position: " + ex);
                     }
                 }
+                
+                if(props.ContainsKey("slot"))
+                {
+                    try {
+                        pops.SetSlot(Convert.ToInt32(props["slot"]));
+                    }
+                    catch(Exception ex) {
+                        Debug.LogError("Error! Could not get slot number: " + ex);
+                    }
+                }
             
+                if(props.ContainsKey("answerSlot"))
+                {
+                    try {
+                        pops.isAnswerSlot = Convert.ToBoolean(props["answerSlot"]);
+                    } catch(Exception ex) {
+                        Debug.LogError("Error! Could not determine if slot is answer or scene: " + ex);
+                    }
+                }
+                
+                if(props.ContainsKey("correctSlot"))
+                {
+                    try {
+                        pops.SetSlot(Convert.ToInt32(props["correctSlot"]));
+                    }
+                    catch(Exception ex) {
+                        Debug.LogError("Error! Could not get correct slot number: " + ex);
+                    }
+                }
+                
+                
                 // get end positions
                 // NOTE: We are not using the end position property!
                 // Leaving code here, commented out, in case we add it back...
@@ -338,10 +391,10 @@ namespace opal
                     }
                 }*/
                 properties = pops; // return the properties
-                Debug.Log(props);
             }
-        // if we are loading a background object, build up its properties instead
-        else if(props.ContainsKey("tag") && 
+            
+            // if we are loading a background object, build up its properties instead
+            else if(props.ContainsKey("tag") && 
                 (((string)props["tag"]).Equals(Constants.TAG_BACKGROUND) ||
                 ((string)props["tag"]).Equals(Constants.TAG_FOREGROUND))) {
                 BackgroundObjectProperties bops = new BackgroundObjectProperties();
@@ -359,11 +412,12 @@ namespace opal
                         Debug.LogError("Error! Could not get initial position: " + ex);
                     }
                 }
-                properties = bops; // return the properties
+                properties = bops; // return the background object properties
             }
         
-        // if we are going to move an object to some destination, build a struct
-        else if(props.ContainsKey("destination")) {
+            // if we are going to move an object to some destination, build a struct
+            else if(props.ContainsKey("destination")) 
+            {
                 MoveObject mo = new MoveObject();
                 if(props.ContainsKey("name"))
                     mo.name = ((string)props["name"]);
@@ -377,10 +431,57 @@ namespace opal
                     mo.destination = new Vector3(posn[0], posn[1], posn[2]);
                 } catch(Exception ex) {
                     Debug.LogError("Error! Could not get destination: " + ex);
-                }
-                properties = mo;
+                } 
+                properties = mo; // return the move object properties
+            }
+            
+            // if we are setting objects as "correct" or "incorrect", build a struct
+            else if (props.ContainsKey("correct"))
+            {
+                SetCorrectObject sco = new SetCorrectObject();
+                sco.correct = ObjectToStringArray(props["correct"] as IEnumerable);
+                if (props.ContainsKey("incorrect"))
+                    sco.incorrect = ObjectToStringArray(props["incorrect"] as IEnumerable);
+                
+                properties = sco; // return the set correct object properties
             }
         
+            // if we are going to set up a story scene, build a struct
+            else if (props.ContainsKey("numScenes"))
+            {
+                SetupStorySceneObject ssso = new SetupStorySceneObject();
+                
+                // get the number of scenes in the story
+                try {
+                    ssso.numScenes = Convert.ToInt32(props["numScenes"]);
+                }
+                catch(Exception ex) {
+                    Debug.LogError("Error! Could not get number of scenes: " + ex);
+                }
+            
+                // are the scenes presented in order or out of order
+                if(props.ContainsKey("scenesInorder"))
+                {
+                    try {
+                        ssso.scenesInOrder = Convert.ToBoolean(props["scenesInOrder"]);
+                    } catch(Exception ex) {
+                        Debug.LogError("Error! Could not determine if scenes i norder: " + ex);
+                    }
+                }
+                
+                // get the number of answers for questions asked about the story
+                if(props.ContainsKey("numAnswers"))
+                {
+                    try {
+                        ssso.numAnswers = Convert.ToInt32(props["numAnswers"]);
+                    }
+                    catch(Exception ex) {
+                        Debug.LogError("Error! Could not get number of answers: " + ex);
+                    }
+                }
+                
+                properties = ssso; // return the setup story scene properties
+            }
         }
     
         /// <summary>
@@ -395,16 +496,75 @@ namespace opal
             // IEnumerable so we can then convert each element of the
             // array to a number, so we can then make an array.....
             int[] posn = {0,0,0};
-            if(en != null) {
+            if(en != null) 
+            {
                 int count = 0;
-                foreach(object el in en) {
+                foreach(object el in en) 
+                {
                     posn[count] = Convert.ToInt32(el);
                     count++;
                 }
             }
             return posn;
         }
-    
+        
+        /// <summary>
+        /// convert object to a string array
+        /// </summary>
+        /// <returns>string array.</returns>
+        /// <param name="en">object that is secretly a string array</param>
+        private static string[] ObjectToStringArray (IEnumerable en)
+        {
+            // C# is weird about conversions from object to arrays
+            // so this is a hack way of converting an object into an
+            // IEnumerable so we can then convert each element of the
+            // array to a string, so we can then make an array.....
+            string[] s;
+            if (en != null)
+            {
+                // get length of array
+                int count = 0;
+                foreach(object el in en) 
+                {
+                    count++;
+                }
+                // make a destination array of the right size 
+                s = new string[count];
+                
+                // reset counter
+                count = 0;
+                
+                // convert each element to a string
+                foreach(object el in en) 
+                {
+                    s[count] = Convert.ToString(el);
+                    count++;
+                }
+                return s;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get the ROS header.
+        /// </summary>
+        /// <returns>The ROS header.</returns>
+        public static Dictionary<string, object> GetROSHeader()
+        {
+            Dictionary<string,object> header = new Dictionary<string, object>();
+            // header sequence number (ROS overrides this)
+            header.Add("seq", 0);
+            // header frame (no frame)
+            header.Add("frame_id", "");
+            // time for header
+            Dictionary<string, Int32> time = new Dictionary<string, Int32>();
+            TimeSpan unixtime = DateTime.UtcNow.Subtract(new DateTime(1970,1,1));
+            time.Add("sec", (Int32)(unixtime.TotalSeconds));
+            time.Add("nsec", (Int32)(unixtime.Milliseconds * 1000));
+            // add time to header
+            header.Add("stamp", time);
+            return header;
+        }
     }
 }
 

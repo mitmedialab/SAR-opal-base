@@ -15,13 +15,36 @@ namespace opal
         public Vector3 initialPosition = Vector3.zero;
         
 		/// <summary>
-		/// is this the first page of the story?
+		/// Is this the first page of the story? (storybook)
 		/// </summary>
 		public bool isStartPage = false;
 		
 		/// <summary>
-		/// is this the first page of the story?
+		/// Is this the first page of the story? (storybook)
 		/// </summary>
 		public bool isEndPage = false;
+        
+        /// <summary>
+        /// Is this a correct response? (social stories)
+        /// Note that there are separate flags for correct and incorrect because
+        /// it is possible for an object to be neither.
+        /// </summary>
+        public bool isCorrect = false;
+        
+        /// <summary>
+        /// Is this an incorrect response? (social stories)
+        /// Note that there are separate flags for correct and incorrect because
+        /// it is possible for an object to be neither.
+        /// </summary>
+        public bool isIncorrect = false;
+        
+        /// <summary>
+        /// What is the correct position of this scene in the story?
+        /// Each social story has some number of scenes (e.g., 4). The scenes may
+        /// be shown out of order and have to be dragged back into order, to the 
+        /// correct slots.
+        /// </summary>
+        public int correctSlot = -1;
+        
     }
 }

@@ -64,7 +64,7 @@ namespace opal
         /// <summary>
         /// state of object or miscellanous string message
         /// </summary>
-        public string state = "";
+        public string message = "";
     
         /// <summary>
         /// state of an object in the scene
@@ -77,6 +77,9 @@ namespace opal
             public bool draggable;
             public string audio;
             public float[] scale;
+            public int correctSlot;
+            public bool isCorrect;
+            public bool isIncorrect;
         }
     
         public SceneObject[] sceneObjects = null;
@@ -87,10 +90,10 @@ namespace opal
         /// </summary>
         /// <param name="type">event type</param>
         /// <param name="state">State or miscellanous string message</param>
-        public LogEvent(EventType type, string state)
+        public LogEvent(EventType type, string message)
         {
             this.type = type;
-            this.state = state;
+            this.message = message;
         }
     
         /// <summary>
@@ -129,13 +132,13 @@ namespace opal
         /// <param name="position">Position.</param>
         /// <param name="state">State.</param>
         public LogEvent(EventType type, string name, string action, Vector3? position,
-    string state)
+            string message)
         {
             this.type = type;
             this.name = name;
             this.action = action;
             this.position = position;
-            this.state = state;
+            this.message = message;
         }
         
         /// <summary>
@@ -158,18 +161,27 @@ namespace opal
             this.positionTwo = positionTwo;
             this.nameTwo = nameTwo;
         }
-    
+        
         /// <summary>
-        /// return the fields relevant for action type log events
+        /// Initializes a new instance of the <see cref="opal.LogEvent"/> class.
         /// </summary>
+        /// <param name="type">Type.</param>
         /// <param name="name">Name.</param>
+        /// <param name="nameTwo">Name two.</param>
         /// <param name="action">Action.</param>
         /// <param name="position">Position.</param>
-        public void getActionFields (out string name, out string action, out Vector3? position)
+        /// <param name="positionTwo">Position two.</param>
+        /// <param name="message">Message.</param>
+        public LogEvent(EventType type, string name, string nameTwo, string action, 
+                        Vector3? position, Vector3? positionTwo, string message)
         {
-            name = this.name;
-            action = this.action;
-            position = this.position.HasValue ? this.position : null;
+            this.type = type;
+            this.name = name;
+            this.action = action;
+            this.position = position;
+            this.positionTwo = positionTwo;
+            this.nameTwo = nameTwo;
+            this.message = message;
         }
 
     }

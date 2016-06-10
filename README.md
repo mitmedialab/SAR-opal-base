@@ -5,7 +5,16 @@ interactions. Easily load different graphics for games requiring similar
 mechanics, all using ROS.
 
 ## Build and Run
-This game was built and tested with Unity 5.3.5 and MonoDevelop 5.9.6.
+This game was built and tested with:
+
+- Unity 5.3.5
+- MonoDevelop 5.9.6
+- rosbridge from ROS Indigo
+- sar\_opal\_msgs 4.0.0
+- TouchScript 8.1
+- LeanTween [no version number]
+- websocket-sharp [no version number]
+
 
 ## Configuration
 
@@ -283,4 +292,6 @@ be deployed to these devices.
   redeploy (and/or a start screen that lets you pick whether you want demo
   mode, story mode, etc when you start the game - use "load scene" function to
   pick the right one).
+- Update LeanTween to current version
+- Update websocket-sharp to current version
 

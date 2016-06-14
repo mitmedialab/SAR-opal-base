@@ -244,7 +244,9 @@ namespace opal
             // to before parsing further? Would need to keep a list of subscriptions. 
             //
             // if the message doesn't have all three parts, consider it invalid
-            if(!data.ContainsKey("msg") && !data.ContainsKey("topic") && !data.ContainsKey("op")) {
+            if(!data.ContainsKey("msg") && !data.ContainsKey("topic") 
+                && !data.ContainsKey("op")) 
+            {
                 Debug.LogWarning("Did not get a valid message!");
                 return;
             }
@@ -252,8 +254,14 @@ namespace opal
             Debug.Log("Got " + data["op"] + " message on topic " + data["topic"]);
         
             // parse the actual message
-            Debug.Log("parsing message: " + data["msg"]);
+            Debug.Log("Parsing message: " + data["msg"]);
             Dictionary<string, object> msg = data["msg"] as Dictionary<string, object>;
+
+            // print header for debugging
+            if(msg.ContainsKey("header"))
+            {
+                Debug.Log(msg["header"]);
+            }
         
             // get the command
             if(msg.ContainsKey("command")) {

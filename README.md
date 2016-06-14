@@ -247,6 +247,10 @@ tablets that have tegra boards, such as many of the older Samsung Galaxy
 tablets), because Unity 5 no longer supports these devices. Thus, Opal cannot
 be deployed to these devices.
 
+### Reporting bugs
+
+Please report all bugs and issues on the [SAR-opal-base github issues page](https://github.com/personal-robots/SAR-opal-base/issues).
+
 ## TODO
 
 - 'next page' appears to not work when touch disabled

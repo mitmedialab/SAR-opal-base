@@ -13,8 +13,8 @@ This game was built and tested with:
 - sar\_opal\_msgs 4.0.0
 - TouchScript 8.1
 - LeanTween [no version number]
-- websocket-sharp [no version number]
-
+- websocket-sharp [no version number, latest commit was
+  0ef00bf0a7d526fa705e938f1114d115691a377a from June 11, 2016]
 
 ## Configuration
 
@@ -172,7 +172,9 @@ is a .Net implementation of websockets, and is used to communicate with the ROS
 rosbridge\_server.
 
 Note that if you try to build this project, the Newtonsoft.Json dll appears to
-be missing, so I copied over the prebuilt dll from bin/Debug.
+be missing. However, a dll is built and placed in bin/Debug anyway. Some
+functionality may be missing as a result, but it doesn't seem to be necessary
+for this project.
 
 ### MiniJSON
 

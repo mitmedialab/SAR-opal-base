@@ -207,21 +207,30 @@ namespace opal
         /// <param name="e">E.</param>
         void HandleOnMessage (object sender, MessageEventArgs e)
         {
-            Debug.Log("Received message: " + e.Data);
-        
-            // use rosbridge utilities to decode and parse message
-            int command = -1;
-            object properties = null;
-            RosbridgeUtilities.DecodeROSJsonCommand(e.Data, out command, out properties);
-        
-            // got a command!
-            // we let the game controller sort out if it's a real command or not
-            // as well as what to do with the extra properties, if any
+            // if the message is a string, we can parse it
+            if (e.IsText)
+            {
+                Debug.Log("Received message: " + e.Data);
             
-            // fire event indicating that we received a message
-            if(this.receivedMsgEvent != null) {
-                // only send subset of msg that is actual message
-                this.receivedMsgEvent(this, command, properties);
+                // use rosbridge utilities to decode and parse message
+                int command = -1;
+                object properties = null;
+                RosbridgeUtilities.DecodeROSJsonCommand(e.Data, out command, out properties);
+            
+                // got a command!
+                // we let the game controller sort out if it's a real command or not
+                // as well as what to do with the extra properties, if any
+                
+                // fire event indicating that we received a message
+                if(this.receivedMsgEvent != null) {
+                    // only send subset of msg that is actual message
+                    this.receivedMsgEvent(this, command, properties);
+                }
+            }
+            else if (e.IsBinary)
+            {
+                Debug.LogWarning("Received byte array in message but we were " +
+                    "expecting a string message.");
             }
         }
     
@@ -245,7 +254,7 @@ namespace opal
         /// <param name="e">E.</param>
         void HandleOnClose (object sender, CloseEventArgs e)
         {
-           Debug.Log("Websocket closed with status " + e.Reason + " " + e.Code);
+           Debug.Log("Websocket closed with status: " + e.Reason + " " + e.Code);
             
             // turn on timer so we try reconnecting later
             // probably sets timer enabled twice - here and in reconnect

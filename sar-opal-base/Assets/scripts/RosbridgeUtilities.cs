@@ -364,10 +364,10 @@ namespace opal
                     }
                 }
             
-                if(props.ContainsKey("answerSlot"))
+                if(props.ContainsKey("isAnswerSlot"))
                 {
                     try {
-                        pops.isAnswerSlot = Convert.ToBoolean(props["answerSlot"]);
+                        pops.isAnswerSlot = Convert.ToBoolean(props["isAnswerSlot"]);
                     } catch(Exception ex) {
                         Debug.LogError("Error! Could not determine if slot is answer or scene: " + ex);
                     }

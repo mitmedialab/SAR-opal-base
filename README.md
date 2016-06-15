@@ -12,7 +12,7 @@ This game was built and tested with:
 - rosbridge from ROS Indigo
 - sar\_opal\_msgs 4.0.0
 - TouchScript 8.1
-- LeanTween [no version number]
+- LeanTween [no current version number, latest commit was 78b0458171150ed89aba7435f336099f7a81e26b from June 11, 2016, after 2.32 release]
 - websocket-sharp [no version number, latest commit was
   0ef00bf0a7d526fa705e938f1114d115691a377a from June 11, 2016]
 
@@ -163,7 +163,10 @@ here](http://dentedpixel.com/LeanTweenDocumentation/classes/LeanTween.html
 "LeanTween docs")).
 
 If you pull in the submodule, you can get the examples, prefabs, etc. The
-necessary .cs file is in the SAR-opal-base Assets/Plugins folder already.
+necessary .cs files are in the SAR-opal-base Assets/Plugins directory already.
+Note that the LeanTween instructions only tell you to move LeanTween.cs to your
+Plugins directory; however, you actually need several other files that are in
+LeanTween's Plugins directory as well.
 
 ### websocket-sharp
 

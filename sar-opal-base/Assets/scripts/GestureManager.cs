@@ -359,6 +359,7 @@ namespace opal
                             gesture.gameObject.name, "press", hit.Point,
                             (gesture.gameObject.name.Contains("yes_button") ? "YES" 
                             : (gesture.gameObject.name.Contains("no_button") ? "NO"
+                            // TODO what if go doesn't have SavedProperties component?
                             : (gesture.gameObject.GetComponent<SavedProperties>().isCorrect ? "CORRECT"
                             : (gesture.gameObject.GetComponent<SavedProperties>().isIncorrect ? "INCORRECT"
                             : ""))))));

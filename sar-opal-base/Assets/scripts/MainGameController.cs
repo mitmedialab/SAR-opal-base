@@ -712,9 +712,11 @@ namespace opal
             if (cmd == Constants.REQUEST_KEYFRAME)
             {
                 // fire event indicating we want to log the state of the current scene
-                if(this.logEvent != null) {
+                if(this.logEvent != null) 
+                {
                     // get keyframe and send it
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => {
+                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                    {
                         LogEvent.SceneObject[] sos = null;
                         this.GetSceneKeyframe(out sos);
                         this.logEvent(this, new LogEvent(LogEvent.EventType.Scene, sos));
@@ -728,7 +730,8 @@ namespace opal
 			else if (cmd == Constants.HIGHLIGHT_OBJECT)
             {
                 // move the highlight behind the specified game object
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                { 
                     GameObject go = GameObject.Find((string)props);
                     if(go != null) {
                         this.gestureManager.LightOn(go.transform.position);
@@ -743,12 +746,10 @@ namespace opal
             {
                 // disable touch events from user
                 this.gestureManager.allowTouch = false; 
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                { 
                     this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
                         Constants.TAG_PLAY_OBJECT }, false);
-                    // and fade the screen 
-                    // - actually no, don't, there's a separate message for that!
-                    //this.fader.SetActive(true);
                 });
             }
             
@@ -756,12 +757,10 @@ namespace opal
             {
                 // enable touch events from user
                 this.gestureManager.allowTouch = true;
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                { 
                     this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
                         Constants.TAG_PLAY_OBJECT }, true);
-                    // and unfade the screen
-                    // no - we don't want to tie fade/touch together!
-                    //this.fader.SetActive(false);
                 });
             }
             
@@ -770,7 +769,8 @@ namespace opal
                // reload the current level
                 // e.g., when the robot's turn starts, want all characters back in their
                 // starting configuration for use with automatic playbacks
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                { 
                     this.ReloadScene();
                 });
             }
@@ -779,7 +779,8 @@ namespace opal
             {
                 if(this.gameConfig.sidekick) {
                     // trigger animation for sidekick character
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                    { 
                         this.sidekickScript.SidekickDo((string)props);
                     }); 
                 }
@@ -789,7 +790,8 @@ namespace opal
             {
                 if(this.gameConfig.sidekick) {
                     // trigger playback of speech for sidekick character
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                    { 
                     this.sidekickScript.SidekickSay((string)props);
                     }); 
                 }
@@ -797,12 +799,24 @@ namespace opal
         
 			else if (cmd == Constants.CLEAR)
             {
-                Debug.Log("clearing scene");
-                try {                   
-                    // remove all play objects and background objects from scene, hide highlight
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                try 
+                {                   
+                    if (props == null)
+                    {
+                    // if no properties,  remove all play objects and background
+                    // objects from scene, hide highlight
+                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                    { 
                         this.ClearScene(); 
                     });
+                    }
+                    else 
+                    {
+                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                    {
+                        this.ClearObjects((string)props);
+                        });
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -813,7 +827,8 @@ namespace opal
 			else if (cmd == Constants.LOAD_OBJECT)
             {
                 // load the specified game object
-                if(props == null) {
+                if(props == null) 
+                {
                     Debug.LogWarning("Was told to load an object, but got no properties!");
                 }
                 else
@@ -822,16 +837,20 @@ namespace opal
 	                
 	                // load new background image with the specified properties
 	                if(sops.Tag().Equals(Constants.TAG_BACKGROUND) ||
-	                    sops.Tag().Equals(Constants.TAG_FOREGROUND)) {
+	                    sops.Tag().Equals(Constants.TAG_FOREGROUND)) 
+                        {
 	                    //Debug.Log("background");
-	                    MainGameController.ExecuteOnMainThread.Enqueue(() => {
+	                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                        {
 	                        this.InstantiateBackground((BackgroundObjectProperties)sops, null);
 	                    }); 
 	                }
 	                // or instantiate new playobject with the specified properties
-	                else if(sops.Tag().Equals(Constants.TAG_PLAY_OBJECT)) {
+	                else if(sops.Tag().Equals(Constants.TAG_PLAY_OBJECT)) 
+                    {
 	                    //Debug.Log("play object");
-	                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+	                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                        { 
 	                        this.InstantiatePlayObject((PlayObjectProperties)sops, null);
 	                    });
 	                }
@@ -840,14 +859,16 @@ namespace opal
             
 			else if (cmd == Constants.MOVE_OBJECT)
             {
-                if(props == null) {
+                if(props == null) 
+                {
                     Debug.LogWarning("Was told to move an object but did not " +
                               "get name of which one or position to move to.");
                     return;
                 }
                 MoveObject mo = (MoveObject)props;
                 // use LeanTween to move object from curr_posn to new_posn
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                MainGameController.ExecuteOnMainThread.Enqueue(() => 
+                { 
                     GameObject go = GameObject.Find(mo.name);
                     if(go != null)
                         LeanTween.move(go, mo.destination, 2.0f).setEase(
@@ -859,7 +880,8 @@ namespace opal
             {
                 // places a white cloud-like object over the scene to give the
                 // appearance that the scene is faded out
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                { 
                     this.fader.SetActive(true);
                 });
             }
@@ -867,7 +889,8 @@ namespace opal
 			else if (cmd == Constants.UNFADE_SCREEN)
             {
                 // remove the fader so the scene is clearly visible again
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                { 
                     this.fader.SetActive(false);
                 });
             }
@@ -875,21 +898,24 @@ namespace opal
 			else if (cmd == Constants.NEXT_PAGE)
             {
                 // in a story game, goes to the next page in the story
-            	MainGameController.ExecuteOnMainThread.Enqueue(() => {
+            	MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                {
             		this.gestureManager.ChangePage(Constants.NEXT);
             		});
             }
 			else if (cmd == Constants.PREV_PAGE)
 			{
                 // in a story game, goes to the previous page in the story
-				MainGameController.ExecuteOnMainThread.Enqueue(() => {
+				MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                {
 					this.gestureManager.ChangePage(Constants.PREVIOUS);
 				});
 			}
             else if (cmd == Constants.EXIT)
             {
                 // exit the program
-                MainGameController.ExecuteOnMainThread.Enqueue(() => {
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                {
                     Application.Quit();
                 });
             }
@@ -904,7 +930,8 @@ namespace opal
                 else 
                 {
                     SetCorrectObject sco = (SetCorrectObject)props;
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => {
+                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                    {
                         this.SetCorrect(sco.correct, sco.incorrect);
                     });
                 }
@@ -912,14 +939,16 @@ namespace opal
             else if (cmd == Constants.SHOW_CORRECT)
             {
                 // show all objects for visual feedback tagged 'correct' or 'incorrect'
-                MainGameController.ExecuteOnMainThread.Enqueue(() => {
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                {
                     this.ToggleCorrect(true);
                 });
             }
             else if (cmd == Constants.HIDE_CORRECT)
             {
                 // hide all objects for visual feedback tagged 'correct' or 'incorrect'
-                MainGameController.ExecuteOnMainThread.Enqueue(() => {
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                {
                     this.ToggleCorrect(false);
                 });
             }
@@ -927,7 +956,8 @@ namespace opal
             {
                 // setup story scene
                 SetupStorySceneObject ssso = (SetupStorySceneObject)props;
-                MainGameController.ExecuteOnMainThread.Enqueue(() => {
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                {
                     this.SetupSocialStoryScene(ssso.numScenes, ssso.scenesInOrder, 
                         ssso.numAnswers);
                 });
@@ -971,17 +1001,72 @@ namespace opal
             // turn off the light if it's not already
             this.gestureManager.LightOff();
             
-            // clear list of answer feedback objects and remove
+            // clear list of incorrect feedback objects and remove
+            // since they are set as not visible, they will not be found by a
+            // call to GameObject.FindObjectsByTag
             if (this.incorrectFeedback != null)
-                this.incorrectFeedback.Clear();
-        
+            {
+                foreach (GameObject go in this.incorrectFeedback)
+                {
+                    Destroy(go);
+                }
+            }
+            // remove correct feedback object too
+            if (this.correctFeedback != null)
+                Destroy(this.correctFeedback);
+
             // remove all objects with specified tags
+            // we include the correct and incorrect feedback here in case some 
+            // are visible or not in the other variables checked above
             this.DestroyObjectsByTag(new string[] {
                 Constants.TAG_BACKGROUND,
                 Constants.TAG_PLAY_OBJECT,
                 Constants.TAG_CORRECT_FEEDBACK,
                 Constants.TAG_INCORRECT_FEEDBACK
             });
+        }
+
+        void ClearObjects(string toclear)
+        {
+            Debug.Log("Clearing objects: " + toclear);
+
+            // turn off the light if it's not already
+            this.gestureManager.LightOff();
+
+            // clear background only
+            if (toclear.Contains(Constants.TAG_BACKGROUND))
+            {
+                this.DestroyObjectsByTag(new string[] {
+                    Constants.TAG_BACKGROUND
+                });
+            }
+            // clear play objects only
+            else if (toclear.Contains(Constants.TAG_PLAY_OBJECT))
+            {
+                this.DestroyObjectsByTag(new string[] {
+                    Constants.TAG_PLAY_OBJECT
+                });
+            }
+            // clear answer graphics only
+            else if (toclear.ToLower().Contains("answer"))
+            {
+                // find all answer graphics and destroy them
+                // these will be play objects set as correct or incorrect
+                GameObject[] objs = GameObject.FindGameObjectsWithTag(Constants.TAG_PLAY_OBJECT);
+                if(objs.Length == 0)
+                    return;
+                foreach(GameObject go in objs) 
+                {
+                    if (go.GetComponent<SavedProperties>() != null
+                        && (go.GetComponent<SavedProperties>().isCorrect
+                        || go.GetComponent<SavedProperties>().isIncorrect))
+                    {
+                        Debug.Log("destroying " + go.name);
+                        DestroyImmediate(go);
+                    }
+                }
+            }
+
         }
     
         /// <summary>

@@ -371,11 +371,11 @@ namespace opal
                 if (slot != null)
                 {
                     Debug.Log("Slot found: " + slot.name + " at position " 
-                            + slot.transform.position + " -- putting scene here.");
+                            + slot.transform.position + " -- putting object here.");
                     go.transform.position = new Vector3(slot.transform.position.x,
                                                         slot.transform.position.y,
                                                         Constants.Z_PLAY_OBJECT);
-                    
+
                     // set scale of sprite
                     // scale slot to one portion of the screen width, using the saved
                     // width of a slot 
@@ -1023,7 +1023,7 @@ namespace opal
                     continue;
                 foreach(GameObject go in objs) {
                     Debug.Log("destroying " + go.name);
-                    Destroy(go);
+                    DestroyImmediate(go);
                 }
             }
         }

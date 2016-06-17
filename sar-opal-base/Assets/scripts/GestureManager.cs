@@ -45,7 +45,7 @@ namespace opal
             // set up light
             this.highlight = GameObject.FindGameObjectWithTag(Constants.TAG_LIGHT);
             if(this.highlight != null) {
-                this.highlight.SetActive(false);
+                this.LightOff();
                 Debug.Log("Got light: " + this.highlight.name);
             } else {
                 Debug.LogError("ERROR: No light found");
@@ -627,8 +627,9 @@ namespace opal
 
         public void LightOn (int scaleBy, Vector3 posn)
         {
-            if(this.highlight != null) {
-                this.highlight.SetActive(true);
+            if(this.highlight != null && this.highlight.GetComponent<Renderer>() != null) 
+            {
+                this.highlight.GetComponent<Renderer>().enabled = true;
                 this.highlight.transform.position = new Vector3(posn.x, posn.y, posn.z + 1);
                 Vector3 sc = this.highlight.transform.localScale;
                 sc.x *= scaleBy;
@@ -650,12 +651,12 @@ namespace opal
         /// <param name="scaleBy">Scale by.</param>
         public void LightOff (int scaleBy)
         {
-            if(this.highlight != null) {
+            if(this.highlight != null && this.highlight.GetComponent<Renderer>() != null) 
+            {
                 Vector3 sc = this.highlight.transform.localScale;
                 sc.x /= scaleBy;
                 this.highlight.transform.localScale = sc;
-    
-                this.highlight.SetActive(false); // turn light off
+                this.highlight.GetComponent<Renderer>().enabled = false;
             } else {
                 Debug.Log("Tried to turn light off ... but light is null!");
             }

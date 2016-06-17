@@ -251,7 +251,7 @@ namespace opal
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError("Error when invoking actions on main thread!" + ex);
+                    Debug.LogError("Error when invoking actions on main thread!\n" + ex);
                 }
             }
         }
@@ -299,23 +299,6 @@ namespace opal
                 : UnityEngine.Random.value.ToString();
             Debug.Log("Creating new play object: " + pops.Name());
 
-            // set tag
-            go.tag = pops.Tag();
-            
-            // if tag is FEEDBACK, keep reference and set as invisible
-            if (go.tag.Equals(Constants.TAG_CORRECT_FEEDBACK))
-            {
-                this.correctFeedback = go;
-                go.SetActive(false);
-            }
-            else if (go.tag.Equals(Constants.TAG_INCORRECT_FEEDBACK))
-            {
-                // this list is cleared when the scene is cleared
-                if (this.incorrectFeedback == null) this.incorrectFeedback = new List<GameObject>();
-                this.incorrectFeedback.Add(go);
-                go.SetActive(false);
-            }
-            
             // set layer based on whether the object is draggable or not
             go.layer = (pops.draggable ? Constants.LAYER_MOVEABLES : Constants.LAYER_STATICS);
 
@@ -424,7 +407,29 @@ namespace opal
                 sp.isCorrect = pops.isCorrect;
                 sp.isIncorrect = pops.isIncorrect;
             }
-
+            
+            // set tag
+            go.tag = pops.Tag();
+            
+            // if tag is FEEDBACK, keep reference and set as invisible
+            if (go.tag.Equals(Constants.TAG_CORRECT_FEEDBACK)
+                && go.GetComponent<Renderer>() != null)
+            {
+                this.correctFeedback = go;
+                go.GetComponent<Renderer>().enabled = false;
+            }
+            else if (go.tag.Equals(Constants.TAG_INCORRECT_FEEDBACK)
+                && go.GetComponent<Renderer>() != null)
+            {
+                // this list is cleared when the scene is cleared
+                if (this.incorrectFeedback == null) 
+                {
+                    this.incorrectFeedback = new List<GameObject>();
+                }
+                this.incorrectFeedback.Add(go);
+                go.GetComponent<Renderer>().enabled = false;
+            }
+            
             // load audio - add an audio source component to the object if there
             // is an audio file to load
             if(pops.AudioFile() != null) {
@@ -1001,29 +1006,16 @@ namespace opal
             // turn off the light if it's not already
             this.gestureManager.LightOff();
             
-            // clear list of incorrect feedback objects and remove
-            // since they are set as not visible, they will not be found by a
-            // call to GameObject.FindObjectsByTag
-            if (this.incorrectFeedback != null)
-            {
-                foreach (GameObject go in this.incorrectFeedback)
-                {
-                    Destroy(go);
-                }
-            }
-            // remove correct feedback object too
-            if (this.correctFeedback != null)
-                Destroy(this.correctFeedback);
-
             // remove all objects with specified tags
-            // we include the correct and incorrect feedback here in case some 
-            // are visible or not in the other variables checked above
             this.DestroyObjectsByTag(new string[] {
                 Constants.TAG_BACKGROUND,
                 Constants.TAG_PLAY_OBJECT,
                 Constants.TAG_CORRECT_FEEDBACK,
                 Constants.TAG_INCORRECT_FEEDBACK
             });
+            // after removing all incorrect feedback objects, reset the list too
+            if (this.incorrectFeedback != null)
+                this.incorrectFeedback.Clear();
         }
 
         void ClearObjects(string toclear)
@@ -1200,9 +1192,10 @@ namespace opal
                     {
                         // load correct visual feedback object at that object
                         // make visible
-                        if(this.correctFeedback != null) 
+                        if(this.correctFeedback != null && 
+                            this.correctFeedback.GetComponent<Renderer>() != null) 
                         {
-                            this.correctFeedback.SetActive(true);
+                            this.correctFeedback.GetComponent<Renderer>().enabled = true;
                             // make sure feedback is shown in the correct position
                             // this is necessary even though the feedback graphics are
                             // loaded on top of the slots, because we do not check when
@@ -1221,20 +1214,20 @@ namespace opal
                           
                     } else if (go.GetComponent<SavedProperties>().isIncorrect)
                     {
-                       
                         // load incorrect visual feedback object at that object
                         // and make visible
                         // note that if there are more objects marked correct or incorrect
                         // than there are answer slots, some won't get marked, since we 
                         // assume that there are only as many correct or incorrect options
                         // as there are answer slots
-                        if(this.incorrectFeedback != null && 
-                           this.incorrectFeedback.Count > counter)
+                        if(this.incorrectFeedback != null
+                           && this.incorrectFeedback.Count > counter
+                           && this.incorrectFeedback[counter].GetComponent<Renderer>() != null) 
                         {
-                            this.incorrectFeedback[counter].SetActive(true);
                             this.incorrectFeedback[counter].transform.position = 
                                 new Vector3(go.transform.position.x, go.transform.position.y, 
                                             Constants.Z_FEEDBACK);
+                            this.incorrectFeedback[counter].GetComponent<Renderer>().enabled = true;
                             counter++;
                         } 
                         else 
@@ -1251,10 +1244,14 @@ namespace opal
             }
             else
             {
+                // TODO now that we're using the renderer instead of setting active,
+                // we can use GameObject.Find to find these objects...
+
                 // hide visual feedback by setting inactive
-                if (this.correctFeedback != null)
+                if (this.correctFeedback != null
+                    && this.correctFeedback.GetComponent<Renderer>() != null)
                 {
-                    this.correctFeedback.SetActive(false);
+                    this.correctFeedback.GetComponent<Renderer>().enabled = false;
                 }
                 else 
                 {
@@ -1265,7 +1262,10 @@ namespace opal
                 {
                     foreach (GameObject go in this.incorrectFeedback)
                     {
-                        go.SetActive(false);
+                        if (go.GetComponent<Renderer>() != null)
+                        {
+                            go.GetComponent<Renderer>().enabled = false;
+                        }
                     }
                 }
                 else 

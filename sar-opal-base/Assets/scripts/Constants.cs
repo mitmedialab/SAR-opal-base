@@ -54,7 +54,7 @@ namespace opal
         public const string SS_INCORRECT_FEEDBACK_NAME = "neg-feedback2";
         
         /// <summary>
-        /// tag applied to all playobjects
+        /// tags applied to game objects 
         /// </summary>
         public const string TAG_PLAY_OBJECT = "PlayObject";
         public const string TAG_LIGHT = "Light";
@@ -71,6 +71,7 @@ namespace opal
         public const string TAG_GO_NEXT = "GoNext";
         public const string TAG_CORRECT_FEEDBACK = "CorrectFeedback";
         public const string TAG_INCORRECT_FEEDBACK = "IncorrectFeedback";
+        public const string TAG_ANSWER_SLOT = "AnswerSlot";
     
         // DEMO - scene numbers (by index -- see list of scenes in build settings)
         public const int SCENE_DEMO_INTRO = 0;

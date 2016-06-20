@@ -358,6 +358,8 @@ namespace opal
                     go.transform.position = new Vector3(slot.transform.position.x,
                                                         slot.transform.position.y,
                                                         Constants.Z_PLAY_OBJECT);
+                    // make slot visible again
+                    slot.GetComponent<Renderer>().enabled = true;
 
                     // set scale of sprite
                     // scale slot to one portion of the screen width, using the saved
@@ -410,7 +412,7 @@ namespace opal
             
             // set tag
             go.tag = pops.Tag();
-            
+
             // if tag is FEEDBACK, keep reference and set as invisible
             if (go.tag.Equals(Constants.TAG_CORRECT_FEEDBACK)
                 && go.GetComponent<Renderer>() != null)
@@ -429,7 +431,12 @@ namespace opal
                 this.incorrectFeedback.Add(go);
                 go.GetComponent<Renderer>().enabled = false;
             }
-            
+
+            // if this is an answer feedback slot graphic, we set it invisible
+            // until the associated answer is loaded
+            if (go.tag.Equals(Constants.TAG_ANSWER_SLOT))
+                go.GetComponent<Renderer>().enabled = false;
+
             // load audio - add an audio source component to the object if there
             // is an audio file to load
             if(pops.AudioFile() != null) {
@@ -553,7 +560,7 @@ namespace opal
         
             // set tag
             go.tag = Constants.TAG_BACKGROUND;
-            
+
             // set layer
             go.layer = Constants.LAYER_STATICS;
         
@@ -1011,7 +1018,8 @@ namespace opal
                 Constants.TAG_BACKGROUND,
                 Constants.TAG_PLAY_OBJECT,
                 Constants.TAG_CORRECT_FEEDBACK,
-                Constants.TAG_INCORRECT_FEEDBACK
+                Constants.TAG_INCORRECT_FEEDBACK,
+                Constants.TAG_ANSWER_SLOT
             });
             // after removing all incorrect feedback objects, reset the list too
             if (this.incorrectFeedback != null)
@@ -1056,6 +1064,15 @@ namespace opal
                         Debug.Log("destroying " + go.name);
                         DestroyImmediate(go);
                     }
+                }
+
+                // turn answer slots invisible
+                GameObject[] slots = GameObject.FindGameObjectsWithTag(Constants.TAG_ANSWER_SLOT);
+                if(objs.Length == 0)
+                    return;
+                foreach(GameObject go in slots)
+                {
+                    go.GetComponent<Renderer>().enabled = false;
                 }
             }
 
@@ -1412,7 +1429,7 @@ namespace opal
                     // create answer slot
                     PlayObjectProperties pops = new PlayObjectProperties(
                         Constants.ANSWER_SLOT + i, // name
-                        Constants.TAG_PLAY_OBJECT, // tag
+                        Constants.TAG_ANSWER_SLOT, // tag
                         false, // draggable
                         null, // audio
                         new Vector3 (
@@ -1449,9 +1466,9 @@ namespace opal
                         // near botton of screen
                         -Screen.height * 0.25f, Constants.Z_FEEDBACK),
                         // scale to one portion of the screen width
-                        new Vector3(aslotwidth / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x,
-                                aslotwidth / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x,
-                                aslotwidth / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x)
+                        new Vector3(aslotwidth / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x * 1.2f,
+                                aslotwidth / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x * 1.2f,
+                                aslotwidth / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x * 1.2f)
                         );
                     
                     // instantiate the scene slot

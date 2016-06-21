@@ -138,7 +138,7 @@ namespace opal
             // to "TAG_FADER_ALL" to use that fader instead!
             this.fader = GameObject.FindGameObjectWithTag(Constants.TAG_FADER);
             if(this.fader != null) {
-                this.fader.SetActive(false);
+                this.fader.GetComponent<Renderer>().enabled = false;
                 Debug.Log("Got fader: " + this.fader.name);
             } else {
                 Debug.LogError("ERROR: No fader found");
@@ -924,7 +924,7 @@ namespace opal
                 MainGameController.ExecuteOnMainThread.Enqueue(() =>
                 { 
                     if (this.fader != null)
-                        this.fader.SetActive(true);
+                        this.fader.GetComponent<Renderer>().enabled = true;
                 });
             }
                 
@@ -934,7 +934,7 @@ namespace opal
                 MainGameController.ExecuteOnMainThread.Enqueue(() =>
                 { 
                     if (this.fader != null)
-                        this.fader.SetActive(false);
+                        this.fader.GetComponent<Renderer>().enabled = false;
                 });
             }
 

@@ -14,6 +14,24 @@ namespace opal
     /// </summary>
     public class MainGameController : MonoBehaviour
     {
+
+        // --------------- FLAGS ---------------
+        // DEMO VERSION
+        private bool demo = false;
+
+        // STORYBOOK VERSION
+        private bool story = false;
+        public int pagesInStory = 0;
+
+        // SOCIAL STORIES VERSION
+        private bool socialStories = true;
+        private List<GameObject> incorrectFeedback;
+        private GameObject correctFeedback;
+        public float slotWidth = 1;
+        public float answerSlotWidth = 1;
+        public bool scenesInOrder = true;
+        // --------------------------------------
+
         // gesture manager
         private GestureManager gestureManager = null;
         
@@ -32,22 +50,8 @@ namespace opal
         
         // fader for fading out the screen
         private GameObject fader = null; 
-    
-        // DEMO VERSION
-        private bool demo = false;
-        
-        // STORYBOOK VERSION
-        private bool story = false;
-        public int pagesInStory = 0;
-        
-        // SOCIAL STORIES VERSION
-        private bool socialStories = true;
-        private List<GameObject> incorrectFeedback;
-        private GameObject correctFeedback;
-        public float slotWidth = 1;
-        public float answerSlotWidth = 1;
-        public bool scenesInOrder = true;
-        
+
+
         // config
         private GameConfig gameConfig;
     
@@ -724,7 +728,7 @@ namespace opal
             if (cmd == Constants.REQUEST_KEYFRAME)
             {
                 // fire event indicating we want to log the state of the current scene
-                if(this.logEvent != null) 
+                if(this.logEvent != null)
                 {
                     // get keyframe and send it
                     MainGameController.ExecuteOnMainThread.Enqueue(() =>
@@ -768,7 +772,8 @@ namespace opal
 			else if (cmd == Constants.ENABLE_TOUCH)
             {
                 // enable touch events from user
-                this.gestureManager.allowTouch = true;
+                if (this.gestureManager != null)
+                    this.gestureManager.allowTouch = true;
                 MainGameController.ExecuteOnMainThread.Enqueue(() =>
                 { 
                     this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
@@ -789,7 +794,12 @@ namespace opal
             
 			else if (cmd == Constants.SIDEKICK_DO)
             {
-                if(this.gameConfig.sidekick) {
+                if(props == null)
+                {
+                    Debug.LogWarning("Sidekick was told to do something, but got no properties!");
+                }
+                else if(this.gameConfig.sidekick && props is String)
+                {
                     // trigger animation for sidekick character
                     MainGameController.ExecuteOnMainThread.Enqueue(() =>
                     { 
@@ -800,11 +810,16 @@ namespace opal
             
 			else if (cmd == Constants.SIDEKICK_SAY)
             {
-                if(this.gameConfig.sidekick) {
+                if(props == null)
+                {
+                    Debug.LogWarning("Sidekick was told to say something, but got no properties!");
+                }
+                else if (this.gameConfig.sidekick && props is String) 
+                {
                     // trigger playback of speech for sidekick character
                     MainGameController.ExecuteOnMainThread.Enqueue(() =>
                     { 
-                    this.sidekickScript.SidekickSay((string)props);
+                        this.sidekickScript.SidekickSay((string)props);
                     }); 
                 }
             }
@@ -815,18 +830,18 @@ namespace opal
                 {                   
                     if (props == null)
                     {
-                    // if no properties,  remove all play objects and background
-                    // objects from scene, hide highlight
-                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                    { 
-                        this.ClearScene(); 
-                    });
+                        // if no properties,  remove all play objects and background
+                        // objects from scene, hide highlight
+                        MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                        { 
+                            this.ClearScene(); 
+                        });
                     }
                     else 
                     {
-                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                    {
-                        this.ClearObjects((string)props);
+                        MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                        {
+                            this.ClearObjects((string)props);
                         });
                     }
                 }
@@ -835,7 +850,7 @@ namespace opal
                     Debug.LogError(ex);
                 }
         	}
-            
+
 			else if (cmd == Constants.LOAD_OBJECT)
             {
                 // load the specified game object
@@ -845,30 +860,36 @@ namespace opal
                 }
                 else
                 {
-	                SceneObjectProperties sops = (SceneObjectProperties)props;
-	                
-	                // load new background image with the specified properties
-	                if(sops.Tag().Equals(Constants.TAG_BACKGROUND) ||
-	                    sops.Tag().Equals(Constants.TAG_FOREGROUND)) 
+                    try {
+    	                SceneObjectProperties sops = (SceneObjectProperties)props;
+ 
+    	                // load new background image with the specified properties
+    	                if(sops.Tag().Equals(Constants.TAG_BACKGROUND) ||
+    	                    sops.Tag().Equals(Constants.TAG_FOREGROUND))
                         {
-	                    //Debug.Log("background");
-	                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+    	                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                            {
+    	                        this.InstantiateBackground((BackgroundObjectProperties)sops, null);
+    	                    }); 
+    	                }
+    	                // or instantiate new playobject with the specified properties
+    	                else if(sops.Tag().Equals(Constants.TAG_PLAY_OBJECT))
                         {
-	                        this.InstantiateBackground((BackgroundObjectProperties)sops, null);
-	                    }); 
-	                }
-	                // or instantiate new playobject with the specified properties
-	                else if(sops.Tag().Equals(Constants.TAG_PLAY_OBJECT)) 
+    	                    //Debug.Log("play object");
+    	                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                            { 
+    	                        this.InstantiatePlayObject((PlayObjectProperties)sops, null);
+    	                    });
+    	                }
+                    }
+                    catch (Exception e)
                     {
-	                    //Debug.Log("play object");
-	                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                        { 
-	                        this.InstantiatePlayObject((PlayObjectProperties)sops, null);
-	                    });
-	                }
+                        Debug.LogWarning("Was told to load an object, but could not convert properties " 
+                            + "provided to SceneObjectProperties!\n" + e);
+                    }
                 }
             }
-            
+
 			else if (cmd == Constants.MOVE_OBJECT)
             {
                 if(props == null) 
@@ -877,15 +898,23 @@ namespace opal
                               "get name of which one or position to move to.");
                     return;
                 }
-                MoveObject mo = (MoveObject)props;
-                // use LeanTween to move object from curr_posn to new_posn
-                MainGameController.ExecuteOnMainThread.Enqueue(() => 
-                { 
-                    GameObject go = GameObject.Find(mo.name);
-                    if(go != null)
-                        LeanTween.move(go, mo.destination, 2.0f).setEase(
-                            LeanTweenType.easeOutSine);    
-                });
+                try
+                {
+                    MoveObject mo = (MoveObject)props;
+                    // use LeanTween to move object from curr_posn to new_posn
+                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                    { 
+                        GameObject go = GameObject.Find(mo.name);
+                        if(go != null)
+                            LeanTween.move(go, mo.destination, 2.0f).setEase(
+                                LeanTweenType.easeOutSine); 
+                    });
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning("Was told to move an object, but properties were not for "
+                        + "moving an object!\n" + e);
+                }
             }
             
 			else if (cmd == Constants.FADE_SCREEN)
@@ -894,7 +923,8 @@ namespace opal
                 // appearance that the scene is faded out
                 MainGameController.ExecuteOnMainThread.Enqueue(() =>
                 { 
-                    this.fader.SetActive(true);
+                    if (this.fader != null)
+                        this.fader.SetActive(true);
                 });
             }
                 
@@ -903,24 +933,27 @@ namespace opal
                 // remove the fader so the scene is clearly visible again
                 MainGameController.ExecuteOnMainThread.Enqueue(() =>
                 { 
-                    this.fader.SetActive(false);
+                    if (this.fader != null)
+                        this.fader.SetActive(false);
                 });
             }
-                
+
 			else if (cmd == Constants.NEXT_PAGE)
             {
                 // in a story game, goes to the next page in the story
             	MainGameController.ExecuteOnMainThread.Enqueue(() =>
                 {
-            		this.gestureManager.ChangePage(Constants.NEXT);
-            		});
+                    if (this.gestureManager != null)
+                		this.gestureManager.ChangePage(Constants.NEXT);
+        		});
             }
 			else if (cmd == Constants.PREV_PAGE)
 			{
                 // in a story game, goes to the previous page in the story
 				MainGameController.ExecuteOnMainThread.Enqueue(() =>
                 {
-					this.gestureManager.ChangePage(Constants.PREVIOUS);
+                    if (this.gestureManager != null)
+    					this.gestureManager.ChangePage(Constants.PREVIOUS);
 				});
 			}
             else if (cmd == Constants.EXIT)
@@ -941,11 +974,19 @@ namespace opal
                 }
                 else 
                 {
-                    SetCorrectObject sco = (SetCorrectObject)props;
-                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                    try
                     {
-                        this.SetCorrect(sco.correct, sco.incorrect);
-                    });
+                        SetCorrectObject sco = (SetCorrectObject)props;
+                        MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                        {
+                            this.SetCorrect(sco.correct, sco.incorrect);
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogWarning("Was told to set objects as correct/incorrect, but "
+                            + "could not convert properties to SetCorrectobject!\n" + e);
+                    }
                 }
             }
             else if (cmd == Constants.SHOW_CORRECT)
@@ -967,12 +1008,20 @@ namespace opal
             else if (cmd == Constants.SETUP_STORY_SCENE)
             {
                 // setup story scene
-                SetupStorySceneObject ssso = (SetupStorySceneObject)props;
-                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                try
                 {
-                    this.SetupSocialStoryScene(ssso.numScenes, ssso.scenesInOrder, 
-                        ssso.numAnswers);
-                });
+                    SetupStorySceneObject ssso = (SetupStorySceneObject)props;
+                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                    {
+                        this.SetupSocialStoryScene(ssso.numScenes, ssso.scenesInOrder,
+                            ssso.numAnswers);
+                    });
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning("Supposed to set up story scene, but did not get "
+                        + "properties for setting up a story scene!\n" + e);
+                }
             }
             else
 	        {

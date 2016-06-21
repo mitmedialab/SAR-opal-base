@@ -319,11 +319,6 @@ Please report all bugs and issues on the [SAR-opal-base github issues page](http
   out without a sidekick and add it in later. Consider adding a sar\_opal\_msg
   that enables or disables the sidekick, so that it can appear or disappear as
   needed.
-- If you try to send a message with sar\_opal\_sender to move an object but
-  send a json file that doesn't have the right stuff in it for a move command,
-  throws error, need to fix. More generally: we don't check that the command
-  number matches the arguments in the json file. Should do that during message
-  decoding.
 - Add capability to load an image on the "top left" or "bottom right" of the
   screen without specifying exact coordinates. Adjust the loaded image's
   position until no collisions are detected so it does not overlap with other

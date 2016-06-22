@@ -78,6 +78,7 @@ namespace opal
             
             // subscribe to timer (used for reconnections)
             this.timer.Elapsed += OnTimeElapsed;
+            this.timer.Enabled = false;
             this.timer.AutoReset = true;
         }
     
@@ -98,7 +99,7 @@ namespace opal
                     this.clientSocket.OnMessage -= HandleOnMessage;
                 }
             } catch(Exception e) {
-                Debug.Log(e.ToString());
+                Logger.Log(e.ToString());
             }
         }
     
@@ -106,12 +107,12 @@ namespace opal
         /// Set up the web socket for communication through rosbridge
         /// and register handlers for messages
         /// </summary>
-        public void SetupSocket ()
+        public bool SetupSocket ()
         {
             // create new websocket that listens and sends to the
             // specified server on the specified port
             try {
-                Debug.Log("[websocket] creating new websocket... ");
+                Logger.Log("[websocket] creating new websocket... ");
                 this.clientSocket = new WebSocket(("ws://" + SERVER +
                     (PORT_NUM == null ? "" : ":" + PORT_NUM)));
             
@@ -135,11 +136,13 @@ namespace opal
                 // OnClose event occurs when the connection has been closed
                 this.clientSocket.OnClose += HandleOnClose;
             
-                Debug.Log("[websocket] connecting to websocket...");
+                Logger.Log("[websocket] connecting to websocket...");
                 // connect to the server
                 this.clientSocket.Connect(); // TODO connectasync?
+                return true;
             } catch(Exception e) {
-                Debug.LogError("[websocket] Error starting websocket: " + e);
+                Logger.LogError("[websocket] Error starting websocket: " + e);
+                return false;
             }
         }
 
@@ -150,11 +153,11 @@ namespace opal
         public void Reconnect()
         {
             try {
-                Debug.Log("[websocket] trying to connect to websocket...");
+                Logger.Log("[websocket] trying to connect to websocket...");
                 // connect to the server
                 this.clientSocket.Connect();
             } catch(Exception e) {
-                Debug.LogError("[websocket] Error starting websocket: " + e);
+                Logger.LogError("[websocket] Error starting websocket: " + e);
                 this.timer.Enabled = true;
             }
         }
@@ -185,7 +188,7 @@ namespace opal
             if(this.clientSocket.IsAlive) {
                 return this.SendToServer(msg);
             } else {
-                Debug.LogWarning("[websocket] Can't send message - client socket dead!"
+                Logger.LogWarning("[websocket] Can't send message - client socket dead!"
                     + "\nWill try to reconnect to socket...");
                 this.timer.Enabled = true;
                 return false;
@@ -199,7 +202,7 @@ namespace opal
         /// <param name="msg">Message.</param>
         private bool SendToServer (String msg)
         {
-            Debug.Log("[websocket] sending message: " + msg);
+            Logger.Log("[websocket] sending message: " + msg);
         
             // try sending to server
             try {
@@ -207,7 +210,7 @@ namespace opal
                 this.clientSocket.Send(msg); 
                 return true; // success!
             } catch(Exception e) {
-                Debug.LogError("[websocket] ERROR: failed to send " + e.ToString());
+                Logger.LogError("[websocket] ERROR: failed to send " + e.ToString());
                 return false; // fail :(
             }
         }
@@ -221,7 +224,7 @@ namespace opal
         void HandleOnOpen (object sender, EventArgs e)
         {
             // connection opened
-            Debug.Log("[websocket] ---- Opened WebSocket ----");
+            Logger.Log("[websocket] ---- Opened WebSocket ----");
         }
     
         /// <summary>
@@ -234,7 +237,7 @@ namespace opal
             // if the message is a string, we can parse it
             if (e.IsText)
             {
-                Debug.Log("[websocket] Received message: " + e.Data);
+                Logger.Log("[websocket] Received message: " + e.Data);
             
                 // use rosbridge utilities to decode and parse message
                 int command = -1;
@@ -253,7 +256,7 @@ namespace opal
             }
             else if (e.IsBinary)
             {
-                Debug.LogWarning("[websocket] Received byte array in message but we " +
+                Logger.LogWarning("[websocket] Received byte array in message but we " +
                     "were expecting a string message.");
             }
         }
@@ -265,7 +268,7 @@ namespace opal
         /// <param name="e">E.</param>
         void HandleOnError (object sender, ErrorEventArgs e)
         {
-            Debug.LogError("[websocket] Error in websocket! " + e.Message + "\n" +
+            Logger.LogError("[websocket] Error in websocket! " + e.Message + "\n" +
                 e.Exception);
         }
     
@@ -278,12 +281,13 @@ namespace opal
         /// <param name="e">E.</param>
         void HandleOnClose (object sender, CloseEventArgs e)
         {
-           Debug.Log("[websocket] Websocket closed with status: " + e.Reason + 
+           Logger.Log("[websocket] Websocket closed with status: " + e.Reason + 
                 "\nCode: " + e.Code + "\nClean close? " + e.WasClean);
             
             // turn on timer so we try reconnecting later
             // probably sets timer enabled twice - here and in reconnect
             this.timer.Enabled = true;
+            this.Reconnect();
         }
         
         /// <summary>
@@ -293,7 +297,7 @@ namespace opal
         /// <param name="e">E.</param>
         void OnTimeElapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            Debug.Log("[websocket] Time elapsed, trying to reconnect...");
+            Logger.Log("[websocket] Time elapsed, trying to reconnect...");
             this.timer.Enabled = false;
             this.Reconnect();
         }

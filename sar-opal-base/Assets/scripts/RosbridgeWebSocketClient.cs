@@ -78,6 +78,7 @@ namespace opal
             
             // subscribe to timer (used for reconnections)
             this.timer.Elapsed += OnTimeElapsed;
+            this.timer.Enabled = false;
             this.timer.AutoReset = true;
         }
     
@@ -106,7 +107,7 @@ namespace opal
         /// Set up the web socket for communication through rosbridge
         /// and register handlers for messages
         /// </summary>
-        public void SetupSocket ()
+        public bool SetupSocket ()
         {
             // create new websocket that listens and sends to the
             // specified server on the specified port
@@ -138,8 +139,10 @@ namespace opal
                 Debug.Log("[websocket] connecting to websocket...");
                 // connect to the server
                 this.clientSocket.Connect(); // TODO connectasync?
+                return true;
             } catch(Exception e) {
                 Debug.LogError("[websocket] Error starting websocket: " + e);
+                return false;
             }
         }
 
@@ -284,6 +287,7 @@ namespace opal
             // turn on timer so we try reconnecting later
             // probably sets timer enabled twice - here and in reconnect
             this.timer.Enabled = true;
+            this.Reconnect();
         }
         
         /// <summary>

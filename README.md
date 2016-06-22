@@ -12,7 +12,9 @@ This game was built and tested with:
 - rosbridge from ROS Indigo
 - sar\_opal\_msgs 4.0.0
 - TouchScript 8.1
-- LeanTween [no current version number, latest commit was 78b0458171150ed89aba7435f336099f7a81e26b from June 11, 2016, after 2.32 release]
+- LeanTween [no current version number, latest commit was
+  78b0458171150ed89aba7435f336099f7a81e26b from June 11, 2016, after 2.32
+  release]
 - websocket-sharp [no version number, latest commit was
   0ef00bf0a7d526fa705e938f1114d115691a377a from June 11, 2016]
 
@@ -41,6 +43,8 @@ for "mnt/sdcard/edu.mit.media.prg.sar.opal.base/opal\_config.txt". This is
 - server: [string] the IP address or hostname of the ROS server
 - port: [string] port number to use
 - toucan: [boolean] whether or not you want a toucan sidekick in the game
+- log\_debug\_to\_ros: [boolean] whether or not to log Unity's Debug.Log\*
+  calls to the ROS topic "/opal\_tablet".
 
 #### Server & port On startup, the game will try to connect to the specified IP
 
@@ -48,7 +52,8 @@ address or host name with the specified port. The server listed should be the
 IP address or hostname of the machine running roscore and the
 rosbridge\_server.
 
-You can start the rosbridge\_server with the command `roslaunch rosbridge\_server rosbridge\_websocket.launch`.
+You can start the rosbridge\_server with the command `roslaunch
+rosbridge\_server rosbridge\_websocket.launch`.
 
 If the specified server address does not exist on the network, there is a 90s
 timeout before it'll give up trying (hardcoded in the websocket library, so one
@@ -116,6 +121,18 @@ is actually a full file path to the desired image (that may or may not be in
 the Resource directory), and attempts to load the graphic from that full file
 path. If this fails, the graphic is not loaded and creation of the GameObject
 will fail.
+
+## Log Files
+
+Unity automatically logs all Debug.Log\* calls to a text file. The location of
+this file varies by platform -- [here's the official
+list](http://docs.unity3d.com/Manual/LogFiles.html).
+
+Opal has a configuration option that lets you decide whether you want these log
+messages to be published to a ROS topic. If you do, note that initial log
+messages will not show up on the ROS topic, since only messages that occur
+*after* the websocket connection is setup can be logged.
+
 
 ## Submodules
 
@@ -280,16 +297,17 @@ To build and deploy the Social Stories version, do the following:
    and "socialStories" to true. 
 4. Build and deploy.
 
-## Bugs and known issues
+## Bugs and Known Issues
 
 Games made with Unity 5 cannot be deployed to non-neon devices (i.e., Android
 tablets that have tegra boards, such as many of the older Samsung Galaxy
 tablets), because Unity 5 no longer supports these devices. Thus, Opal cannot
 be deployed to these devices.
 
-### Reporting bugs
+### Reporting Bugs
 
-Please report all bugs and issues on the [SAR-opal-base github issues page](https://github.com/personal-robots/SAR-opal-base/issues).
+Please report all bugs and issues on the [SAR-opal-base github issues
+page](https://github.com/personal-robots/SAR-opal-base/issues).
 
 ## TODO
 

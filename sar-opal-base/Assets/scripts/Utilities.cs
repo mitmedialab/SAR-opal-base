@@ -46,6 +46,7 @@ namespace opal
             gameConfig.server = "";
             gameConfig.port = "";
             gameConfig.sidekick = false;
+            gameConfig.logDebugToROS = false;
             
             //if (!File.Exists(path))
             //{
@@ -69,17 +70,20 @@ namespace opal
         
                 // if the config file doesn't have all parts, consider it invalid
                 if(!(data.ContainsKey("server") && data.ContainsKey("port") 
-                    && data.ContainsKey("toucan"))) {
+                    && data.ContainsKey("toucan") && data.ContainsKey("log_debug_to_ros"))) {
                     Debug.LogError("Did not get a valid config file!");
                     return false;
                 }
         
-                // get server and port
+                // get configuration options
                 gameConfig.server = (string)data["server"];
                 gameConfig.port = (string)data["port"];
                 gameConfig.sidekick = (bool)data["toucan"];
+                gameConfig.logDebugToROS = (bool)data["log_debug_to_ros"];
+
                 Debug.Log("server: " + gameConfig.server + "  port: " + gameConfig.port 
-                          + "  sidekick: " + gameConfig.sidekick);
+                          + "  sidekick: " + gameConfig.sidekick + "  log_debug_to_ros: " 
+                          + gameConfig.logDebugToROS);
                 return true;
         
             } catch(Exception e) {

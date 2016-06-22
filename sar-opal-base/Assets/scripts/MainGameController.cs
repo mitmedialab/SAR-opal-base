@@ -109,12 +109,12 @@ namespace opal
             else {
                 Debug.Log("Got game config!");
             }
-                    
+
             // find gesture manager
             FindGestureManager(); 
             this.gestureManager.logEvent += new LogEventHandler(HandleLogEvent);
             this.logEvent += new LogEventHandler(HandleLogEvent);
-            
+ 
             // share flags with everyone else
             this.gestureManager.demo = this.demo;
             this.gestureManager.story = this.story;
@@ -152,9 +152,7 @@ namespace opal
 	                }
                 }
             }
-            
-            
-            
+ 
             // set up fader
             // NOTE right now we're just using one fader that fades out all but the
             // toucan - but in the unity editor there's an unused 'fader_all' that
@@ -171,9 +169,10 @@ namespace opal
             // subscribe to all log events from existing play objects 
             // with collision managers
             this.SubscribeToLogEvents(new string[] { Constants.TAG_PLAY_OBJECT });
-            
+
+
         }
-            
+
         /// <summary>
         /// Called on start, use to initialize stuff
         /// </summary>
@@ -197,33 +196,41 @@ namespace opal
                     this.gameConfig.port);  
                 }
             
-                this.clientSocket.SetupSocket();
-                this.clientSocket.receivedMsgEvent += 
-                new ReceivedMessageEventHandler(HandleClientSocketReceivedMsgEvent);
+                if (this.clientSocket.SetupSocket())
+                {
+                    this.clientSocket.receivedMsgEvent += 
+                    new ReceivedMessageEventHandler(HandleClientSocketReceivedMsgEvent);
+                    
+                    // advertise that we will publish opal_tablet messages
+                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+                    Constants.LOG_ROSTOPIC, Constants.LOG_ROSMSG_TYPE));
                 
-                // advertise that we will publish opal_tablet messages
-                this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
-                Constants.LOG_ROSTOPIC, Constants.LOG_ROSMSG_TYPE));
-            
-                // advertise that we will publish opal_tablet_action messages
-                this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
-                Constants.ACTION_ROSTOPIC, Constants.ACTION_ROSMSG_TYPE));
-                
-                // advertise that we will publish opal_tablet_scene messages
-                this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
-                    Constants.SCENE_ROSTOPIC, Constants.SCENE_ROSMSG_TYPE));
-                
-                // advertise that we will publish opal_tablet_audio messages
-                this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
-                    Constants.AUDIO_ROSTOPIC, Constants.AUDIO_ROSMSG_TYPE));
-                
-                // subscribe to opal command messages
-                this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonSubscribeMsg(
-                Constants.CMD_ROSTOPIC, Constants.CMD_ROSMSG_TYPE));
-                
-                // public string message to opal_tablet
-                this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
-                Constants.LOG_ROSTOPIC, "Opal tablet checking in!"));
+                    // advertise that we will publish opal_tablet_action messages
+                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+                    Constants.ACTION_ROSTOPIC, Constants.ACTION_ROSMSG_TYPE));
+                    
+                    // advertise that we will publish opal_tablet_scene messages
+                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+                        Constants.SCENE_ROSTOPIC, Constants.SCENE_ROSMSG_TYPE));
+                    
+                    // advertise that we will publish opal_tablet_audio messages
+                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+                        Constants.AUDIO_ROSTOPIC, Constants.AUDIO_ROSMSG_TYPE));
+                    
+                    // subscribe to opal command messages
+                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonSubscribeMsg(
+                    Constants.CMD_ROSTOPIC, Constants.CMD_ROSMSG_TYPE));
+                    
+                    // public string message to opal_tablet
+                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
+                    Constants.LOG_ROSTOPIC, "Opal tablet checking in!"));
+                }
+                else {
+                    Debug.LogError("Could not set up websocket!");
+                }            
+            // register log callback for Debug.Log calls
+            Application.logMessageReceivedThreaded += HandleApplicationLogMessageReceived;
+ 
             }
         }
 
@@ -246,6 +253,9 @@ namespace opal
             {
                 this.sidekickScript.donePlayingEvent -= new DonePlayingEventHandler(HandleDonePlayingAudioEvent);
             }
+
+            // unsubscribe from Unity Debug.Log events
+            Application.logMessageReceivedThreaded -= HandleApplicationLogMessageReceived;
         
             // close websocket
             if(this.clientSocket != null) {
@@ -735,8 +745,11 @@ namespace opal
         void HandleClientSocketReceivedMsgEvent (object sender, int cmd, object props)
         {
             Debug.Log("MSG received from remote: " + cmd);
-            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
-                Constants.LOG_ROSTOPIC, "got message"));
+            if (this.clientSocket != null)
+            {
+                this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
+                    Constants.LOG_ROSTOPIC, "got message"));
+            }
         
             // process first token to determine which message type this is
             // if there is a second token, this is the message argument
@@ -1619,39 +1632,62 @@ namespace opal
         /// <param name="logme">event to log</param>
         void HandleLogEvent (object sender, LogEvent logme)
         {
+            // don't log stuff for demo games
             if (this.demo) return;
-        
-            switch(logme.type) 
+
+            if (this.clientSocket != null)
             {
-            case LogEvent.EventType.Action:
-                // note that for some gestures, the 2d Point returned by the gesture
-                // library does not include z position and sets z to 0 by default, so
-                // the z position may not be accurate (but it also doesn't really matter)
-                this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishActionMsg(
-                    Constants.ACTION_ROSTOPIC, logme.name, logme.nameTwo, logme.action, 
-                    (logme.position.HasValue ? new float[] 
-                    {logme.position.Value.x, logme.position.Value.y,
-                    logme.position.Value.z} : new float[] {}),
-                    (logme.positionTwo.HasValue ? new float[] 
-                    {logme.positionTwo.Value.x, logme.position.Value.y,
-                    logme.positionTwo.Value.z} : new float[] {}),
-                    logme.message));
-                break;
-            
-            case LogEvent.EventType.Scene:
-                // send keyframe message
-                this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishSceneMsg(
-                Constants.SCENE_ROSTOPIC, logme.sceneObjects));
-                break;
-            
-            case LogEvent.EventType.Message:
-                // send string message
-                this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
-            Constants.LOG_ROSTOPIC, logme.message));
-                break;
+                switch(logme.type) 
+                {
+                case LogEvent.EventType.Action:
+                    // note that for some gestures, the 2d Point returned by the gesture
+                    // library does not include z position and sets z to 0 by default, so
+                    // the z position may not be accurate (but it also doesn't really matter)
+                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishActionMsg(
+                        Constants.ACTION_ROSTOPIC, logme.name, logme.nameTwo, logme.action, 
+                        (logme.position.HasValue ? new float[] 
+                        {logme.position.Value.x, logme.position.Value.y,
+                        logme.position.Value.z} : new float[] {}),
+                        (logme.positionTwo.HasValue ? new float[] 
+                        {logme.positionTwo.Value.x, logme.position.Value.y,
+                        logme.positionTwo.Value.z} : new float[] {}),
+                        logme.message));
+                    break;
+                
+                case LogEvent.EventType.Scene:
+                    // send keyframe message
+                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishSceneMsg(
+                        Constants.SCENE_ROSTOPIC, logme.sceneObjects));
+                    break;
+                
+                case LogEvent.EventType.Message:
+                    // send string message
+                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
+                        Constants.LOG_ROSTOPIC, logme.message));
+                    break;
+                }
             }
         }
-    
+
+        /// <summary>
+        /// Handles the application log message received event.
+        /// </summary>
+        /// <param name="logString">Log string.</param>
+        /// <param name="stackTrace">Stack trace.</param>
+        /// <param name="type">Type.</param>
+        public void HandleApplicationLogMessageReceived(string condition, string stackTrace, 
+            LogType type)
+        {
+            if (this.clientSocket != null && this.gameConfig.logDebugToROS)
+            {
+                // send log string over ROS
+                this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
+                    Constants.LOG_ROSTOPIC, 
+                    System.DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff: ") +
+                    condition + "\n" + stackTrace));
+            }
+        }
+
         /// <summary>
         /// Called when sidekick audio is done playing
         /// </summary>

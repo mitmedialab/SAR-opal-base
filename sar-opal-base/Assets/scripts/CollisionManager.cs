@@ -53,7 +53,7 @@ namespace opal
 		 /// <param name="other">Other.</param>
 	    void OnTriggerEnter2D (Collider2D other)
 	    {
-            Debug.Log("COLLISION BEGIN " + other.name + " entered " + this.gameObject.name);
+            Logger.Log("COLLISION BEGIN " + other.name + " entered " + this.gameObject.name);
             // fire event indicating a collision occurred
             if(this.logEvent != null) {
                 // send action log event
@@ -70,7 +70,7 @@ namespace opal
                 SavedProperties sp = this.GetComponent<SavedProperties>();
                 if(ReferenceEquals(sp, null))
                 {
-                    Debug.LogWarning("Tried to check collisions for " + this.name 
+                    Logger.LogWarning("Tried to check collisions for " + this.name 
                     + " but could not find any saved properties.");
                 } 
                 // does the collided-with other's name contain the number of our slot?
@@ -105,7 +105,7 @@ namespace opal
         /// <param name="other">Other.</param>
         void OnTriggerExit2D (Collider2D other)
         {
-            Debug.Log("COLLISION END " + other.name + " exited " + this.gameObject.name);
+            Logger.Log("COLLISION END " + other.name + " exited " + this.gameObject.name);
             // fire event indicating a collision occurred
             if(this.logEvent != null) {
                 // send action log event

@@ -53,7 +53,7 @@ namespace opal
     	        // checking for null anyway in case adding the component didn't work
     	        if(tg != null) {
     	            tg.Tapped += tappedHandler; // subscribe to tap events
-    	            Debug.Log(go.name + " subscribed to tap events");
+    	            Logger.Log(go.name + " subscribed to tap events");
     	        }
                 
                 // and start pulsing
@@ -70,7 +70,7 @@ namespace opal
             // checking for null anyway in case adding the component didn't work
             if(tapg != null) {
                 tapg.Tapped += tappedHandler; // subscribe to tap events
-                Debug.Log(sk.name + " subscribed to tap events");
+                Logger.Log(sk.name + " subscribed to tap events");
             }
         }
         
@@ -82,7 +82,7 @@ namespace opal
                 TapGesture tg = go.GetComponent<TapGesture>();
                 if(tg != null) {
                     tg.Tapped -= tappedHandler;
-                    Debug.Log(go.name + " unsubscribed from tap events");
+                    Logger.Log(go.name + " unsubscribed from tap events");
                 }
             }
             
@@ -93,7 +93,7 @@ namespace opal
                 TapGesture tapg = gob.GetComponent<TapGesture>();
                 if(tapg != null) {
                     tapg.Tapped -= tappedHandler;
-                    Debug.Log(gob.name + " unsubscribed from tap events");
+                    Logger.Log(gob.name + " unsubscribed from tap events");
                 }
             }
         }
@@ -123,7 +123,7 @@ namespace opal
             // recognized - i.e., where on the object (in screen dimensions) did
             // the tap occur?
             if(gesture.GetTargetHitResult(out hit)) {
-                Debug.Log("TAP registered on " + gesture.gameObject.name + " at " + hit.Point);
+                Logger.Log("TAP registered on " + gesture.gameObject.name + " at " + hit.Point);
                 
                 // load a scene if its object is touched
                 if (gesture.gameObject.tag.Contains(Constants.TAG_PLAY_OBJECT))
@@ -141,7 +141,7 @@ namespace opal
                 
             } else {
                 // this probably won't ever happen, but in case it does, we'll log it
-                Debug.LogWarning("!! could not register where TAP was located!");
+                Logger.LogWarning("!! could not register where TAP was located!");
             }
         }
         
@@ -150,40 +150,40 @@ namespace opal
     	 **/
         void LoadNext(string toLoad)
         {
-            Debug.Log("attempting to load next scene...");
+            Logger.Log("attempting to load next scene...");
             
             switch (toLoad)
             {
             case Constants.NAME_1_PACK:
-                Debug.Log(">> Loading packing scene");
+                Logger.Log(">> Loading packing scene");
                 SceneManager.LoadScene(Constants.SCENE_1_PACK); // load next scene
                 break;
             case Constants.NAME_2_ZOO:
-                Debug.Log(">> Loading zoo scene");
+                Logger.Log(">> Loading zoo scene");
                 SceneManager.LoadScene(Constants.SCENE_2_ZOO); // load next scene
                 break;
             case Constants.NAME_3_PICNIC:
-                Debug.Log(">> Loading picnic scene");
+                Logger.Log(">> Loading picnic scene");
                 SceneManager.LoadScene(Constants.SCENE_3_PICNIC); // load next scene
                 break;
             case Constants.NAME_4_PARK:
-                Debug.Log (">> Loading park scene");
+                Logger.Log (">> Loading park scene");
                 SceneManager.LoadScene(Constants.SCENE_4_PARK);
                 break;
             case Constants.NAME_5_ROOM:
-                Debug.Log (">> Loading room scene");
+                Logger.Log (">> Loading room scene");
                 SceneManager.LoadScene(Constants.SCENE_5_ROOM);
                 break;
             case Constants.NAME_6_BATH:
-                Debug.Log (">> Loading bath scene");
+                Logger.Log (">> Loading bath scene");
                 SceneManager.LoadScene(Constants.SCENE_6_BATH);
                 break;
             case Constants.NAME_7_PARTY:
-                Debug.Log (">> Loading party scene");
+                Logger.Log (">> Loading party scene");
                 SceneManager.LoadScene(Constants.SCENE_7_PARTY);
                 break;
             case Constants.NAME_8_BYE:
-                Debug.Log (">> Loading goodbye scene");
+                Logger.Log (">> Loading goodbye scene");
                 SceneManager.LoadScene(Constants.SCENE_8_BYE);
                 break;
                 

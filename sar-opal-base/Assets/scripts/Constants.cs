@@ -60,6 +60,7 @@ namespace opal
         public string server;
         public string port;
         public bool sidekick;
+        public bool logDebugToROS;
     }
 
     public static class Constants

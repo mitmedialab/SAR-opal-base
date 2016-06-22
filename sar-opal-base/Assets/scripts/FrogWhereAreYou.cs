@@ -45,9 +45,9 @@ namespace opal
 			this.mgc = (MainGameController)GameObject.FindGameObjectWithTag(
 				Constants.TAG_DIRECTOR).GetComponent<MainGameController>();
 			if(this.mgc == null) {
-				Debug.Log("ERROR: Could not find main game controller!");
+				Logger.Log("ERROR: Could not find main game controller!");
 			} else {
-				Debug.Log("Got main game controller");
+				Logger.Log("Got main game controller");
 			}
         
             // load "Frog, where are you?" story
@@ -75,7 +75,7 @@ namespace opal
         /** Load story */
         void LoadStory()
         {
-        	Debug.Log ("Loading \"Frog, where are you?\" story");
+        	Logger.Log ("Loading \"Frog, where are you?\" story");
             // load "Frog, where are you?" story
             // find the image files
             Sprite[] sprites = Resources.LoadAll<Sprite>(Constants.GRAPHICS_FILE_PATH 

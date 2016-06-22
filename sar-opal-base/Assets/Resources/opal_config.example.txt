@@ -1,5 +1,6 @@
 {
 	"server": "write the IP address of the ROS server here, e.g., 192.168.1.23",
 	"port": "9090",
-	"toucan": true
+	"toucan": true,
+	"log_debug_to_ros": true
 }

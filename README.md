@@ -5,27 +5,36 @@ interactions. Easily load different graphics for games requiring similar
 mechanics, all using ROS.
 
 ## Build and Run
-This game was built and tested with Unity 5.3.5 and MonoDevelop 5.9.6.
+This game was built and tested with:
+
+- Unity 5.3.5
+- MonoDevelop 5.9.6
+- rosbridge from ROS Indigo
+- sar\_opal\_msgs 4.0.0
+- TouchScript 8.1
+- LeanTween [no current version number, latest commit was 78b0458171150ed89aba7435f336099f7a81e26b from June 11, 2016, after 2.32 release]
+- websocket-sharp [no version number, latest commit was
+  0ef00bf0a7d526fa705e938f1114d115691a377a from June 11, 2016]
 
 ## Configuration
 
-The gaem uses configuration options listed in the websocket\_config file. There
+The game uses configuration options listed in the opal\_config file. There
 is an example file located in Assets/Resources/.
 
 ### On OS X
 
 When running the game on OS X from the Unity editor, the game will check for
-"Assets/Resources/websocket\_config.txt".
+"Assets/Resources/opal\_config.txt".
 
 ### On Android
 
 When running the game on Android (e.g., on a tablet), the game will first check
-for "mnt/sdcard/edu.mit.media.prg.sar.opal.base/websocket\_config.txt". This is
+for "mnt/sdcard/edu.mit.media.prg.sar.opal.base/opal\_config.txt". This is
     because once the game is packaged up for Android, you can't change stuff in
     the package, so we needed a location for the config file that could be
     easily edited after the game is installed. If that file doesn't exist, or
     connecting fails with the values listed in that file, the game will try the
-    file packaged in "Assets/Resources/websocket\_config.txt". 
+    file packaged in "Assets/Resources/opal\_config.txt". 
 
 ### Configuration options 
 
@@ -93,7 +102,8 @@ telling Opal to load an object is the name of the associated graphic to load.
 Opal tries to load the graphic from two places:
 
 1) "Assets/Resources/graphics/base-images" directory. If the game is a social
-stories game, Opal assumes all graphics loaded will be in the
+stories game (see below for different game descriptions), Opal assumes all
+graphics loaded will be in the
 "Assets/Resources/graphics/base-images/socialstories" directory. Either the
 base-images or socialstories directories may have subdirectories, which
 shouldsocialstories be provided as part of the graphic name. E.g.,if you want
@@ -154,7 +164,10 @@ here](http://dentedpixel.com/LeanTweenDocumentation/classes/LeanTween.html
 "LeanTween docs")).
 
 If you pull in the submodule, you can get the examples, prefabs, etc. The
-necessary .cs file is in the SAR-opal-base Assets/Plugins folder already.
+necessary .cs files are in the SAR-opal-base Assets/Plugins directory already.
+Note that the LeanTween instructions only tell you to move LeanTween.cs to your
+Plugins directory; however, you actually need several other files that are in
+LeanTween's Plugins directory as well.
 
 ### websocket-sharp
 
@@ -163,7 +176,9 @@ is a .Net implementation of websockets, and is used to communicate with the ROS
 rosbridge\_server.
 
 Note that if you try to build this project, the Newtonsoft.Json dll appears to
-be missing, so I copied over the prebuilt dll from bin/Debug.
+be missing. However, a dll is built and placed in bin/Debug anyway. Some
+functionality may be missing as a result, but it doesn't seem to be necessary
+for this project.
 
 ### MiniJSON
 
@@ -179,19 +194,20 @@ comments on the github gist page added in.
 - When adding new images to the project, make sure to set each image as
   'Advanced' and check the 'read/write' box in the Unity editor. If you don't
   do this, when images are programatically loaded as PlayObjects, the polygon
-      colliders won't be generated to properly fit the image's shape/outline.
-      When deploying the game, you'll probably get the error "Sprite outline
-      generation failed - could not read texture pixel data. Did you forget to
-      make the texture readable?" whenever you dynamically add a polygon
-      collider to an object. Something about textures/images not being readable
-      by scripts by default, the polygon collider needing to read the texture
-      to figure out the outline to make the collider the right shape, but not
-      being able to, and thus the collider ending up the wrong shape and making
-      collisions happen weird... 
+  colliders won't be generated to properly fit the image's shape/outline.
+  When deploying the game, you'll probably get the error "Sprite outline
+  generation failed - could not read texture pixel data. Did you forget to
+  make the texture readable?" whenever you dynamically add a polygon
+  collider to an object. Something about textures/images not being readable
+  by scripts by default, the polygon collider needing to read the texture
+  to figure out the outline to make the collider the right shape, but not
+  being able to, and thus the collider ending up the wrong shape and making
+  collisions happen weird... 
 
 - Only a small set of "demo" graphics are included in this repository. The full
-  set is available from the Personal Robots Group - email students in the group
-  to inquire. Add the full set to the "Resources\/base\_images" folder. 
+  set of graphics for different games is available from the Personal Robots
+  Group - email students in the group to inquire. Add the full set to the
+  "Resources\/base\_images" folder. 
 
 ## Version Notes
 
@@ -199,7 +215,17 @@ The Year 3 SAR study was run using Opal version 1.0.3.
 
 The Cyber4 study was run using Opal version 2.0.0.
 
-## Demo Version
+## Game Versions
+
+Opal is a flexible platform and can be configured for a number of different
+game setups. Currently, these include:
+
+- Demo
+- SAR Year 3 study game with Toucan
+- Storybook
+- SAR Year 5 social stories game
+
+### Demo Version
 
 To build and deploy the demo version, do the following:
 
@@ -207,14 +233,17 @@ To build and deploy the demo version, do the following:
    uncheck basic-scene and all other non-demo scenes.
 2. In Unity > Build Settings > Player Settings, change the deployed name of the
    game to be "SAR Opal Demo" and the bundle identifier to be "demo" instead of
-   "base".
-3. In the MainGameController, set the flag "demo" to true.
+   "base". Technically, this step is not necessary, but if you have another
+   version of Opal deployed on your device, you'll want to change these
+   settings so you can have both side by side.
+3. In the MainGameController, set the flag "demo" to true, "story" to false,
+   and "socialStories" to false.
 4. Build and deploy. 
 
 The demo version of the game requires some graphics that are not included in
 the demo. 
 
-## Storybook version
+### Storybook Version
 
 To build and deploy the Frog Where Are You storybook, do the following:
 
@@ -224,12 +253,32 @@ To build and deploy the Frog Where Are You storybook, do the following:
    scene and uncheck the other scenes.
 2. In Unity > Build Settings > Player Settings, change the deployed name of the
    game to be "Frog Where Are You" and the bundle identifier to be "fway"
-   instead of "base".
-3. In the MainGameController, set the flag "story" to true.
+   instead of "base". Technically, this step is not necessary, but if you have
+   another version of Opal deployed on your device, you'll want to change these
+   settings so you can have both side by side.
+3. In the MainGameController, set the flag "story" to true, "demo" to false,
+   and "socialStories" to false.
 4. Build and deploy.
 
 You can use the Frog Where Are You book as an example for how to load your own
 set of images for a storybook.
+
+### Social Stories Version
+
+To build and deploy the Social Stories version, do the following:
+
+1. Get the Social Stories graphics and put the "socialstories" directory in the
+   "Resources/graphics/base-images/" directory.
+2. In Unity > Build Settings > Scenes in build, check the socialstories scene
+   and uncheck the other scenes.
+3. In Unity > Build Settings > Player Settings, change the deployed name of the
+   game to be "SAR Social Stories" and the bundle identifier to be "ss" instead
+   of "base". Technically, this step is not necessary, but if you have another
+   version of Opal deployed on your device, you'll want to change these
+   settings so you can have both side by side.
+3. In the MainGameController, set the flag "story" to false, "demo" to false",
+   and "socialStories" to true. 
+4. Build and deploy.
 
 ## Bugs and known issues
 
@@ -237,6 +286,10 @@ Games made with Unity 5 cannot be deployed to non-neon devices (i.e., Android
 tablets that have tegra boards, such as many of the older Samsung Galaxy
 tablets), because Unity 5 no longer supports these devices. Thus, Opal cannot
 be deployed to these devices.
+
+### Reporting bugs
+
+Please report all bugs and issues on the [SAR-opal-base github issues page](https://github.com/personal-robots/SAR-opal-base/issues).
 
 ## TODO
 
@@ -266,11 +319,6 @@ be deployed to these devices.
   out without a sidekick and add it in later. Consider adding a sar\_opal\_msg
   that enables or disables the sidekick, so that it can appear or disappear as
   needed.
-- If you try to send a message with sar\_opal\_sender to move an object but
-  send a json file that doesn't have the right stuff in it for a move command,
-  throws error, need to fix. More generally: we don't check that the command
-  number matches the arguments in the json file. Should do that during message
-  decoding.
 - Add capability to load an image on the "top left" or "bottom right" of the
   screen without specifying exact coordinates. Adjust the loaded image's
   position until no collisions are detected so it does not overlap with other
@@ -283,4 +331,3 @@ be deployed to these devices.
   redeploy (and/or a start screen that lets you pick whether you want demo
   mode, story mode, etc when you start the game - use "load scene" function to
   pick the right one).
-

@@ -1,3 +1,27 @@
+// Jacqueline Kory Westlund
+// June 2016
+//
+// The MIT License (MIT)
+// Copyright (c) 2016 Personal Robots Group
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 using System.Collections.Generic;
 using System.Collections;
 using System.IO;
@@ -232,10 +256,10 @@ namespace opal
             Dictionary<string, object> data = null;
             data = Json.Deserialize(rosmsg) as Dictionary<string, object>;
             if(data == null) {   
-                Debug.LogWarning("Could not parse JSON message!");
+                Debug.LogWarning("[decode ROS msg] Could not parse JSON message!");
                 return;
             }
-            Debug.Log("deserialized " + data.Count + " objects from JSON!");
+            Debug.Log("[decode ROS msg] deserialized " + data.Count + " objects from JSON!");
         
             // message sent over rosbridge comes with the topic name and what the
             // operation was
@@ -244,24 +268,32 @@ namespace opal
             // to before parsing further? Would need to keep a list of subscriptions. 
             //
             // if the message doesn't have all three parts, consider it invalid
-            if(!data.ContainsKey("msg") && !data.ContainsKey("topic") && !data.ContainsKey("op")) {
-                Debug.LogWarning("Did not get a valid message!");
+            if(!data.ContainsKey("msg") && !data.ContainsKey("topic") 
+                && !data.ContainsKey("op")) 
+            {
+                Debug.LogWarning("[decode ROS msg] Did not get a valid message!");
                 return;
             }
         
-            Debug.Log("Got " + data["op"] + " message on topic " + data["topic"]);
+            Debug.Log("[decode ROS msg] Got " + data["op"] + " message on topic " + data["topic"]);
         
             // parse the actual message
-            Debug.Log("parsing message: " + data["msg"]);
+            Debug.Log("[decode ROS msg] Parsing message: " + data["msg"]);
             Dictionary<string, object> msg = data["msg"] as Dictionary<string, object>;
+
+            // print header for debugging
+            if(msg.ContainsKey("header"))
+            {
+                Debug.Log("[decode ROS msg]" + msg["header"]);
+            }
         
             // get the command
             if(msg.ContainsKey("command")) {
-                Debug.Log("command: " + msg["command"]);
+                Debug.Log("[decode ROS msg] command: " + msg["command"]);
                 try {
                     command = Convert.ToInt32(msg["command"]);
                 } catch(Exception ex) {
-                    Debug.LogError("Error! Could not get command: " + ex);
+                    Debug.LogError("[decode ROS msg] Error! Could not get command: " + ex);
                 }
             }
             
@@ -269,31 +301,31 @@ namespace opal
             // we're done, return command only
             if(!msg.ContainsKey("properties") || 
                 ((string)msg["properties"]).Equals("")) {
-                Debug.Log("no properties found, done parsing");
+                Debug.Log("[decode ROS msg] no properties found, done parsing");
                 return;
             }
         
             // otherwise, we've got properties, decode them.
-            Debug.Log("properties: " + msg["properties"]);
+            Debug.Log("[decode ROS msg] properties: " + msg["properties"]);
         
             // parse data, see if it's valid json
             Dictionary<string, object> props = null;
             props = Json.Deserialize((string)msg["properties"]) as Dictionary<string, object>;
             // if we can't deserialize the json message, return
             if(props == null) {   
-                Debug.Log("Could not parse JSON properties! Could just be a string.");
+                Debug.Log("[decode ROS msg] Could not parse JSON properties! Could just be a string.");
             
                 // so properties could be just a string (e.g. if command is SIDEKICK_DO)
                 if(msg["properties"] is String) {
                     properties = (string)msg["properties"];
                 } else {
-                    Debug.LogWarning("Could not parse as a string either!");
+                    Debug.LogWarning("[decode ROS msg] Could not parse as a string either!");
                     properties = "";
                 }
                 return;
             }
             // otherwise, we got properties!
-            Debug.Log("deserialized " + props.Count + " properties from JSON!");
+            Debug.Log("[decode ROS msg] deserialized " + props.Count + " properties from JSON!");
         
             // if the properties contain the tag "play object", we're loading a 
             // play object, so build up a properties object
@@ -311,7 +343,7 @@ namespace opal
                     if(props.ContainsKey("draggable"))
                         pops.draggable = Convert.ToBoolean(props["draggable"]);
                 } catch(Exception ex) {
-                    Debug.LogError("Error! Could not determine if draggable: " + ex);
+                    Debug.LogError("[decode ROS msg] Error! Could not determine if draggable: " + ex);
                 }
         
                 if(props.ContainsKey("audioFile"))
@@ -319,7 +351,7 @@ namespace opal
                     try {
                         pops.SetAudioFile((string)props["audioFile"]);
                     } catch(Exception ex) {
-                        Debug.LogError("Error! Could not get audio file: " + ex);
+                        Debug.LogError("[decode ROS msg] Error! Could not get audio file: " + ex);
                     }
                 }
             
@@ -331,7 +363,7 @@ namespace opal
                         int[] posn = ObjectToIntArray(props["position"] as IEnumerable);
                         pops.SetInitPosition(new Vector3(posn[0], posn[1], posn[2]));
                     } catch(Exception ex) {
-                        Debug.LogError("Error! Could not get initial position: " + ex);
+                        Debug.LogError("[decode ROS msg] Error! Could not get initial position: " + ex);
                     }
                 }
                 
@@ -342,7 +374,7 @@ namespace opal
                         int[] posn = ObjectToIntArray(props["scale"] as IEnumerable);
                         pops.SetScale(new Vector3(posn[0], posn[1], posn[2]));
                     } catch(Exception ex) {
-                        Debug.LogError("Error! Could not get initial position: " + ex);
+                        Debug.LogError("[decode ROS msg] Error! Could not get initial position: " + ex);
                     }
                 }
                 
@@ -352,16 +384,16 @@ namespace opal
                         pops.SetSlot(Convert.ToInt32(props["slot"]));
                     }
                     catch(Exception ex) {
-                        Debug.LogError("Error! Could not get slot number: " + ex);
+                        Debug.LogError("[decode ROS msg] Error! Could not get slot number: " + ex);
                     }
                 }
             
-                if(props.ContainsKey("answerSlot"))
+                if(props.ContainsKey("isAnswerSlot"))
                 {
                     try {
-                        pops.isAnswerSlot = Convert.ToBoolean(props["answerSlot"]);
+                        pops.isAnswerSlot = Convert.ToBoolean(props["isAnswerSlot"]);
                     } catch(Exception ex) {
-                        Debug.LogError("Error! Could not determine if slot is answer or scene: " + ex);
+                        Debug.LogError("[decode ROS msg] Error! Could not determine if slot is answer or scene: " + ex);
                     }
                 }
                 
@@ -371,7 +403,7 @@ namespace opal
                         pops.SetSlot(Convert.ToInt32(props["correctSlot"]));
                     }
                     catch(Exception ex) {
-                        Debug.LogError("Error! Could not get correct slot number: " + ex);
+                        Debug.LogError("[decode ROS msg] Error! Could not get correct slot number: " + ex);
                     }
                 }
                 
@@ -409,7 +441,7 @@ namespace opal
                         //Debug.Log("posn: " + posn);
                         bops.SetInitPosition(new Vector3(posn[0], posn[1], posn[2]));
                     } catch(Exception ex) {
-                        Debug.LogError("Error! Could not get initial position: " + ex);
+                        Debug.LogError("[decode ROS msg] Error! Could not get initial position: " + ex);
                     }
                 }
                 properties = bops; // return the background object properties
@@ -430,7 +462,7 @@ namespace opal
                     Debug.Log("posn: " + posn);
                     mo.destination = new Vector3(posn[0], posn[1], posn[2]);
                 } catch(Exception ex) {
-                    Debug.LogError("Error! Could not get destination: " + ex);
+                    Debug.LogError("[decode ROS msg] Error! Could not get destination: " + ex);
                 } 
                 properties = mo; // return the move object properties
             }
@@ -456,7 +488,7 @@ namespace opal
                     ssso.numScenes = Convert.ToInt32(props["numScenes"]);
                 }
                 catch(Exception ex) {
-                    Debug.LogError("Error! Could not get number of scenes: " + ex);
+                    Debug.LogError("[decode ROS msg] Error! Could not get number of scenes: " + ex);
                 }
             
                 // are the scenes presented in order or out of order
@@ -465,7 +497,7 @@ namespace opal
                     try {
                         ssso.scenesInOrder = Convert.ToBoolean(props["scenesInOrder"]);
                     } catch(Exception ex) {
-                        Debug.LogError("Error! Could not determine if scenes i norder: " + ex);
+                        Debug.LogError("[decode ROS msg] Error! Could not determine if scenes i norder: " + ex);
                     }
                 }
                 
@@ -476,7 +508,7 @@ namespace opal
                         ssso.numAnswers = Convert.ToInt32(props["numAnswers"]);
                     }
                     catch(Exception ex) {
-                        Debug.LogError("Error! Could not get number of answers: " + ex);
+                        Debug.LogError("[decode ROS msg] Error! Could not get number of answers: " + ex);
                     }
                 }
                 

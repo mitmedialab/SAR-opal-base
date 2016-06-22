@@ -1,3 +1,27 @@
+// Jacqueline Kory Westlund
+// June 2016
+//
+// The MIT License (MIT)
+// Copyright (c) 2016 Personal Robots Group
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -44,10 +68,10 @@ namespace opal
             
             // TODO test this
             if (!System.Net.IPAddress.TryParse(rosIP, out ip))
-                throw new ArgumentException("IP address is not valid!", "rosIP");
+                throw new ArgumentException("[websocket] IP address is not valid!", "rosIP");
             
             if (!UInt16.TryParse(portNum, out num))
-                throw new ArgumentException("Port number is not a port!", "portNum");
+                throw new ArgumentException("[websocket] Port number is not a port!", "portNum");
             
             this.SERVER = rosIP;    
             this.PORT_NUM = portNum;
@@ -87,7 +111,7 @@ namespace opal
             // create new websocket that listens and sends to the
             // specified server on the specified port
             try {
-                Debug.Log("creating new websocket... ");
+                Debug.Log("[websocket] creating new websocket... ");
                 this.clientSocket = new WebSocket(("ws://" + SERVER +
                     (PORT_NUM == null ? "" : ":" + PORT_NUM)));
             
@@ -111,11 +135,11 @@ namespace opal
                 // OnClose event occurs when the connection has been closed
                 this.clientSocket.OnClose += HandleOnClose;
             
-                Debug.Log("connecting to websocket...");
+                Debug.Log("[websocket] connecting to websocket...");
                 // connect to the server
                 this.clientSocket.Connect(); // TODO connectasync?
             } catch(Exception e) {
-                Debug.LogError("Error starting websocket: " + e);
+                Debug.LogError("[websocket] Error starting websocket: " + e);
             }
         }
 
@@ -126,11 +150,11 @@ namespace opal
         public void Reconnect()
         {
             try {
-                Debug.Log("trying to connect to websocket...");
+                Debug.Log("[websocket] trying to connect to websocket...");
                 // connect to the server
                 this.clientSocket.Connect();
             } catch(Exception e) {
-                Debug.LogError("Error starting websocket: " + e);
+                Debug.LogError("[websocket] Error starting websocket: " + e);
                 this.timer.Enabled = true;
             }
         }
@@ -161,7 +185,7 @@ namespace opal
             if(this.clientSocket.IsAlive) {
                 return this.SendToServer(msg);
             } else {
-                Debug.LogWarning("Can't send message - client socket dead!"
+                Debug.LogWarning("[websocket] Can't send message - client socket dead!"
                     + "\nWill try to reconnect to socket...");
                 this.timer.Enabled = true;
                 return false;
@@ -175,7 +199,7 @@ namespace opal
         /// <param name="msg">Message.</param>
         private bool SendToServer (String msg)
         {
-            Debug.Log("sending message: " + msg);
+            Debug.Log("[websocket] sending message: " + msg);
         
             // try sending to server
             try {
@@ -183,7 +207,7 @@ namespace opal
                 this.clientSocket.Send(msg); 
                 return true; // success!
             } catch(Exception e) {
-                Debug.LogError("ERROR: failed to send " + e.ToString());
+                Debug.LogError("[websocket] ERROR: failed to send " + e.ToString());
                 return false; // fail :(
             }
         }
@@ -197,7 +221,7 @@ namespace opal
         void HandleOnOpen (object sender, EventArgs e)
         {
             // connection opened
-            Debug.Log("---- Opened WebSocket ----");
+            Debug.Log("[websocket] ---- Opened WebSocket ----");
         }
     
         /// <summary>
@@ -207,21 +231,30 @@ namespace opal
         /// <param name="e">E.</param>
         void HandleOnMessage (object sender, MessageEventArgs e)
         {
-            Debug.Log("Received message: " + e.Data);
-        
-            // use rosbridge utilities to decode and parse message
-            int command = -1;
-            object properties = null;
-            RosbridgeUtilities.DecodeROSJsonCommand(e.Data, out command, out properties);
-        
-            // got a command!
-            // we let the game controller sort out if it's a real command or not
-            // as well as what to do with the extra properties, if any
+            // if the message is a string, we can parse it
+            if (e.IsText)
+            {
+                Debug.Log("[websocket] Received message: " + e.Data);
             
-            // fire event indicating that we received a message
-            if(this.receivedMsgEvent != null) {
-                // only send subset of msg that is actual message
-                this.receivedMsgEvent(this, command, properties);
+                // use rosbridge utilities to decode and parse message
+                int command = -1;
+                object properties = null;
+                RosbridgeUtilities.DecodeROSJsonCommand(e.Data, out command, out properties);
+            
+                // got a command!
+                // we let the game controller sort out if it's a real command or not
+                // as well as what to do with the extra properties, if any
+                
+                // fire event indicating that we received a message
+                if(this.receivedMsgEvent != null) {
+                    // only send subset of msg that is actual message
+                    this.receivedMsgEvent(this, command, properties);
+                }
+            }
+            else if (e.IsBinary)
+            {
+                Debug.LogWarning("[websocket] Received byte array in message but we " +
+                    "were expecting a string message.");
             }
         }
     
@@ -232,7 +265,7 @@ namespace opal
         /// <param name="e">E.</param>
         void HandleOnError (object sender, ErrorEventArgs e)
         {
-            Debug.LogError("Error in websocket! " + e.Message + "\n" +
+            Debug.LogError("[websocket] Error in websocket! " + e.Message + "\n" +
                 e.Exception);
         }
     
@@ -245,7 +278,8 @@ namespace opal
         /// <param name="e">E.</param>
         void HandleOnClose (object sender, CloseEventArgs e)
         {
-           Debug.Log("Websocket closed with status " + e.Reason + " " + e.Code);
+           Debug.Log("[websocket] Websocket closed with status: " + e.Reason + 
+                "\nCode: " + e.Code + "\nClean close? " + e.WasClean);
             
             // turn on timer so we try reconnecting later
             // probably sets timer enabled twice - here and in reconnect
@@ -259,6 +293,7 @@ namespace opal
         /// <param name="e">E.</param>
         void OnTimeElapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
+            Debug.Log("[websocket] Time elapsed, trying to reconnect...");
             this.timer.Enabled = false;
             this.Reconnect();
         }

@@ -17,6 +17,7 @@ TagManager:
   - GoNext
   - CorrectFeedback
   - IncorrectFeedback
+  - AnswerSlot
   layers:
   - Default
   - TransparentFX

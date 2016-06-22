@@ -1,3 +1,27 @@
+// Jacqueline Kory Westlund
+// June 2016
+//
+// The MIT License (MIT)
+// Copyright (c) 2016 Personal Robots Group
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
@@ -45,7 +69,7 @@ namespace opal
             // set up light
             this.highlight = GameObject.FindGameObjectWithTag(Constants.TAG_LIGHT);
             if(this.highlight != null) {
-                this.highlight.SetActive(false);
+                this.LightOff();
                 Debug.Log("Got light: " + this.highlight.name);
             } else {
                 Debug.LogError("ERROR: No light found");
@@ -359,6 +383,7 @@ namespace opal
                             gesture.gameObject.name, "press", hit.Point,
                             (gesture.gameObject.name.Contains("yes_button") ? "YES" 
                             : (gesture.gameObject.name.Contains("no_button") ? "NO"
+                            // TODO what if go doesn't have SavedProperties component?
                             : (gesture.gameObject.GetComponent<SavedProperties>().isCorrect ? "CORRECT"
                             : (gesture.gameObject.GetComponent<SavedProperties>().isIncorrect ? "INCORRECT"
                             : ""))))));
@@ -626,8 +651,9 @@ namespace opal
 
         public void LightOn (int scaleBy, Vector3 posn)
         {
-            if(this.highlight != null) {
-                this.highlight.SetActive(true);
+            if(this.highlight != null && this.highlight.GetComponent<Renderer>() != null) 
+            {
+                this.highlight.GetComponent<Renderer>().enabled = true;
                 this.highlight.transform.position = new Vector3(posn.x, posn.y, posn.z + 1);
                 Vector3 sc = this.highlight.transform.localScale;
                 sc.x *= scaleBy;
@@ -649,12 +675,12 @@ namespace opal
         /// <param name="scaleBy">Scale by.</param>
         public void LightOff (int scaleBy)
         {
-            if(this.highlight != null) {
+            if(this.highlight != null && this.highlight.GetComponent<Renderer>() != null) 
+            {
                 Vector3 sc = this.highlight.transform.localScale;
                 sc.x /= scaleBy;
                 this.highlight.transform.localScale = sc;
-    
-                this.highlight.SetActive(false); // turn light off
+                this.highlight.GetComponent<Renderer>().enabled = false;
             } else {
                 Debug.Log("Tried to turn light off ... but light is null!");
             }

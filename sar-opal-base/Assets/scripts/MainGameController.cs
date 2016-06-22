@@ -1,3 +1,27 @@
+// Jacqueline Kory Westlund
+// June 2016
+//
+// The MIT License (MIT)
+// Copyright (c) 2016 Personal Robots Group
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 using UnityEngine;
 using System;
 using System.Collections.Generic;
@@ -14,6 +38,24 @@ namespace opal
     /// </summary>
     public class MainGameController : MonoBehaviour
     {
+
+        // --------------- FLAGS ---------------
+        // DEMO VERSION
+        private bool demo = false;
+
+        // STORYBOOK VERSION
+        private bool story = false;
+        public int pagesInStory = 0;
+
+        // SOCIAL STORIES VERSION
+        private bool socialStories = true;
+        private List<GameObject> incorrectFeedback;
+        private GameObject correctFeedback;
+        public float slotWidth = 1;
+        public float answerSlotWidth = 1;
+        public bool scenesInOrder = true;
+        // --------------------------------------
+
         // gesture manager
         private GestureManager gestureManager = null;
         
@@ -32,21 +74,8 @@ namespace opal
         
         // fader for fading out the screen
         private GameObject fader = null; 
-    
-        // DEMO VERSION
-        private bool demo = false;
-        
-        // STORYBOOK VERSION
-        private bool story = false;
-        public int pagesInStory = 0;
-        
-        // SOCIAL STORIES VERSION
-        private bool socialStories = true;
-        private List<GameObject> incorrectFeedback;
-        private GameObject correctFeedback;
-        public float slotWidth = 1;
-        public bool scenesInOrder = true;
-        
+
+
         // config
         private GameConfig gameConfig;
     
@@ -133,7 +162,7 @@ namespace opal
             // to "TAG_FADER_ALL" to use that fader instead!
             this.fader = GameObject.FindGameObjectWithTag(Constants.TAG_FADER);
             if(this.fader != null) {
-                this.fader.SetActive(false);
+                this.fader.GetComponent<Renderer>().enabled = false;
                 Debug.Log("Got fader: " + this.fader.name);
             } else {
                 Debug.LogError("ERROR: No fader found");
@@ -250,7 +279,7 @@ namespace opal
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError("Error when invoking actions on main thread!" + ex);
+                    Debug.LogError("Error when invoking actions on main thread!\n" + ex);
                 }
             }
         }
@@ -298,24 +327,7 @@ namespace opal
                 : UnityEngine.Random.value.ToString();
             Debug.Log("Creating new play object: " + pops.Name());
 
-            // set tag
-            go.tag = pops.Tag();
-            
-            // if tag is FEEDBACK, keep reference and set as invisible
-            if (go.tag.Equals(Constants.TAG_CORRECT_FEEDBACK))
-            {
-                this.correctFeedback = go;
-                go.SetActive(false);
-            }
-            else if (go.tag.Equals(Constants.TAG_INCORRECT_FEEDBACK))
-            {
-                // this list is cleared when the scene is cleared
-                if (this.incorrectFeedback == null) this.incorrectFeedback = new List<GameObject>();
-                this.incorrectFeedback.Add(go);
-                go.SetActive(false);
-            }
-            
-            // set layer
+            // set layer based on whether the object is draggable or not
             go.layer = (pops.draggable ? Constants.LAYER_MOVEABLES : Constants.LAYER_STATICS);
 
             // load sprite/image for object
@@ -332,8 +344,9 @@ namespace opal
                 if(sprite == null)
                 {
                     Debug.LogWarning("Could not load sprite from Resources: " 
-                        + Constants.GRAPHICS_FILE_PATH + pops.Name() 
+                        + Constants.GRAPHICS_FILE_PATH  
                         + (this.socialStories ? Constants.SOCIAL_STORY_FILE_PATH : "")
+                        + pops.Name()
                         + "\nGoing to try file path...");
                     
                     // TODO add filepath to pops! don't use Name
@@ -368,17 +381,32 @@ namespace opal
                     Constants.SCENE_SLOT) + (pops.Slot() - 1)); // slots 1-indexed
                 if (slot != null)
                 {
+                    Debug.Log("Slot found: " + slot.name + " at position " 
+                            + slot.transform.position + " -- putting object here.");
                     go.transform.position = new Vector3(slot.transform.position.x,
                                                         slot.transform.position.y,
                                                         Constants.Z_PLAY_OBJECT);
-                    
+                    // make slot visible again
+                    slot.GetComponent<Renderer>().enabled = true;
+
                     // set scale of sprite
                     // scale slot to one portion of the screen width, using the saved
                     // width of a slot 
-                    go.transform.localScale = new Vector3(
-                            slotWidth / spriteRenderer.sprite.bounds.size.x,
-                            slotWidth / spriteRenderer.sprite.bounds.size.y,
-                            slotWidth / spriteRenderer.sprite.bounds.size.z);
+                    if (pops.isAnswerSlot)
+                    {
+                        go.transform.localScale = new Vector3(
+                            this.answerSlotWidth / spriteRenderer.sprite.bounds.size.x,
+                            this.answerSlotWidth / spriteRenderer.sprite.bounds.size.y,
+                            this.answerSlotWidth / spriteRenderer.sprite.bounds.size.z);
+                    }
+                    // use scene slot width, not answer slot width, to scale
+                    else
+                    {
+                        go.transform.localScale = new Vector3(
+                            this.slotWidth / spriteRenderer.sprite.bounds.size.x,
+                            (this.slotWidth * 9/16) / spriteRenderer.sprite.bounds.size.y,
+                            this.slotWidth / spriteRenderer.sprite.bounds.size.z);
+                    }
                 }
                 else
                 {
@@ -409,6 +437,33 @@ namespace opal
                 sp.isCorrect = pops.isCorrect;
                 sp.isIncorrect = pops.isIncorrect;
             }
+            
+            // set tag
+            go.tag = pops.Tag();
+
+            // if tag is FEEDBACK, keep reference and set as invisible
+            if (go.tag.Equals(Constants.TAG_CORRECT_FEEDBACK)
+                && go.GetComponent<Renderer>() != null)
+            {
+                this.correctFeedback = go;
+                go.GetComponent<Renderer>().enabled = false;
+            }
+            else if (go.tag.Equals(Constants.TAG_INCORRECT_FEEDBACK)
+                && go.GetComponent<Renderer>() != null)
+            {
+                // this list is cleared when the scene is cleared
+                if (this.incorrectFeedback == null) 
+                {
+                    this.incorrectFeedback = new List<GameObject>();
+                }
+                this.incorrectFeedback.Add(go);
+                go.GetComponent<Renderer>().enabled = false;
+            }
+
+            // if this is an answer feedback slot graphic, we set it invisible
+            // until the associated answer is loaded
+            if (go.tag.Equals(Constants.TAG_ANSWER_SLOT))
+                go.GetComponent<Renderer>().enabled = false;
 
             // load audio - add an audio source component to the object if there
             // is an audio file to load
@@ -533,7 +588,7 @@ namespace opal
         
             // set tag
             go.tag = Constants.TAG_BACKGROUND;
-            
+
             // set layer
             go.layer = Constants.LAYER_STATICS;
         
@@ -697,9 +752,11 @@ namespace opal
             if (cmd == Constants.REQUEST_KEYFRAME)
             {
                 // fire event indicating we want to log the state of the current scene
-                if(this.logEvent != null) {
+                if(this.logEvent != null)
+                {
                     // get keyframe and send it
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => {
+                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                    {
                         LogEvent.SceneObject[] sos = null;
                         this.GetSceneKeyframe(out sos);
                         this.logEvent(this, new LogEvent(LogEvent.EventType.Scene, sos));
@@ -713,7 +770,8 @@ namespace opal
 			else if (cmd == Constants.HIGHLIGHT_OBJECT)
             {
                 // move the highlight behind the specified game object
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                { 
                     GameObject go = GameObject.Find((string)props);
                     if(go != null) {
                         this.gestureManager.LightOn(go.transform.position);
@@ -728,25 +786,22 @@ namespace opal
             {
                 // disable touch events from user
                 this.gestureManager.allowTouch = false; 
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                { 
                     this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
                         Constants.TAG_PLAY_OBJECT }, false);
-                    // and fade the screen 
-                    // - actually no, don't, there's a separate message for that!
-                    //this.fader.SetActive(true);
                 });
             }
             
 			else if (cmd == Constants.ENABLE_TOUCH)
             {
                 // enable touch events from user
-                this.gestureManager.allowTouch = true;
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                if (this.gestureManager != null)
+                    this.gestureManager.allowTouch = true;
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                { 
                     this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
                         Constants.TAG_PLAY_OBJECT }, true);
-                    // and unfade the screen
-                    // no - we don't want to tie fade/touch together!
-                    //this.fader.SetActive(false);
                 });
             }
             
@@ -755,16 +810,23 @@ namespace opal
                // reload the current level
                 // e.g., when the robot's turn starts, want all characters back in their
                 // starting configuration for use with automatic playbacks
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                { 
                     this.ReloadScene();
                 });
             }
             
 			else if (cmd == Constants.SIDEKICK_DO)
             {
-                if(this.gameConfig.sidekick) {
+                if(props == null)
+                {
+                    Debug.LogWarning("Sidekick was told to do something, but got no properties!");
+                }
+                else if(this.gameConfig.sidekick && props is String)
+                {
                     // trigger animation for sidekick character
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
+                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                    { 
                         this.sidekickScript.SidekickDo((string)props);
                     }); 
                 }
@@ -772,109 +834,157 @@ namespace opal
             
 			else if (cmd == Constants.SIDEKICK_SAY)
             {
-                if(this.gameConfig.sidekick) {
+                if(props == null)
+                {
+                    Debug.LogWarning("Sidekick was told to say something, but got no properties!");
+                }
+                else if (this.gameConfig.sidekick && props is String) 
+                {
                     // trigger playback of speech for sidekick character
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                    this.sidekickScript.SidekickSay((string)props);
+                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                    { 
+                        this.sidekickScript.SidekickSay((string)props);
                     }); 
                 }
             }
         
 			else if (cmd == Constants.CLEAR)
             {
-                Debug.Log("clearing scene");
-                try {                   
-                    // remove all play objects and background objects from scene, hide highlight
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                        this.ClearScene(); 
-                    });
+                try 
+                {                   
+                    if (props == null)
+                    {
+                        // if no properties,  remove all play objects and background
+                        // objects from scene, hide highlight
+                        MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                        { 
+                            this.ClearScene(); 
+                        });
+                    }
+                    else 
+                    {
+                        MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                        {
+                            this.ClearObjects((string)props);
+                        });
+                    }
                 }
                 catch (Exception ex)
                 {
                     Debug.LogError(ex);
                 }
         	}
-            
+
 			else if (cmd == Constants.LOAD_OBJECT)
             {
                 // load the specified game object
-                if(props == null) {
+                if(props == null) 
+                {
                     Debug.LogWarning("Was told to load an object, but got no properties!");
                 }
                 else
                 {
-	                SceneObjectProperties sops = (SceneObjectProperties)props;
-	                
-	                // load new background image with the specified properties
-	                if(sops.Tag().Equals(Constants.TAG_BACKGROUND) ||
-	                    sops.Tag().Equals(Constants.TAG_FOREGROUND)) {
-	                    //Debug.Log("background");
-	                    MainGameController.ExecuteOnMainThread.Enqueue(() => {
-	                        this.InstantiateBackground((BackgroundObjectProperties)sops, null);
-	                    }); 
-	                }
-	                // or instantiate new playobject with the specified properties
-	                else if(sops.Tag().Equals(Constants.TAG_PLAY_OBJECT)) {
-	                    //Debug.Log("play object");
-	                    MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-	                        this.InstantiatePlayObject((PlayObjectProperties)sops, null);
-	                    });
-	                }
+                    try {
+    	                SceneObjectProperties sops = (SceneObjectProperties)props;
+ 
+    	                // load new background image with the specified properties
+    	                if(sops.Tag().Equals(Constants.TAG_BACKGROUND) ||
+    	                    sops.Tag().Equals(Constants.TAG_FOREGROUND))
+                        {
+    	                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                            {
+    	                        this.InstantiateBackground((BackgroundObjectProperties)sops, null);
+    	                    }); 
+    	                }
+    	                // or instantiate new playobject with the specified properties
+    	                else if(sops.Tag().Equals(Constants.TAG_PLAY_OBJECT))
+                        {
+    	                    //Debug.Log("play object");
+    	                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                            { 
+    	                        this.InstantiatePlayObject((PlayObjectProperties)sops, null);
+    	                    });
+    	                }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogWarning("Was told to load an object, but could not convert properties " 
+                            + "provided to SceneObjectProperties!\n" + e);
+                    }
                 }
             }
-            
+
 			else if (cmd == Constants.MOVE_OBJECT)
             {
-                if(props == null) {
+                if(props == null) 
+                {
                     Debug.LogWarning("Was told to move an object but did not " +
                               "get name of which one or position to move to.");
                     return;
                 }
-                MoveObject mo = (MoveObject)props;
-                // use LeanTween to move object from curr_posn to new_posn
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                    GameObject go = GameObject.Find(mo.name);
-                    if(go != null)
-                        LeanTween.move(go, mo.destination, 2.0f).setEase(
-                            LeanTweenType.easeOutSine);    
-                });
+                try
+                {
+                    MoveObject mo = (MoveObject)props;
+                    // use LeanTween to move object from curr_posn to new_posn
+                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                    { 
+                        GameObject go = GameObject.Find(mo.name);
+                        if(go != null)
+                            LeanTween.move(go, mo.destination, 2.0f).setEase(
+                                LeanTweenType.easeOutSine); 
+                    });
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning("Was told to move an object, but properties were not for "
+                        + "moving an object!\n" + e);
+                }
             }
             
 			else if (cmd == Constants.FADE_SCREEN)
             {
                 // places a white cloud-like object over the scene to give the
                 // appearance that the scene is faded out
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                    this.fader.SetActive(true);
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                { 
+                    if (this.fader != null)
+                        this.fader.GetComponent<Renderer>().enabled = true;
                 });
             }
                 
 			else if (cmd == Constants.UNFADE_SCREEN)
             {
                 // remove the fader so the scene is clearly visible again
-                MainGameController.ExecuteOnMainThread.Enqueue(() => { 
-                    this.fader.SetActive(false);
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                { 
+                    if (this.fader != null)
+                        this.fader.GetComponent<Renderer>().enabled = false;
                 });
             }
-                
+
 			else if (cmd == Constants.NEXT_PAGE)
             {
                 // in a story game, goes to the next page in the story
-            	MainGameController.ExecuteOnMainThread.Enqueue(() => {
-            		this.gestureManager.ChangePage(Constants.NEXT);
-            		});
+            	MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                {
+                    if (this.gestureManager != null)
+                		this.gestureManager.ChangePage(Constants.NEXT);
+        		});
             }
 			else if (cmd == Constants.PREV_PAGE)
 			{
                 // in a story game, goes to the previous page in the story
-				MainGameController.ExecuteOnMainThread.Enqueue(() => {
-					this.gestureManager.ChangePage(Constants.PREVIOUS);
+				MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                {
+                    if (this.gestureManager != null)
+    					this.gestureManager.ChangePage(Constants.PREVIOUS);
 				});
 			}
             else if (cmd == Constants.EXIT)
             {
                 // exit the program
-                MainGameController.ExecuteOnMainThread.Enqueue(() => {
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                {
                     Application.Quit();
                 });
             }
@@ -888,34 +998,54 @@ namespace opal
                 }
                 else 
                 {
-                    SetCorrectObject sco = (SetCorrectObject)props;
-                    MainGameController.ExecuteOnMainThread.Enqueue(() => {
-                        this.SetCorrect(sco.correct, sco.incorrect);
-                    });
+                    try
+                    {
+                        SetCorrectObject sco = (SetCorrectObject)props;
+                        MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                        {
+                            this.SetCorrect(sco.correct, sco.incorrect);
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogWarning("Was told to set objects as correct/incorrect, but "
+                            + "could not convert properties to SetCorrectobject!\n" + e);
+                    }
                 }
             }
             else if (cmd == Constants.SHOW_CORRECT)
             {
                 // show all objects for visual feedback tagged 'correct' or 'incorrect'
-                MainGameController.ExecuteOnMainThread.Enqueue(() => {
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                {
                     this.ToggleCorrect(true);
                 });
             }
             else if (cmd == Constants.HIDE_CORRECT)
             {
                 // hide all objects for visual feedback tagged 'correct' or 'incorrect'
-                MainGameController.ExecuteOnMainThread.Enqueue(() => {
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                {
                     this.ToggleCorrect(false);
                 });
             }
             else if (cmd == Constants.SETUP_STORY_SCENE)
             {
                 // setup story scene
-                SetupStorySceneObject ssso = (SetupStorySceneObject)props;
-                MainGameController.ExecuteOnMainThread.Enqueue(() => {
-                    this.SetupSocialStoryScene(ssso.numScenes, ssso.scenesInOrder, 
-                        ssso.numAnswers);
-                });
+                try
+                {
+                    SetupStorySceneObject ssso = (SetupStorySceneObject)props;
+                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                    {
+                        this.SetupSocialStoryScene(ssso.numScenes, ssso.scenesInOrder,
+                            ssso.numAnswers);
+                    });
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning("Supposed to set up story scene, but did not get "
+                        + "properties for setting up a story scene!\n" + e);
+                }
             }
             else
 	        {
@@ -956,17 +1086,69 @@ namespace opal
             // turn off the light if it's not already
             this.gestureManager.LightOff();
             
-            // clear list of answer feedback objects and remove
-            if (this.incorrectFeedback != null)
-                this.incorrectFeedback.Clear();
-        
             // remove all objects with specified tags
             this.DestroyObjectsByTag(new string[] {
                 Constants.TAG_BACKGROUND,
                 Constants.TAG_PLAY_OBJECT,
                 Constants.TAG_CORRECT_FEEDBACK,
-                Constants.TAG_INCORRECT_FEEDBACK
+                Constants.TAG_INCORRECT_FEEDBACK,
+                Constants.TAG_ANSWER_SLOT
             });
+            // after removing all incorrect feedback objects, reset the list too
+            if (this.incorrectFeedback != null)
+                this.incorrectFeedback.Clear();
+        }
+
+        void ClearObjects(string toclear)
+        {
+            Debug.Log("Clearing objects: " + toclear);
+
+            // turn off the light if it's not already
+            this.gestureManager.LightOff();
+
+            // clear background only
+            if (toclear.Contains(Constants.TAG_BACKGROUND))
+            {
+                this.DestroyObjectsByTag(new string[] {
+                    Constants.TAG_BACKGROUND
+                });
+            }
+            // clear play objects only
+            else if (toclear.Contains(Constants.TAG_PLAY_OBJECT))
+            {
+                this.DestroyObjectsByTag(new string[] {
+                    Constants.TAG_PLAY_OBJECT
+                });
+            }
+            // clear answer graphics only
+            else if (toclear.ToLower().Contains("answer"))
+            {
+                // find all answer graphics and destroy them
+                // these will be play objects set as correct or incorrect
+                GameObject[] objs = GameObject.FindGameObjectsWithTag(Constants.TAG_PLAY_OBJECT);
+                if(objs.Length == 0)
+                    return;
+                foreach(GameObject go in objs) 
+                {
+                    if (go.GetComponent<SavedProperties>() != null
+                        && (go.GetComponent<SavedProperties>().isCorrect
+                        || go.GetComponent<SavedProperties>().isIncorrect))
+                    {
+                        Debug.Log("destroying " + go.name);
+                        DestroyImmediate(go);
+                    }
+                }
+
+                // turn answer slots invisible
+                GameObject[] slots = GameObject.FindGameObjectsWithTag(Constants.TAG_ANSWER_SLOT);
+                if(objs.Length == 0)
+                    return;
+                foreach(GameObject go in slots)
+                {
+                    go.GetComponent<Renderer>().enabled = false;
+                }
+            }
+
         }
     
         /// <summary>
@@ -1008,7 +1190,7 @@ namespace opal
                     continue;
                 foreach(GameObject go in objs) {
                     Debug.Log("destroying " + go.name);
-                    Destroy(go);
+                    DestroyImmediate(go);
                 }
             }
         }
@@ -1100,9 +1282,10 @@ namespace opal
                     {
                         // load correct visual feedback object at that object
                         // make visible
-                        if(this.correctFeedback != null) 
+                        if(this.correctFeedback != null && 
+                            this.correctFeedback.GetComponent<Renderer>() != null) 
                         {
-                            this.correctFeedback.SetActive(true);
+                            this.correctFeedback.GetComponent<Renderer>().enabled = true;
                             // make sure feedback is shown in the correct position
                             // this is necessary even though the feedback graphics are
                             // loaded on top of the slots, because we do not check when
@@ -1121,20 +1304,20 @@ namespace opal
                           
                     } else if (go.GetComponent<SavedProperties>().isIncorrect)
                     {
-                       
                         // load incorrect visual feedback object at that object
                         // and make visible
                         // note that if there are more objects marked correct or incorrect
                         // than there are answer slots, some won't get marked, since we 
                         // assume that there are only as many correct or incorrect options
                         // as there are answer slots
-                        if(this.incorrectFeedback != null && 
-                           this.incorrectFeedback.Count > counter)
+                        if(this.incorrectFeedback != null
+                           && this.incorrectFeedback.Count > counter
+                           && this.incorrectFeedback[counter].GetComponent<Renderer>() != null) 
                         {
-                            this.incorrectFeedback[counter].SetActive(true);
                             this.incorrectFeedback[counter].transform.position = 
                                 new Vector3(go.transform.position.x, go.transform.position.y, 
                                             Constants.Z_FEEDBACK);
+                            this.incorrectFeedback[counter].GetComponent<Renderer>().enabled = true;
                             counter++;
                         } 
                         else 
@@ -1151,10 +1334,14 @@ namespace opal
             }
             else
             {
+                // TODO now that we're using the renderer instead of setting active,
+                // we can use GameObject.Find to find these objects...
+
                 // hide visual feedback by setting inactive
-                if (this.correctFeedback != null)
+                if (this.correctFeedback != null
+                    && this.correctFeedback.GetComponent<Renderer>() != null)
                 {
-                    this.correctFeedback.SetActive(false);
+                    this.correctFeedback.GetComponent<Renderer>().enabled = false;
                 }
                 else 
                 {
@@ -1165,7 +1352,10 @@ namespace opal
                 {
                     foreach (GameObject go in this.incorrectFeedback)
                     {
-                        go.SetActive(false);
+                        if (go.GetComponent<Renderer>() != null)
+                        {
+                            go.GetComponent<Renderer>().enabled = false;
+                        }
                     }
                 }
                 else 
@@ -1184,9 +1374,14 @@ namespace opal
         /// <param name="num_answers">Number of answer options for this story</param>
         public void SetupSocialStoryScene(int numScenes, bool scenesInOrder, int numAnswers)
         {
-            // clear scene
-            this.ClearScene();
-            
+            // check that we got valid data first
+            if (numScenes < 1)
+            {
+                Debug.LogWarning("Setup Social Story Scene: Told to set up fewer " +
+                    "than 1 scene. Not setting up.");
+                return;
+            }
+
             // save whether we are showing a social story in order or not in order
             this.scenesInOrder = scenesInOrder;
             
@@ -1210,13 +1405,18 @@ namespace opal
             this.InstantiateBackground(bops, bk);
             
             // need to scale scene/answer slots to evenly fit in the screen
+            // scene slots are wider than answer slots - 16:9 ratio
+            // answer slots are square
+            //
             // they can be bigger if there are fewer slots
-            // but never make them taller than a one-third the screen height
-            float slot_width = (float) (Screen.width / numScenes * 0.75);
-            if (slot_width > Screen.height / 3) slot_width = (float) (Screen.height / 3);
+            // but never make them taller than two-fifths the screen height
+            float slotwidth = (float) (Screen.width / numScenes * 0.85);
+            if ((slotwidth * 9/16) > Screen.height / 2) slotwidth = (float) (Screen.height / 2);
             // save slot width so we can load scenes of the right size later
-            this.slotWidth = slot_width;
-            
+            this.slotWidth = slotwidth;
+
+            // get answer slot width later, if we need to load answer slots
+
             // load the number of slots needed for this story
             for (int i = 0; i < numScenes; i++)
             {
@@ -1244,9 +1444,9 @@ namespace opal
                     // near top of screen
                     Screen.height * 0.25f, Constants.Z_SLOT),
                     // scale slot to one portion of the screen width
-                    new Vector3(slot_width / s.bounds.size.x,
-                            slot_width / s.bounds.size.y,
-                            slot_width / s.bounds.size.z)
+                    new Vector3(slotwidth / s.bounds.size.x,
+                            (slotwidth * 9/16) / s.bounds.size.y,
+                            slotwidth / s.bounds.size.z)
                     );
                 
                 // instantiate the scene slot
@@ -1258,7 +1458,8 @@ namespace opal
                 {
                     pops.SetName(Constants.SCENE_COLLIDE_SLOT + i);
                     pops.SetInitPosition(new Vector3(pops.InitPosition().x,
-                                                     pops.InitPosition().y, Constants.Z_COLLIDE_SLOT));
+                                                     pops.InitPosition().y, 
+                                                     Constants.Z_COLLIDE_SLOT));
                     pops.SetScale(new Vector3(pops.Scale().x / 3, 
                                               pops.Scale().y / 3, 
                                               pops.Scale().z) / 3);
@@ -1268,75 +1469,85 @@ namespace opal
                 }
             }
             
-            // load answer slots
-            // find the image files for the scenes
-            // load the number of answer slots needed for this story
-            // all answer slots look the same so load one graphic and reuse it
-            Sprite ans = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
-                                                + Constants.SOCIAL_STORY_FILE_PATH
-                                                + Constants.SS_ANSWER_SLOT_PATH
-                                                + Constants.SS_SLOT_NAME);
-            
-            Sprite feedc = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
-                                                  + Constants.SOCIAL_STORY_FILE_PATH
-                                                  + Constants.SS_FEEDBACK_PATH
-                                                  + Constants.SS_CORRECT_FEEDBACK_NAME);  
-            
-            Sprite feedic = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
-                                                   + Constants.SOCIAL_STORY_FILE_PATH
-                                                   + Constants.SS_FEEDBACK_PATH
-                                                   + Constants.SS_INCORRECT_FEEDBACK_NAME);                                       
-            
-            for (int i = 0; i < numAnswers; i++)
-            {   
-                // create answer slot
-                PlayObjectProperties pops = new PlayObjectProperties(
-                    Constants.ANSWER_SLOT + i, // name
-                    Constants.TAG_PLAY_OBJECT, // tag
-                    false, // draggable
-                    null, // audio
-                    new Vector3 (
-                    // left edge + offset to first item + counter * width/count
-                    (-Screen.width/2) 
-                    + (Screen.width / (numAnswers * 2)) 
-                    + (i * Screen.width / (numAnswers)),
-                    // near botton of screen
-                    -Screen.height * 0.25f, Constants.Z_SLOT),
-                    // scale to one portion of the screen width
-                    new Vector3(slot_width / ans.bounds.size.x,
-                            slot_width / ans.bounds.size.x,
-                            slot_width / ans.bounds.size.x)
-                    );
+            // load answer slots, if we need to
+            if (numAnswers >= 1)
+            {
+                // answer slot width
+                float aslotwidth = (float) (Screen.width / numAnswers * 0.8);
+                if (aslotwidth > Screen.height * 2/5) aslotwidth = (float) (Screen.height * 2/5);
+                // save answer slot width so we can load answers of the right size later
+                this.answerSlotWidth = aslotwidth;
+
+                // find the image files for the scenes
+                // load the number of answer slots needed for this story
+                // all answer slots look the same so load one graphic and reuse it
+                Sprite ans = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
+                                                    + Constants.SOCIAL_STORY_FILE_PATH
+                                                    + Constants.SS_ANSWER_SLOT_PATH
+                                                    + Constants.SS_SLOT_NAME);
+
+                // also load graphics for correct and incorrect feedback
+                Sprite feedc = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
+                                                      + Constants.SOCIAL_STORY_FILE_PATH
+                                                      + Constants.SS_FEEDBACK_PATH
+                                                      + Constants.SS_CORRECT_FEEDBACK_NAME);  
                 
-                // instantiate the scene slot
-                this.InstantiatePlayObject(pops, ans);
+                Sprite feedic = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
+                                                       + Constants.SOCIAL_STORY_FILE_PATH
+                                                       + Constants.SS_FEEDBACK_PATH
+                                                       + Constants.SS_INCORRECT_FEEDBACK_NAME);                                       
                 
-                // also load answer feedback graphics for answer slots
-                // we know only one answer will be correct, so load 1 correct, x incorrect
-                // like with the highlight, keep reference to the answer feedback graphics
-                // but set them as not visible
-                PlayObjectProperties pobps = new PlayObjectProperties(
-                    (i < numAnswers - 1 ? "feedback-incorrect" + i : "feedback-correct"), // name
-                    (i < numAnswers - 1 ? Constants.TAG_INCORRECT_FEEDBACK : 
-                 Constants.TAG_CORRECT_FEEDBACK), // tag
-                    false, // draggable
-                    null, // audio
-                    new Vector3 (
-                    // left edge + offset to first item + counter * width/count
-                    (-Screen.width/2) 
-                    + (Screen.width / (numAnswers * 2)) 
-                    + (i * Screen.width / (numAnswers)),
-                    // near botton of screen
-                    -Screen.height * 0.25f, Constants.Z_FEEDBACK),
-                    // scale to one portion of the screen width
-                    new Vector3(slot_width / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x,
-                            slot_width / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x,
-                            slot_width / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x)
-                    );
-                
-                // instantiate the scene slot
-                this.InstantiatePlayObject(pobps, (i < numAnswers - 1 ? feedic : feedc));
-            }  
+                for (int i = 0; i < numAnswers; i++)
+                {   
+                    // create answer slot
+                    PlayObjectProperties pops = new PlayObjectProperties(
+                        Constants.ANSWER_SLOT + i, // name
+                        Constants.TAG_ANSWER_SLOT, // tag
+                        false, // draggable
+                        null, // audio
+                        new Vector3 (
+                        // left edge + offset to first item + counter * width/count
+                        (-Screen.width/2) 
+                        + (Screen.width / (numAnswers * 2)) 
+                        + (i * Screen.width / (numAnswers)),
+                        // near botton of screen
+                        -Screen.height * 0.25f, Constants.Z_SLOT),
+                        // scale to one portion of the screen width
+                        new Vector3(slotwidth / ans.bounds.size.x,
+                                slotwidth / ans.bounds.size.x,
+                                slotwidth / ans.bounds.size.x)
+                        );
+                    
+                    // instantiate the scene slot
+                    this.InstantiatePlayObject(pops, ans);
+                    
+                    // also load answer feedback graphics for answer slots
+                    // we know only one answer will be correct, so load 1 correct, x incorrect
+                    // like with the highlight, keep reference to the answer feedback graphics
+                    // but set them as not visible
+                    PlayObjectProperties pobps = new PlayObjectProperties(
+                        (i < numAnswers - 1 ? "feedback-incorrect" + i : "feedback-correct"), // name
+                        (i < numAnswers - 1 ? Constants.TAG_INCORRECT_FEEDBACK : 
+                     Constants.TAG_CORRECT_FEEDBACK), // tag
+                        false, // draggable
+                        null, // audio
+                        new Vector3 (
+                        // left edge + offset to first item + counter * width/count
+                        (-Screen.width/2) 
+                        + (Screen.width / (numAnswers * 2)) 
+                        + (i * Screen.width / (numAnswers)),
+                        // near botton of screen
+                        -Screen.height * 0.25f, Constants.Z_FEEDBACK),
+                        // scale to one portion of the screen width
+                        new Vector3(aslotwidth / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x * 1.2f,
+                                aslotwidth / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x * 1.2f,
+                                aslotwidth / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x * 1.2f)
+                        );
+                    
+                    // instantiate the scene slot
+                    this.InstantiatePlayObject(pobps, (i < numAnswers - 1 ? feedic : feedc));
+                }  
+            }
         }
     
         /// <summary>

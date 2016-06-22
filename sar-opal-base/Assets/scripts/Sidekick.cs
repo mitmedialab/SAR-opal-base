@@ -77,9 +77,9 @@ namespace opal
             /*this.fader = GameObject.FindGameObjectWithTag(Constants.TAG_FADER);
             if(this.fader != null) {
                 this.fader.SetActive(false);
-                Debug.Log("Got fader: " + this.fader.name);
+                Logger.Log("Got fader: " + this.fader.name);
             } else {
-                Debug.LogError("ERROR: No fader found");
+                Logger.LogError("ERROR: No fader found");
             }*/
             
         }
@@ -110,7 +110,7 @@ namespace opal
             {
                 // we're done playing audio, tell sidekick to stop playing
                 // the speaking animation
-                Debug.Log("done speaking");
+                Logger.Log("done speaking");
                 this.checkAudio = false;
                 // NOTE right now we're just fading screen when touch is diabled
                 // but we could easily just fade screen when toucan speaks, here
@@ -129,7 +129,7 @@ namespace opal
             }
             else if (this.checkAnim && this.playingAnim)
             {
-                Debug.Log("done playing animation " + this.currAnim);
+                Logger.Log("done playing animation " + this.currAnim);
                 this.playingAnim = false;
                 this.checkAnim = false;
                 this.animator.SetBool(Constants.ANIM_FLAGS[this.currAnim], false);
@@ -146,7 +146,7 @@ namespace opal
         { 
             if (utterance.Equals(""))
             {
-                Debug.LogWarning("Sidekick was told to say an empty string!");
+                Logger.LogWarning("Sidekick was told to say an empty string!");
                 return false;
             }
                 
@@ -157,7 +157,7 @@ namespace opal
                 this.audioSource.clip = Resources.Load(Constants.AUDIO_FILE_PATH + 
                                                   utterance) as AudioClip;
             } catch(UnityException e) {
-                Debug.LogError("ERROR could not load audio: " + utterance + "\n" + e);
+                Logger.LogError("ERROR could not load audio: " + utterance + "\n" + e);
                 return false;
             }
             this.audioSource.loop = false;
@@ -167,12 +167,12 @@ namespace opal
             if (!this.gameObject.GetComponent<AudioSource>().isPlaying)
             {
                 // start the speaking animation
-                //Debug.Log("flag is ... " 
+                //Logger.Log("flag is ... " 
                 //    + this.animator.GetBool(Constants.ANIM_FLAGS[Constants.ANIM_SPEAK]));
                 
                 this.animator.SetBool(Constants.ANIM_FLAGS[Constants.ANIM_SPEAK],true);
                 
-                //Debug.Log("going to speak ... " 
+                //Logger.Log("going to speak ... " 
                 //    + this.animator.GetBool(Constants.ANIM_FLAGS[Constants.ANIM_SPEAK]));
                 
                 // play audio
@@ -195,24 +195,24 @@ namespace opal
         {
             if (action.Equals(""))
             {
-                Debug.LogWarning("Sidekick was told to do an empty string!");
+                Logger.LogWarning("Sidekick was told to do an empty string!");
                 return false;
             }
         
             // now try playing animation
             try {
                 // start the animation
-                Debug.Log("flag is ... " + this.animator.GetBool(Constants.ANIM_FLAGS[action]));
+                Logger.Log("flag is ... " + this.animator.GetBool(Constants.ANIM_FLAGS[action]));
                 this.animator.SetBool(Constants.ANIM_FLAGS[action],true);
                 this.currAnim = action;
                 this.checkAnim = true;
-                Debug.Log("going to do " + action + " ... " 
+                Logger.Log("going to do " + action + " ... " 
                     + this.animator.GetBool(Constants.ANIM_FLAGS[action]));
                 
             }
             catch (Exception ex)
             {
-                Debug.LogError("Could not play animation " + action + ": " + ex);
+                Logger.LogError("Could not play animation " + action + ": " + ex);
                 return false;
             }
             return true;

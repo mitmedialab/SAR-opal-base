@@ -50,28 +50,28 @@ namespace opal
             
             //if (!File.Exists(path))
             //{
-            //    Debug.LogError("ERROR: can't find websocket config file at " +
+            //    Logger.LogError("ERROR: can't find websocket config file at " +
             //              path);
             //    return;
             //}
             string config = "";
             try {
                 config = File.ReadAllText(path);
-                Debug.Log("got config: " + config);
+                Logger.Log("got config: " + config);
                 config.Replace("\n", "");
         
                 Dictionary<string, object> data = null;
                 data = Json.Deserialize(config) as Dictionary<string, object>;
                 if(data == null) {   
-                    Debug.LogError("Could not parse JSON config file!");
+                    Logger.LogError("Could not parse JSON config file!");
                     return false;
                 }
-                Debug.Log("deserialized " + data.Count + " objects from JSON!");
+                Logger.Log("deserialized " + data.Count + " objects from JSON!");
         
                 // if the config file doesn't have all parts, consider it invalid
                 if(!(data.ContainsKey("server") && data.ContainsKey("port") 
                     && data.ContainsKey("toucan") && data.ContainsKey("log_debug_to_ros"))) {
-                    Debug.LogError("Did not get a valid config file!");
+                    Logger.LogError("Did not get a valid config file!");
                     return false;
                 }
         
@@ -81,13 +81,13 @@ namespace opal
                 gameConfig.sidekick = (bool)data["toucan"];
                 gameConfig.logDebugToROS = (bool)data["log_debug_to_ros"];
 
-                Debug.Log("server: " + gameConfig.server + "  port: " + gameConfig.port 
+                Logger.Log("server: " + gameConfig.server + "  port: " + gameConfig.port 
                           + "  sidekick: " + gameConfig.sidekick + "  log_debug_to_ros: " 
                           + gameConfig.logDebugToROS);
                 return true;
         
             } catch(Exception e) {
-                Debug.LogError("Could not read config file! File path given was " 
+                Logger.LogError("Could not read config file! File path given was " 
                     + path + "\nError: " + e);
                 return false;
             }
@@ -121,15 +121,15 @@ namespace opal
                         new Vector2(0.5f,0.5f));
                         
                     if (sp != null) return sp;
-                    else Debug.LogWarning("Could not create sprite for file: " + filepath);
+                    else Logger.LogWarning("Could not create sprite for file: " + filepath);
                 }
                 else {
-                    Debug.LogWarning("Could not create texture from file: " + filepath);
+                    Logger.LogWarning("Could not create texture from file: " + filepath);
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError("Could not load image from file: " + filepath + "\nError: " + e.Message 
+                Logger.LogError("Could not load image from file: " + filepath + "\nError: " + e.Message 
                 + e.StackTrace);
             }
             

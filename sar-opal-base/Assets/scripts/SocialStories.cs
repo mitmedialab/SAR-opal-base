@@ -47,9 +47,9 @@ namespace opal
             this.mgc = (MainGameController)GameObject.FindGameObjectWithTag(
                 Constants.TAG_DIRECTOR).GetComponent<MainGameController>();
             if(this.mgc == null) {
-                Debug.Log("ERROR: Could not find main game controller!");
+                Logger.Log("ERROR: Could not find main game controller!");
             } else {
-                Debug.Log("Got main game controller");
+                Logger.Log("Got main game controller");
             }
             
             // TODO setup demo game using this?

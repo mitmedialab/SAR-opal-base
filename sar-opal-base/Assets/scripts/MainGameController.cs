@@ -41,7 +41,7 @@ namespace opal
 
         // --------------- FLAGS ---------------
         // DEMO VERSION
-        private bool demo = false;
+        private bool demo = true;
 
         // STORYBOOK VERSION
         private bool story = false;
@@ -84,30 +84,30 @@ namespace opal
         /// </summary>
         void Awake()
         {
-            if (this.demo) Debug.Log("--- RUNNING IN DEMO MODE ---");
-            if (this.story) Debug.Log ("--- RUNNING IN STORYBOOK MODE ---");
-            if (this.socialStories) Debug.Log("--- RUNNING IN SOCIAL STORIES MODE ---");
+            if (this.demo) Logger.Log("--- RUNNING IN DEMO MODE ---");
+            if (this.story) Logger.Log ("--- RUNNING IN STORYBOOK MODE ---");
+            if (this.socialStories) Logger.Log("--- RUNNING IN SOCIAL STORIES MODE ---");
         
             string path = "";
             
             // find the config file
             #if UNITY_ANDROID
             path = Constants.CONFIG_PATH_ANDROID + Constants.OPAL_CONFIG;
-            Debug.Log("trying android path: " + path);
+            Logger.Log("trying android path: " + path);
             #endif
             
             #if UNITY_EDITOR
             path = Application.dataPath + Constants.CONFIG_PATH_OSX + Constants.OPAL_CONFIG;
-            Debug.Log("trying os x path: " + path);
+            Logger.Log("trying os x path: " + path);
             #endif
             
             // read config file
             if(!Utilities.ParseConfig(path, out gameConfig)) {
-                Debug.LogWarning("Could not read config file! Will try default "
+                Logger.LogWarning("Could not read config file! Will try default "
                     + "values of toucan=true, server IP=18.85.38.90, port=9090.");
             }
             else {
-                Debug.Log("Got game config!");
+                Logger.Log("Got game config!");
             }
 
             // find gesture manager
@@ -125,9 +125,9 @@ namespace opal
             {
 	            GameObject sidekick = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
 	            if(sidekick == null) {
-	                Debug.LogError("ERROR: Could not find sidekick!");
+	                Logger.LogError("ERROR: Could not find sidekick!");
 	            } else {
-	                Debug.Log("Got sidekick");
+	                Logger.Log("Got sidekick");
 	                if(this.gameConfig.sidekick) {
 	                    // add sidekick's gestures
 	                    this.gestureManager.AddAndSubscribeToGestures(sidekick, false, false);
@@ -136,15 +136,15 @@ namespace opal
 	                    this.sidekickScript = (Sidekick)sidekick.GetComponent<Sidekick>();
 	                    if(this.sidekickScript == null) 
                         {
-	                        Debug.LogError("ERROR: Could not get sidekick script!");
+	                        Logger.LogError("ERROR: Could not get sidekick script!");
 	                    } else {
-	                        Debug.Log("Got sidekick script");
+	                        Logger.Log("Got sidekick script");
 	                        this.sidekickScript.donePlayingEvent += new DonePlayingEventHandler(HandleDonePlayingAudioEvent);
 	                    }
 	                }
 	                else {
 	                    // we don't have a sidekick in this game, set as inactive
-	                    Debug.Log("Don't need sidekick... disabling");
+	                    Logger.Log("Don't need sidekick... disabling");
 	                    sidekick.SetActive(false);
 	                    
 	                    // try to disable the sidekick's highlight as well
@@ -161,9 +161,9 @@ namespace opal
             this.fader = GameObject.FindGameObjectWithTag(Constants.TAG_FADER);
             if(this.fader != null) {
                 this.fader.GetComponent<Renderer>().enabled = false;
-                Debug.Log("Got fader: " + this.fader.name);
+                Logger.Log("Got fader: " + this.fader.name);
             } else {
-                Debug.LogError("ERROR: No fader found");
+                Logger.LogError("ERROR: No fader found");
             }
             
             // subscribe to all log events from existing play objects 
@@ -185,7 +185,7 @@ namespace opal
             {
                 // load file
                 if (this.gameConfig.server.Equals("") || this.gameConfig.port.Equals("")) {
-                    Debug.LogWarning("Do not have opal configuration... trying "
+                    Logger.LogWarning("Do not have opal configuration... trying "
                         + "hardcoded IP 18.85.38.35 and port 9090");
                     this.clientSocket = new RosbridgeWebSocketClient(
                     "18.85.38.35",// server, // can pass hostname or IP address
@@ -226,9 +226,9 @@ namespace opal
                     Constants.LOG_ROSTOPIC, "Opal tablet checking in!"));
                 }
                 else {
-                    Debug.LogError("Could not set up websocket!");
+                    Logger.LogError("Could not set up websocket!");
                 }            
-            // register log callback for Debug.Log calls
+            // register log callback for Logger.Log calls
             Application.logMessageReceivedThreaded += HandleApplicationLogMessageReceived;
  
             }
@@ -254,7 +254,7 @@ namespace opal
                 this.sidekickScript.donePlayingEvent -= new DonePlayingEventHandler(HandleDonePlayingAudioEvent);
             }
 
-            // unsubscribe from Unity Debug.Log events
+            // unsubscribe from Unity Logger.Log events
             Application.logMessageReceivedThreaded -= HandleApplicationLogMessageReceived;
         
             // close websocket
@@ -267,7 +267,7 @@ namespace opal
             
             
         
-            Debug.Log("destroyed main game controller");
+            Logger.Log("destroyed main game controller");
         }
     
         
@@ -283,13 +283,13 @@ namespace opal
             // dispatch stuff on main thread (usually stuff in response to 
             // messages received from the websocket on another thread)
             while(ExecuteOnMainThread.Count > 0) {
-                Debug.Log("Invoking actions on main thread....");
+                Logger.Log("Invoking actions on main thread....");
                 try {
                     ExecuteOnMainThread.Dequeue().Invoke(); 
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError("Error when invoking actions on main thread!\n" + ex);
+                    Logger.LogError("Error when invoking actions on main thread!\n" + ex);
                 }
             }
         }
@@ -335,7 +335,7 @@ namespace opal
             // set object name
             go.name = (pops.Name() != "") ? Path.GetFileNameWithoutExtension(pops.Name()) 
                 : UnityEngine.Random.value.ToString();
-            Debug.Log("Creating new play object: " + pops.Name());
+            Logger.Log("Creating new play object: " + pops.Name());
 
             // set layer based on whether the object is draggable or not
             go.layer = (pops.draggable ? Constants.LAYER_MOVEABLES : Constants.LAYER_STATICS);
@@ -353,7 +353,7 @@ namespace opal
                     + Path.ChangeExtension(pops.Name(), null));
                 if(sprite == null)
                 {
-                    Debug.LogWarning("Could not load sprite from Resources: " 
+                    Logger.LogWarning("Could not load sprite from Resources: " 
                         + Constants.GRAPHICS_FILE_PATH  
                         + (this.socialStories ? Constants.SOCIAL_STORY_FILE_PATH : "")
                         + pops.Name()
@@ -363,11 +363,11 @@ namespace opal
                     sprite = Utilities.LoadSpriteFromFile(pops.Name());
                     if(sprite == null)
                     {
-                        Debug.LogError("Could not load sprite from file path: " 
+                        Logger.LogError("Could not load sprite from file path: " 
                                         + pops.Name());
                         // still don't have image - failed to load!
                         // delete game object and return
-                        Debug.LogError("Could not load sprite: " + pops.Name());
+                        Logger.LogError("Could not load sprite: " + pops.Name());
                         GameObject.Destroy(go);
                         return;
                     }
@@ -391,7 +391,7 @@ namespace opal
                     Constants.SCENE_SLOT) + (pops.Slot() - 1)); // slots 1-indexed
                 if (slot != null)
                 {
-                    Debug.Log("Slot found: " + slot.name + " at position " 
+                    Logger.Log("Slot found: " + slot.name + " at position " 
                             + slot.transform.position + " -- putting object here.");
                     go.transform.position = new Vector3(slot.transform.position.x,
                                                         slot.transform.position.y,
@@ -420,7 +420,7 @@ namespace opal
                 }
                 else
                 {
-                    Debug.LogError("Tried to get position and scale of scene or answer slot so we"
+                    Logger.LogError("Tried to get position and scale of scene or answer slot so we"
                         + " could load an object at that position, but slot was null! Defaulting"
                         + " to position (0,0,0) and scale (1,1,1).");
                         go.transform.position = Vector3.zero;
@@ -485,7 +485,7 @@ namespace opal
                     audioSource.clip = Resources.Load(Constants.AUDIO_FILE_PATH + 
                         pops.AudioFile()) as AudioClip;
                 } catch(UnityException e) {
-                    Debug.LogError("Could not load audio: " + pops.AudioFile() + "\n" + e);
+                    Logger.LogError("Could not load audio: " + pops.AudioFile() + "\n" + e);
                 }
                 audioSource.loop = false;
                 audioSource.playOnAwake = false;
@@ -545,7 +545,7 @@ namespace opal
             
             // add and subscribe to gestures
             if(this.gestureManager == null) {
-                Debug.Log("ERROR no gesture manager");
+                Logger.Log("ERROR no gesture manager");
                 FindGestureManager();
             }
             
@@ -555,7 +555,7 @@ namespace opal
             }
             catch (Exception e)
             {
-                Debug.LogError("Tried to subscribe to gestures but failed! " + e);
+                Logger.LogError("Tried to subscribe to gestures but failed! " + e);
             }
            
             // add pulsing behavior (draws attention to actionable objects)
@@ -594,7 +594,7 @@ namespace opal
         
             // set object name
             go.name = (bops.Name() != "") ? bops.Name() : UnityEngine.Random.value.ToString();
-            Debug.Log("Creating new background: " + bops.Name());
+            Logger.Log("Creating new background: " + bops.Name());
         
             // set tag
             go.tag = Constants.TAG_BACKGROUND;
@@ -629,7 +629,7 @@ namespace opal
             {
                 Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + bops.Name());
                 if(sprite == null)
-                    Debug.Log("ERROR could not load sprite: " 
+                    Logger.Log("ERROR could not load sprite: " 
                         + Constants.GRAPHICS_FILE_PATH + bops.Name());
                 spriteRenderer.sprite = sprite; 
             }
@@ -655,7 +655,7 @@ namespace opal
 			
 			// set object name
 			go.name = (sops.Name() != "") ? sops.Name() : UnityEngine.Random.value.ToString();
-			Debug.Log("Creating new story page: " + sops.Name());
+			Logger.Log("Creating new story page: " + sops.Name());
 			
 			// set tag
 			go.tag = Constants.TAG_BACKGROUND;
@@ -675,7 +675,7 @@ namespace opal
 				Sprite spt = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + 
 					sops.StoryPath() + sops.Name());
 				if(spt == null)
-					Debug.Log("ERROR could not load sprite: " 
+					Logger.Log("ERROR could not load sprite: " 
 				          + Constants.GRAPHICS_FILE_PATH + sops.Name());
 			 }
 			
@@ -698,7 +698,7 @@ namespace opal
 			
 			// add and subscribe to gestures
 			if(this.gestureManager == null) {
-				Debug.Log("ERROR no gesture manager");
+				Logger.Log("ERROR no gesture manager");
 				FindGestureManager();
 			}
 			
@@ -709,7 +709,7 @@ namespace opal
 			}
 			catch (Exception e)
 			{
-				Debug.LogError("Tried to subscribe to gestures but failed! " + e);
+				Logger.LogError("Tried to subscribe to gestures but failed! " + e);
 			}
 			
 			// save the initial position in case we need to reset this object later
@@ -730,9 +730,9 @@ namespace opal
                 Constants.TAG_GESTURE_MAN).GetComponent<GestureManager>();
             if(this.gestureManager == null) 
             {
-                Debug.Log("ERROR: Could not find gesture manager!");
+                Logger.Log("ERROR: Could not find gesture manager!");
             } else {
-                Debug.Log("Got gesture manager");
+                Logger.Log("Got gesture manager");
             }
         }
        
@@ -744,7 +744,7 @@ namespace opal
         /// <param name="props">Properties.</param>
         void HandleClientSocketReceivedMsgEvent (object sender, int cmd, object props)
         {
-            Debug.Log("MSG received from remote: " + cmd);
+            Logger.Log("MSG received from remote: " + cmd);
             if (this.clientSocket != null)
             {
                 this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
@@ -775,7 +775,7 @@ namespace opal
                         this.logEvent(this, new LogEvent(LogEvent.EventType.Scene, sos));
                     });
                 }  else {
-                    Debug.LogWarning("Was told to send keyframe but logger " +
+                    Logger.LogWarning("Was told to send keyframe but logger " +
                                      "doesn't appear to exist.");
                 }
             }
@@ -789,7 +789,7 @@ namespace opal
                     if(go != null) {
                         this.gestureManager.LightOn(go.transform.position);
                     } else {
-                        Debug.LogWarning("Was told to highlight " + (string)props + 
+                        Logger.LogWarning("Was told to highlight " + (string)props + 
                                          " but could not find the game object!");
                     }
                 });  
@@ -833,7 +833,7 @@ namespace opal
             {
                 if(props == null)
                 {
-                    Debug.LogWarning("Sidekick was told to do something, but got no properties!");
+                    Logger.LogWarning("Sidekick was told to do something, but got no properties!");
                 }
                 else if(this.gameConfig.sidekick && props is String)
                 {
@@ -849,7 +849,7 @@ namespace opal
             {
                 if(props == null)
                 {
-                    Debug.LogWarning("Sidekick was told to say something, but got no properties!");
+                    Logger.LogWarning("Sidekick was told to say something, but got no properties!");
                 }
                 else if (this.gameConfig.sidekick && props is String) 
                 {
@@ -884,7 +884,7 @@ namespace opal
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError(ex);
+                    Logger.LogError(ex);
                 }
         	}
 
@@ -893,7 +893,7 @@ namespace opal
                 // load the specified game object
                 if(props == null) 
                 {
-                    Debug.LogWarning("Was told to load an object, but got no properties!");
+                    Logger.LogWarning("Was told to load an object, but got no properties!");
                 }
                 else
                 {
@@ -912,7 +912,7 @@ namespace opal
     	                // or instantiate new playobject with the specified properties
     	                else if(sops.Tag().Equals(Constants.TAG_PLAY_OBJECT))
                         {
-    	                    //Debug.Log("play object");
+    	                    //Logger.Log("play object");
     	                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
                             { 
     	                        this.InstantiatePlayObject((PlayObjectProperties)sops, null);
@@ -921,7 +921,7 @@ namespace opal
                     }
                     catch (Exception e)
                     {
-                        Debug.LogWarning("Was told to load an object, but could not convert properties " 
+                        Logger.LogWarning("Was told to load an object, but could not convert properties " 
                             + "provided to SceneObjectProperties!\n" + e);
                     }
                 }
@@ -931,7 +931,7 @@ namespace opal
             {
                 if(props == null) 
                 {
-                    Debug.LogWarning("Was told to move an object but did not " +
+                    Logger.LogWarning("Was told to move an object but did not " +
                               "get name of which one or position to move to.");
                     return;
                 }
@@ -949,7 +949,7 @@ namespace opal
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning("Was told to move an object, but properties were not for "
+                    Logger.LogWarning("Was told to move an object, but properties were not for "
                         + "moving an object!\n" + e);
                 }
             }
@@ -1006,7 +1006,7 @@ namespace opal
                 // given two lists of object names, set as correct or incorrect
                 // set object flags for correct or incorrect
                 if(props == null) {
-                    Debug.LogWarning("Was told to set objects as correct/incorrect, " +
+                    Logger.LogWarning("Was told to set objects as correct/incorrect, " +
                     "but got no properties!");
                 }
                 else 
@@ -1021,7 +1021,7 @@ namespace opal
                     }
                     catch (Exception e)
                     {
-                        Debug.LogWarning("Was told to set objects as correct/incorrect, but "
+                        Logger.LogWarning("Was told to set objects as correct/incorrect, but "
                             + "could not convert properties to SetCorrectobject!\n" + e);
                     }
                 }
@@ -1056,13 +1056,13 @@ namespace opal
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning("Supposed to set up story scene, but did not get "
+                    Logger.LogWarning("Supposed to set up story scene, but did not get "
                         + "properties for setting up a story scene!\n" + e);
                 }
             }
             else
 	        {
-	            Debug.LogWarning("Got a message that doesn't match any we expect!");
+	            Logger.LogWarning("Got a message that doesn't match any we expect!");
 	            
         	}
         }
@@ -1075,7 +1075,7 @@ namespace opal
         /// </summary>
         void ReloadScene ()
         {
-            Debug.Log("Reloading current scene...");
+            Logger.Log("Reloading current scene...");
         
             // turn light off if it's not already
             this.gestureManager.LightOff();
@@ -1094,7 +1094,7 @@ namespace opal
         /// </summary>
         void ClearScene ()
         {
-            Debug.Log("Clearing current scene...");
+            Logger.Log("Clearing current scene...");
         
             // turn off the light if it's not already
             this.gestureManager.LightOff();
@@ -1114,7 +1114,7 @@ namespace opal
 
         void ClearObjects(string toclear)
         {
-            Debug.Log("Clearing objects: " + toclear);
+            Logger.Log("Clearing objects: " + toclear);
 
             // turn off the light if it's not already
             this.gestureManager.LightOff();
@@ -1147,7 +1147,7 @@ namespace opal
                         && (go.GetComponent<SavedProperties>().isCorrect
                         || go.GetComponent<SavedProperties>().isIncorrect))
                     {
-                        Debug.Log("destroying " + go.name);
+                        Logger.Log("destroying " + go.name);
                         DestroyImmediate(go);
                     }
                 }
@@ -1177,11 +1177,11 @@ namespace opal
                 if(objs.Length == 0)
                     continue;
                 foreach(GameObject go in objs) {
-                    Debug.Log("moving " + go.name);
+                    Logger.Log("moving " + go.name);
                     // if the initial position was saved, move to it
                     SavedProperties spop = go.GetComponent<SavedProperties>();
                     if(spop == null) {
-                        Debug.LogWarning("Tried to reset " + go.name + " but could not find " +
+                        Logger.LogWarning("Tried to reset " + go.name + " but could not find " +
                             " any saved properties.");
                     } else {
                         go.transform.position = spop.initialPosition;  
@@ -1202,7 +1202,7 @@ namespace opal
                 if(objs.Length == 0)
                     continue;
                 foreach(GameObject go in objs) {
-                    Debug.Log("destroying " + go.name);
+                    Logger.Log("destroying " + go.name);
                     DestroyImmediate(go);
                 }
             }
@@ -1223,7 +1223,7 @@ namespace opal
                 foreach(GameObject go in objs) {
                     if (go.GetComponent<Transformer>() != null)
                     {
-                        Debug.Log("touch " + (enabled ? "enabled" : "disabled") + " for " + go.name);
+                        Logger.Log("touch " + (enabled ? "enabled" : "disabled") + " for " + go.name);
                         go.GetComponent<Transformer>().enabled = enabled;
                     }
                 }
@@ -1245,7 +1245,7 @@ namespace opal
                     GameObject go = GameObject.Find(cgo);
                     if(go == null || go.GetComponent<SavedProperties>() == null) 
                     {
-                        Debug.LogWarning("Tried to set \"correct\" flag for " + cgo +
+                        Logger.LogWarning("Tried to set \"correct\" flag for " + cgo +
                          " but could not find any saved properties.");
                     } else {
                         go.GetComponent<SavedProperties>().isCorrect = true;
@@ -1261,7 +1261,7 @@ namespace opal
                     GameObject go = GameObject.Find(igo);
                     if(go == null || go.GetComponent<SavedProperties>() == null) 
                     {
-                        Debug.LogWarning("Tried to set \"incorrect\" flag for " + igo +
+                        Logger.LogWarning("Tried to set \"incorrect\" flag for " + igo +
                                          " but could not find any saved properties.");
                     } else {
                         go.GetComponent<SavedProperties>().isIncorrect = true;
@@ -1288,7 +1288,7 @@ namespace opal
                 {
                     if(go.GetComponent<SavedProperties>() == null) 
                     {
-                        Debug.LogWarning("Tried to check flags for " + go +
+                        Logger.LogWarning("Tried to check flags for " + go +
                                          " but could not find any saved properties.");
                     } 
                     else if (go.GetComponent<SavedProperties>().isCorrect)
@@ -1311,7 +1311,7 @@ namespace opal
                         } 
                         else 
                         {
-                            Debug.LogWarning("Tried to make correct feedback visible, but feedback "
+                            Logger.LogWarning("Tried to make correct feedback visible, but feedback "
                                 + "object is null!");
                         }
                           
@@ -1335,7 +1335,7 @@ namespace opal
                         } 
                         else 
                         {
-                            Debug.LogWarning("Tried to make incorrect feedback visible, but feedback "
+                            Logger.LogWarning("Tried to make incorrect feedback visible, but feedback "
                                       + "object is null!");
                         }
                     }
@@ -1358,7 +1358,7 @@ namespace opal
                 }
                 else 
                 {
-                    Debug.LogWarning("Tried to make correct feedback invisible, but object"
+                    Logger.LogWarning("Tried to make correct feedback invisible, but object"
                         + " was null!");
                 }
                 if (this.incorrectFeedback != null)
@@ -1373,7 +1373,7 @@ namespace opal
                 }
                 else 
                 {
-                    Debug.LogWarning("Tried to make incorrect feedback invisible, but object"
+                    Logger.LogWarning("Tried to make incorrect feedback invisible, but object"
                                    + " was null!");
                 }
             }
@@ -1390,7 +1390,7 @@ namespace opal
             // check that we got valid data first
             if (numScenes < 1)
             {
-                Debug.LogWarning("Setup Social Story Scene: Told to set up fewer " +
+                Logger.LogWarning("Setup Social Story Scene: Told to set up fewer " +
                     "than 1 scene. Not setting up.");
                 return;
             }
@@ -1407,7 +1407,7 @@ namespace opal
             }
             
             // load background image
-            Debug.Log ("Loading background");
+            Logger.Log ("Loading background");
             Sprite bk = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + "SSBackground");
             BackgroundObjectProperties bops = new BackgroundObjectProperties(
                 "SSBackground", Constants.TAG_BACKGROUND, 
@@ -1440,7 +1440,7 @@ namespace opal
                                                   + (scenesInOrder ? "" : (i+1).ToString()));
                 if (s == null)
                 {
-                    Debug.LogError("Could not load scene slot image!" );
+                    Logger.LogError("Could not load scene slot image!" );
                     continue;
                 }
                 

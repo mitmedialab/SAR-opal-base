@@ -33,10 +33,12 @@ ehthumbs.db
 # === #
 *.swp
 *.swo
-# =================== #
-# ignore packaged app #
-# =================== #
+# ==================== #
+# ignore packaged apps #
+# ==================== #
 *.apk
+*.zip
+*.app
 # ============= #
 # version notes #
 # ============= #

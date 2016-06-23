@@ -32,11 +32,27 @@ When running the game on OS X from the Unity editor, the game will check for
 
 When running the game on Android (e.g., on a tablet), the game will first check
 for "mnt/sdcard/edu.mit.media.prg.sar.opal.base/opal\_config.txt". This is
-    because once the game is packaged up for Android, you can't change stuff in
-    the package, so we needed a location for the config file that could be
-    easily edited after the game is installed. If that file doesn't exist, or
-    connecting fails with the values listed in that file, the game will try the
-    file packaged in "Assets/Resources/opal\_config.txt". 
+because once the game is packaged up for Android, you can't change stuff in the
+package, so we needed a location for the config file that could be easily
+edited after the game is installed. If that file doesn't exist, or connecting
+fails with the values listed in that file, the game will try default values set
+in the packaged game.
+
+### On Linux
+
+When running the game on Linux from a standalone executable, the game will
+check for the config file in the "executable-name\_Data/Resources" directory.
+You will have to manually add the config file to this directory. This is
+because when the app is packaged up, all the game assets are packaged up by
+Unity and cannot be easily edited after the game is installed. If that file
+doesn't exist, or if connecting fails with the values listed in that file, the
+game will try default values set in the packaged game.
+
+If you are running the game in an Ubuntu virtual machine (e.g., using
+VirtualBox), you may encounter OpenGL problems, possibly due to how the VM
+handles 3D acceleration. One possible solution is to run the executable from
+the command line with the flag `-force-opengl`, i.e., `./executable-name
+-force-opengl`.
 
 ### Configuration options 
 

@@ -100,11 +100,16 @@ namespace opal
             path = Application.dataPath + Constants.CONFIG_PATH_OSX + Constants.OPAL_CONFIG;
             Logger.Log("trying os x path: " + path);
             #endif
+
+            #if UNITY_STANDALONE_LINUX
+            path = Application.dataPath + Constants.CONFIG_PATH_LINUX + Constants.OPAL_CONFIG;
+            Logger.Log("trying linux path: " + path);
+            #endif
             
             // read config file
             if(!Utilities.ParseConfig(path, out gameConfig)) {
                 Logger.LogWarning("Could not read config file! Will try default "
-                    + "values of toucan=true, server IP=18.85.38.90, port=9090.");
+                    + "values of toucan=true, server IP=192.168.1.254, port=9090.");
             }
             else {
                 Logger.Log("Got game config!");
@@ -186,9 +191,9 @@ namespace opal
                 // load file
                 if (this.gameConfig.server.Equals("") || this.gameConfig.port.Equals("")) {
                     Logger.LogWarning("Do not have opal configuration... trying "
-                        + "hardcoded IP 18.85.38.35 and port 9090");
+                        + "hardcoded IP 192.168.1.254 and port 9090");
                     this.clientSocket = new RosbridgeWebSocketClient(
-                    "18.85.38.35",// server, // can pass hostname or IP address
+                    "192.168.1.254",// server, // can pass hostname or IP address
                     "9090"); //port);   
                 } else {
                     this.clientSocket = new RosbridgeWebSocketClient(

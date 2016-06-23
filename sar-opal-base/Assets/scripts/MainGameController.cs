@@ -41,7 +41,7 @@ namespace opal
 
         // --------------- FLAGS ---------------
         // DEMO VERSION
-        private bool demo = true;
+        private bool demo = false;
 
         // STORYBOOK VERSION
         private bool story = false;

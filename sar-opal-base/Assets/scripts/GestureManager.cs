@@ -381,7 +381,7 @@ namespace opal
                         // button, or whether the object was a CORRECT or INCORRECT object
                         this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
                             gesture.gameObject.name, "press", hit.Point,
-                            (gesture.gameObject.name.Contains("yes_button") ? "YES" 
+                            (gesture.gameObject.name.Contains("start_button") ? "START" 
                             : (gesture.gameObject.name.Contains("no_button") ? "NO"
                             // TODO what if go doesn't have SavedProperties component?
                             : (gesture.gameObject.GetComponent<SavedProperties>().isCorrect ? "CORRECT"

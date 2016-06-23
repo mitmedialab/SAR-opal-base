@@ -194,6 +194,8 @@ namespace opal
         public const string CONFIG_PATH_OSX = @"/Resources/";
         // if playing on tablet:
         public const string CONFIG_PATH_ANDROID = "mnt/sdcard/edu.mit.media.prg.sar.opal.base/";
+        // if a linux game:
+        public const string CONFIG_PATH_LINUX = "/Resources/";
     
     
         /** ROS-related constants: topics and message types */

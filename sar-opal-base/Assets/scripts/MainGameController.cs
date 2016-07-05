@@ -175,6 +175,14 @@ namespace opal
             // with collision managers
             this.SubscribeToLogEvents(new string[] { Constants.TAG_PLAY_OBJECT });
 
+            if (this.demo)
+            {
+                foreach (GameObject go in GameObject.FindGameObjectsWithTag(
+                    Constants.TAG_PLAY_OBJECT))
+                {
+                    this.gestureManager.AddAndSubscribeToGestures(go, true, false);
+                }
+            }
 
         }
 

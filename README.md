@@ -20,18 +20,18 @@ This game was built and tested with:
 
 ## Configuration
 
-The game uses configuration options listed in the opal\_config file. There
-is an example file located in Assets/Resources/.
+The game uses configuration options listed in the `opal\_config` file. There
+is an example file located in `Assets/Resources/`.
 
 ### On OS X
 
 When running the game on OS X from the Unity editor, the game will check for
-"Assets/Resources/opal\_config.txt".
+`Assets/Resources/opal_config.txt`.
 
 ### On Android
 
 When running the game on Android (e.g., on a tablet), the game will first check
-for "mnt/sdcard/edu.mit.media.prg.sar.opal.base/opal\_config.txt". This is
+for `mnt/sdcard/edu.mit.media.prg.sar.opal.base/opal_config.txt`. This is
 because once the game is packaged up for Android, you can't change stuff in the
 package, so we needed a location for the config file that could be easily
 edited after the game is installed. If that file doesn't exist, or connecting
@@ -41,7 +41,7 @@ in the packaged game.
 ### On Linux
 
 When running the game on Linux from a standalone executable, the game will
-check for the config file in the "executable-name\_Data/Resources" directory.
+check for the config file in the `executable-name_Data/Resources` directory.
 You will have to manually add the config file to this directory. This is
 because when the app is packaged up, all the game assets are packaged up by
 Unity and cannot be easily edited after the game is installed. If that file
@@ -90,7 +90,7 @@ rosbridge\_server, the connection will be refused.
 
 #### Toucan
 
-If you set the toucan option to 'true', a toucan sidekick character will be
+If you set the toucan option to `true`, a toucan sidekick character will be
 loaded into the game (provided you have the toucan graphics in your Assets
 folder). You will then be able to send the sidekick commands, such as to play
 back sound or animations. If set to false, no toucan will be present.
@@ -100,28 +100,28 @@ back sound or animations. If set to false, no toucan will be present.
 The topics listed here are the default names of the topics subscribed and
 published to. You can change these defaults in the config file.
 
-The game subscribes to the ROS topic "opal\_tablet\_command" to receive
+The game subscribes to the ROS topic `opal\_tablet\_command` to receive
 messages of type
 "/[sar\_opal\_msgs](https://github.com/personal-robots/sar_opal_msgs
 "/sar\_opal\_msgs")/OpalCommand".
 
-The game publishes /std\_msgs/String messages to the ROS topic "opal\_tablet".
+The game publishes /std\_msgs/String messages to the ROS topic `opal\_tablet`.
 
 The game publishes
 "/[sar\_opal\_msgs](https://github.com/personal-robots/sar_opal_msgs
-"/sar\_opal\_msgs")/OpalAction" to the ROS topic "opal\_tablet\_action". See
+"/sar\_opal\_msgs")/OpalAction" to the ROS topic `opal\_tablet\_action`. See
 [/sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs
 "/sar\_opal\_msgs") for more info.
 
 The game publishes
 "/[sar\_opal\_msgs](https://github.com/personal-robots/sar_opal_msgs
-"/sar\_opal\_msgs")/OpalScene" to the ROS topic "opal\_tablet\_scene". Usually
+"/sar\_opal\_msgs")/OpalScene" to the ROS topic `opal\_tablet\_scene`. Usually
 this message will only be published after receiving a "request keyframe"
 command - see
 [/sar\_opal\_msgs](https://github.com/personal-robots/sar_opal_msgs
 "/sar\_opal\_msgs") for more info. 
 
-The game publishes "/std\_msgs/Bool" to the ROS topic "opal\_tablet\_audio", to
+The game publishes "/std\_msgs/Bool" to the ROS topic `opal\_tablet\_audio`, to
 indicate whether the sidekick character is done playing back an audio file.
 
 ### OpalCommand LOAD\_OBJECT messages
@@ -133,15 +133,14 @@ a GameObject with the specified properties. As the
 telling Opal to load an object is the name of the associated graphic to load.
 Opal tries to load the graphic from two places:
 
-1) "Assets/Resources/graphics/base-images" directory. If the game is a social
+1) `Assets/Resources/graphics/base-images` directory. If the game is a social
 stories game (see below for different game descriptions), Opal assumes all
 graphics loaded will be in the
-"Assets/Resources/graphics/base-images/socialstories" directory. Either the
-base-images or socialstories directories may have subdirectories, which
-shouldsocialstories be provided as part of the graphic name. E.g.,if you want
-to load the image "happy.png" that resides in the "base-images/emotions/"
-directory, you would need to list the name of the graphic to load as
-"emotions/happy.png".
+`Assets/Resources/graphics/base-images/socialstories` directory. Either the
+base-images or socialstories directories may have subdirectories, which should
+be provided as part of the graphic name. E.g., if you want to load the image
+`happy.png` that resides in the `base-images/emotions/` directory, you would
+need to list the name of the graphic to load as `emotions/happy.png`.
 
 2) If loading from Resources fails, Opal assumes the graphic file name provided
 is actually a full file path to the desired image (that may or may not be in
@@ -151,7 +150,7 @@ will fail.
 
 ## Log Files
 
-Unity automatically logs all Debug.Log\* calls to a text file. The location of
+Unity automatically logs all `Debug.Log*` calls to a text file. The location of
 this file varies by platform -- [here's the official
 list](http://docs.unity3d.com/Manual/LogFiles.html).
 
@@ -208,10 +207,10 @@ here](http://dentedpixel.com/LeanTweenDocumentation/classes/LeanTween.html
 "LeanTween docs")).
 
 If you pull in the submodule, you can get the examples, prefabs, etc. The
-necessary .cs files are in the SAR-opal-base Assets/Plugins directory already.
-Note that the LeanTween instructions only tell you to move LeanTween.cs to your
-Plugins directory; however, you actually need several other files that are in
-LeanTween's Plugins directory as well.
+necessary .cs files are in the `SAR-opal-base Assets/Plugins` directory
+already.  Note that the LeanTween instructions only tell you to move
+LeanTween.cs to your Plugins directory; however, you actually need several
+other files that are in LeanTween's Plugins directory as well.
 
 ### websocket-sharp
 
@@ -251,7 +250,7 @@ comments on the github gist page added in.
 - Only a small set of "demo" graphics are included in this repository. The full
   set of graphics for different games is available from the Personal Robots
   Group - email students in the group to inquire. Add the full set to the
-  "Resources\/base\_images" folder. 
+  `Resources/base_images` folder. 
 
 ## Version Notes
 
@@ -283,8 +282,8 @@ To build and deploy the demo version, do the following:
    "base". Technically, this step is not necessary, but if you have another
    version of Opal deployed on your device, you'll want to change these
    settings so you can have both side by side.
-3. In the MainGameController, set the flag "demo" to true, "story" to false,
-   and "socialStories" to false.
+3. In the MainGameController, set the flag `demo` to true, `story` to false,
+   and `socialStories` to false.
 4. Build and deploy. 
 
 The demo version of the game requires some graphics that are not included in
@@ -303,8 +302,8 @@ To build and deploy the Frog Where Are You storybook, do the following:
    instead of "base". Technically, this step is not necessary, but if you have
    another version of Opal deployed on your device, you'll want to change these
    settings so you can have both side by side.
-3. In the MainGameController, set the flag "story" to true, "demo" to false,
-   and "socialStories" to false.
+3. In the MainGameController, set the flag `story` to true, `demo` to false,
+   and `socialStories` to false.
 4. Build and deploy.
 
 You can use the Frog Where Are You book as an example for how to load your own
@@ -323,8 +322,8 @@ To build and deploy the Social Stories version, do the following:
    of "base". Technically, this step is not necessary, but if you have another
    version of Opal deployed on your device, you'll want to change these
    settings so you can have both side by side.
-3. In the MainGameController, set the flag "story" to false, "demo" to false",
-   and "socialStories" to true. 
+3. In the MainGameController, set the flag `story` to false, `demo` to false",
+   and `socialStories` to true. 
 4. Build and deploy.
 
 ## Bugs and Known Issues
@@ -379,3 +378,4 @@ page](https://github.com/personal-robots/SAR-opal-base/issues).
   redeploy (and/or a start screen that lets you pick whether you want demo
   mode, story mode, etc when you start the game - use "load scene" function to
   pick the right one).
+- Rarely, we get a "websocket closed 1005" error. Why? Fix.

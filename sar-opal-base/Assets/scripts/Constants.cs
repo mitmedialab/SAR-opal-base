@@ -136,14 +136,6 @@ namespace opal
         public const string ANSWER_SLOT = "answer-slot";
         public const string SCENE_COLLIDE_SLOT = "scene-collide-slot";
     
-        // edges of screen - used to make sure objects aren't dragged off the screen
-        // screen is 1280x768, minus the menu bar
-        // TODO this needs to scale to the size of the screen - use Screen.width etc!
-        public const int LEFT_SIDE = -620; // -640
-        public const int RIGHT_SIDE = 620; //640
-        public const int TOP_SIDE = 360; //384
-        public const int BOTTOM_SIDE = -330; //-384
-
         /** messages we can receive */
         public const int DISABLE_TOUCH = 1;
         public const int ENABLE_TOUCH = 2;

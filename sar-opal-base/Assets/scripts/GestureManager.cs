@@ -668,35 +668,6 @@ namespace opal
     #region utilities
     
         /// <summary>
-        /// Checks that the object is only moving on the screen and not colliding
-        /// with the sidekick.
-        /// </summary>
-        /// <returns>An allowable position to move to</returns>
-        /// <param name="posn">desired position to move to</param>
-        public Vector3 CheckAllowedMoves (Vector3 posn, float z)
-        {
-            // check if on screen
-            if(posn.x > Constants.RIGHT_SIDE)
-                posn.x = Constants.RIGHT_SIDE;
-            else if(posn.x < Constants.LEFT_SIDE)
-                posn.x = Constants.LEFT_SIDE;
-            if(posn.y > Constants.TOP_SIDE)
-                posn.y = Constants.TOP_SIDE;
-            else if(posn.y < Constants.BOTTOM_SIDE)
-                posn.y = Constants.BOTTOM_SIDE;
-        
-            // background image is at z=0 or +
-            // make sure moved object stays in front of background
-            posn.z = (z <= 0) ? z : 0;
-        
-            // TODO check that we're not colliding with the sidekick boundaries (?)
-            // or maybe the sidekick is the frontmost layer, so stuff would just 
-            // move behind it?
-        
-            return posn;
-        }
-    
-        /// <summary>
         /// Sets light object active in the specified position and with the specified scale
         /// </summary>
         /// <param name="posn">Posn.</param>

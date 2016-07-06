@@ -242,7 +242,7 @@ namespace opal
             {
                 // if the game object is not within the screen boundaries, move
                 // it so that it is
-                Debug.Log(this.mostRecentlyDraggedGO.name +
+                Logger.Log(this.mostRecentlyDraggedGO.name +
                     " is going off screen! Keeping it on screen...");
                 this.mostRecentlyDraggedGO.transform.position = new Vector3(
                     Mathf.Clamp(this.mostRecentlyDraggedGO.transform.position.x,

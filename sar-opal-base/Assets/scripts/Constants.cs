@@ -61,6 +61,11 @@ namespace opal
         public string port;
         public bool sidekick;
         public bool logDebugToROS;
+        public string opalCommandTopic;
+        public string opalActionTopic;
+        public string opalLogTopic;
+        public string opalSceneTopic;
+        public string opalAudioTopic;
     }
 
     public static class Constants
@@ -190,30 +195,35 @@ namespace opal
         public const string CONFIG_PATH_LINUX = "/Resources/";
     
     
-        /** ROS-related constants: topics and message types */
+        /** Default ROS-related constants: topics and message types */
         // general string log messages (e.g., "started up", "error", whatever)
-        public const string LOG_ROSTOPIC = "/opal_tablet";
+        public static string LOG_ROSTOPIC = "/opal_tablet";
+        public const string DEFAULT_LOG_ROSTOPIC = "/opal_tablet";
         public const string LOG_ROSMSG_TYPE = "std_msgs/String";
         // messages about actions taken on tablet (e.g., tap occurred on object x at xyz)
         // contains: 
         //  string object: name
         //  string action_type: tap
         //  float[] position: xyz
-        public const string ACTION_ROSTOPIC = "/opal_tablet_action";
+        public static string ACTION_ROSTOPIC = "/opal_tablet_action";
+        public const string DEFAULT_ACTION_ROSTOPIC = "/opal_tablet_action";
         public const string ACTION_ROSMSG_TYPE = "/sar_opal_msgs/OpalAction";
         // messages logging the entire current scene
         // contains:
         //  string background
         //  objects[] { name posn tag }
-        public const string SCENE_ROSTOPIC = "/opal_tablet_scene";
+        public static string SCENE_ROSTOPIC = "/opal_tablet_scene";
+        public const string DEFAULT_SCENE_ROSTOPIC = "/opal_tablet_scene";
         public const string SCENE_ROSMSG_TYPE = "/sar_opal_msgs/OpalScene";
         // commands from elsewhere that we should deal with
-        public const string CMD_ROSTOPIC = "/opal_tablet_command";
+        public static string CMD_ROSTOPIC = "/opal_tablet_command";
+        public const string DEFAULT_CMD_ROSTOPIC = "/opal_tablet_command";
         public const string CMD_ROSMSG_TYPE = "/sar_opal_msgs/OpalCommand";   
         // messages to tell the game node when we're done playing audio
         // contains:
         //   bool done playing
-        public const string AUDIO_ROSTOPIC = "/opal_tablet_audio";
+        public static string AUDIO_ROSTOPIC = "/opal_tablet_audio";
+        public const string DEFAULT_AUDIO_ROSTOPIC = "/opal_tablet_audio";
         public const string AUDIO_ROSMSG_TYPE = "/std_msgs/Bool";     
     }
 }

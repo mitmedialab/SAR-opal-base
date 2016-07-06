@@ -61,6 +61,14 @@ the command line with the flag `-force-opengl`, i.e., `./executable-name
 - toucan: [boolean] whether or not you want a toucan sidekick in the game
 - log\_debug\_to\_ros: [boolean] whether or not to log Unity's Debug.Log\*
   calls to the ROS topic "/opal\_tablet".
+- opal\_action\_topic: [string] the ROS topic to publish OpalAction messages to
+- opal\_audio\_topic: [string] the ROS topic to publish Bool messages to
+  indicating whether the sidekick character is done playing audio or not 
+- opal\_command\_topic: [string] the ROS topic to subscribe to to receive
+  OpalCommand messages
+- opal\_log\_topic: [string] the ROS topic to publish String messages to with
+  basic log messages
+- opal\_scene\_topic: [string] the ROS topic to publish OpalScene messages to
 
 #### Server & port On startup, the game will try to connect to the specified IP
 
@@ -88,6 +96,9 @@ folder). You will then be able to send the sidekick commands, such as to play
 back sound or animations. If set to false, no toucan will be present.
 
 ## SAR Opal messages
+
+The topics listed here are the default names of the topics subscribed and
+published to. You can change these defaults in the config file.
 
 The game subscribes to the ROS topic "opal\_tablet\_command" to receive
 messages of type
@@ -257,6 +268,9 @@ game setups. Currently, these include:
 - SAR Year 3 study game with Toucan
 - Storybook
 - SAR Year 5 social stories game
+
+For all versions, you may need to adjust the options in the config file for
+your setup.
 
 ### Demo Version
 

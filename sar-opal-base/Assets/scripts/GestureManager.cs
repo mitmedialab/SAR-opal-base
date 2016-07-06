@@ -50,6 +50,15 @@ namespace opal
         // for logging stuff
         public event LogEventHandler logEvent;
         
+        // track the most recently dragged game object so we can
+        // check that it stays on the screen in the Update loop
+        private GameObject mostRecentlyDraggedGO = null;
+
+        // rectangle holds the camera boundaries so we don't have
+        // to re-compute these every time we want to check whether
+        // an object is still within the viewable area
+        private Rect cameraRect;
+
         // DEMO VERSION
         public bool demo = false;
         private int demospeech = 0;
@@ -88,6 +97,17 @@ namespace opal
 					Logger.LogError("ERROR: Couldn't find main camera!");
 				}
 			}
+
+            // get the camera boundaries so we don't have to re-compute these
+            // every time we want to check whether an object is still within
+            // the viewable area
+            Vector3 bottomLeft = Camera.main.ScreenToWorldPoint(Vector3.zero);
+            Vector3 topRight = Camera.main.ScreenToWorldPoint(new Vector3(
+                Camera.main.pixelWidth, Camera.main.pixelHeight));
+            this.cameraRect = new Rect(bottomLeft.x,
+                                       bottomLeft.y,
+                                       topRight.x - bottomLeft.x,
+                                       topRight.y - bottomLeft.y);
         }
 
         /// <summary>
@@ -200,6 +220,38 @@ namespace opal
                     }
                 }
             //}
+        }
+
+        /// <summary>
+        /// Update this instance.
+        /// </summary>
+        public void Update()
+        {
+            // Check whether the most recently moved game object is within the
+            // screen boundaries -- if not, move it so it is.
+            if (this.mostRecentlyDraggedGO != null)
+            {
+                if (this.mostRecentlyDraggedGO.transform.position.x
+                        < this.cameraRect.xMin
+                    || this.mostRecentlyDraggedGO.transform.position.x
+                        > this.cameraRect.xMax
+                    || this.mostRecentlyDraggedGO.transform.position.y
+                        < this.cameraRect.yMin
+                    || this.mostRecentlyDraggedGO.transform.position.y
+                        > this.cameraRect.yMax)
+            {
+                // if the game object is not within the screen boundaries, move
+                // it so that it is
+                Logger.Log(this.mostRecentlyDraggedGO.name +
+                    " is going off screen! Keeping it on screen...");
+                this.mostRecentlyDraggedGO.transform.position = new Vector3(
+                    Mathf.Clamp(this.mostRecentlyDraggedGO.transform.position.x,
+                        this.cameraRect.xMin, this.cameraRect.xMax),
+                    Mathf.Clamp(this.mostRecentlyDraggedGO.transform.position.y,
+                        this.cameraRect.yMin, this.cameraRect.yMax),
+                    this.mostRecentlyDraggedGO.transform.position.z);
+            }
+            }
         }
 
         /// <summary>
@@ -470,6 +522,12 @@ namespace opal
                 // we check the allowed moves
                 if(this.allowTouch)
                 {
+                    // The transformer component moves object on drag events, but we
+                    // have to check that the object stays within the screen boundaries.
+                    // This happens in the Update loop; here we just save the most
+                    // recently dragged object.
+                    this.mostRecentlyDraggedGO = gesture.gameObject;
+
                    // the transformer component moves object on pan events
                     // send the light the z position of the panned object so it
                     // shows up in the right plane 
@@ -510,8 +568,6 @@ namespace opal
                 // move this game object with the drag
                 if(this.allowTouch)
                 {
-                    // the transformer component moves object on pan events
-
                     // send the light the z position of the panned object so it shows
                     // up in the right plane
                     LightOn(1, new Vector3(hit.Point.x, hit.Point.y, 
@@ -610,35 +666,6 @@ namespace opal
     #endregion
     
     #region utilities
-    
-        /// <summary>
-        /// Checks that the object is only moving on the screen and not colliding
-        /// with the sidekick.
-        /// </summary>
-        /// <returns>An allowable position to move to</returns>
-        /// <param name="posn">desired position to move to</param>
-        public Vector3 CheckAllowedMoves (Vector3 posn, float z)
-        {
-            // check if on screen
-            if(posn.x > Constants.RIGHT_SIDE)
-                posn.x = Constants.RIGHT_SIDE;
-            else if(posn.x < Constants.LEFT_SIDE)
-                posn.x = Constants.LEFT_SIDE;
-            if(posn.y > Constants.TOP_SIDE)
-                posn.y = Constants.TOP_SIDE;
-            else if(posn.y < Constants.BOTTOM_SIDE)
-                posn.y = Constants.BOTTOM_SIDE;
-        
-            // background image is at z=0 or +
-            // make sure moved object stays in front of background
-            posn.z = (z <= 0) ? z : 0;
-        
-            // TODO check that we're not colliding with the sidekick boundaries (?)
-            // or maybe the sidekick is the frontmost layer, so stuff would just 
-            // move behind it?
-        
-            return posn;
-        }
     
         /// <summary>
         /// Sets light object active in the specified position and with the specified scale

@@ -1,6 +1,11 @@
 {
 	"server": "write the IP address of the ROS server here, e.g., 192.168.1.23",
 	"port": "9090",
+	"opal_action_topic": "opal_tablet_action",
+	"opal_audio_topic": "opal_tablet_audio",
+	"opal_command_topic": "opal_tablet_command",
+	"opal_log_topic": "opal_tablet",
+	"opal_scene_topic": "opal_tablet_scene",
 	"toucan": false,
 	"log_debug_to_ros": false
 }

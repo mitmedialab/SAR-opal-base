@@ -47,6 +47,11 @@ namespace opal
             gameConfig.port = "";
             gameConfig.sidekick = false;
             gameConfig.logDebugToROS = false;
+            gameConfig.opalActionTopic = "";
+            gameConfig.opalAudioTopic = "";
+            gameConfig.opalCommandTopic = "";
+            gameConfig.opalLogTopic = "";
+            gameConfig.opalSceneTopic = "";
             
             //if (!File.Exists(path))
             //{
@@ -69,8 +74,16 @@ namespace opal
                 Logger.Log("deserialized " + data.Count + " objects from JSON!");
         
                 // if the config file doesn't have all parts, consider it invalid
-                if(!(data.ContainsKey("server") && data.ContainsKey("port") 
-                    && data.ContainsKey("toucan") && data.ContainsKey("log_debug_to_ros"))) {
+                if(!(data.ContainsKey("server")
+                    && data.ContainsKey("port")
+                    && data.ContainsKey("toucan")
+                    && data.ContainsKey("log_debug_to_ros")
+                    && data.ContainsKey("opal_action_topic")
+                    && data.ContainsKey("opal_scene_topic")
+                    && data.ContainsKey("opal_command_topic")
+                    && data.ContainsKey("opal_audio_topic")
+                    && data.ContainsKey("opal_log_topic")))
+                {
                     Logger.LogError("Did not get a valid config file!");
                     return false;
                 }
@@ -80,10 +93,20 @@ namespace opal
                 gameConfig.port = (string)data["port"];
                 gameConfig.sidekick = (bool)data["toucan"];
                 gameConfig.logDebugToROS = (bool)data["log_debug_to_ros"];
-
-                Logger.Log("server: " + gameConfig.server + "  port: " + gameConfig.port 
-                          + "  sidekick: " + gameConfig.sidekick + "  log_debug_to_ros: " 
-                          + gameConfig.logDebugToROS);
+                gameConfig.opalActionTopic = (string)data["opal_action_topic"];
+                gameConfig.opalAudioTopic = (string)data["opal_audio_topic"];
+                gameConfig.opalCommandTopic = (string)data["opal_command_topic"];
+                gameConfig.opalSceneTopic = (string)data["opal_scene_topic"];
+                gameConfig.opalLogTopic = (string)data["opal_log_topic"];
+                
+                Logger.Log("server: " + gameConfig.server + "\nport: " + gameConfig.port 
+                          + "\nsidekick: " + gameConfig.sidekick + "\nlog_debug_to_ros: " 
+                          + gameConfig.logDebugToROS + "\nopal_action_topic: "
+                          + gameConfig.opalActionTopic + "\nopal_audio_topic: "
+                          + gameConfig.opalAudioTopic + "\nopal_command_topic: "
+                          + gameConfig.opalCommandTopic + "\nopal_log_topic: "
+                          + gameConfig.opalLogTopic + "\nopal_scene_topic: "
+                          + gameConfig.opalSceneTopic);
                 return true;
         
             } catch(Exception e) {

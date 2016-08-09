@@ -1,4 +1,4 @@
-# SAR-opal-base 
+# SAR-opal-base
 
 Opal is a generalized Unity game builder designed for use in child-robot
 interactions. Easily load different graphics for games requiring similar
@@ -54,7 +54,7 @@ handles 3D acceleration. One possible solution is to run the executable from
 the command line with the flag `-force-opengl`, i.e., `./executable-name
 -force-opengl`.
 
-### Configuration options 
+### Configuration options
 
 - server: [string] the IP address or hostname of the ROS server
 - port: [string] port number to use
@@ -63,7 +63,7 @@ the command line with the flag `-force-opengl`, i.e., `./executable-name
   calls to the ROS topic "/opal\_tablet".
 - opal\_action\_topic: [string] the ROS topic to publish OpalAction messages to
 - opal\_audio\_topic: [string] the ROS topic to publish Bool messages to
-  indicating whether the sidekick character is done playing audio or not 
+  indicating whether the sidekick character is done playing audio or not
 - opal\_command\_topic: [string] the ROS topic to subscribe to to receive
   OpalCommand messages
 - opal\_log\_topic: [string] the ROS topic to publish String messages to with
@@ -119,7 +119,7 @@ The game publishes
 this message will only be published after receiving a "request keyframe"
 command - see
 [/sar\_opal\_msgs](https://github.com/personal-robots/sar_opal_msgs
-"/sar\_opal\_msgs") for more info. 
+"/sar\_opal\_msgs") for more info.
 
 The game publishes "/std\_msgs/Bool" to the ROS topic `opal\_tablet\_audio`, to
 indicate whether the sidekick character is done playing back an audio file.
@@ -171,7 +171,7 @@ if you want their source, extra examples, prefabs, etc, then you can.
 [TouchScript] (https://github.com/TouchScript/TouchScript "TouchScript") makes
 it easy to detect and respond to touch events, such as taps and drags. See the
 wiki [here] (https://github.com/TouchScript/TouchScript/wiki "TouchScript
-wiki") for more information. 
+wiki") for more information.
 
 We built a unitypackage from the TouchScript 8.1 source, which has been
 imported into the game in the Assets folder.
@@ -184,7 +184,7 @@ to Contribute"). For 8.1, the steps are:
 - init and update any submodules of those submodules
 - run `Build/build_external.sh`
 - run `Build/package.sh`
-- import the generated TouchScript.unitypackage file in the Unity editor 
+- import the generated TouchScript.unitypackage file in the Unity editor
 
 Note that the MainCamera and the Moveables Camera in the Unity scene each need
 a CameraLayer2D component attached. The camera layer is used to "see" which
@@ -245,12 +245,12 @@ comments on the github gist page added in.
   by scripts by default, the polygon collider needing to read the texture
   to figure out the outline to make the collider the right shape, but not
   being able to, and thus the collider ending up the wrong shape and making
-  collisions happen weird... 
+  collisions happen weird...
 
 - Only a small set of "demo" graphics are included in this repository. The full
   set of graphics for different games is available from the Personal Robots
   Group - email students in the group to inquire. Add the full set to the
-  `Resources/base_images` folder. 
+  `Resources/base_images` folder.
 
 ## Version Notes
 
@@ -284,10 +284,10 @@ To build and deploy the demo version, do the following:
    settings so you can have both side by side.
 3. In the MainGameController, set the flag `demo` to true, `story` to false,
    and `socialStories` to false.
-4. Build and deploy. 
+4. Build and deploy.
 
 The demo version of the game requires some graphics that are not included in
-the demo. 
+the demo.
 
 ### Storybook Version
 
@@ -323,7 +323,7 @@ To build and deploy the Social Stories version, do the following:
    version of Opal deployed on your device, you'll want to change these
    settings so you can have both side by side.
 3. In the MainGameController, set the flag `story` to false, `demo` to false",
-   and `socialStories` to true. 
+   and `socialStories` to true.
 4. Build and deploy.
 
 ## Bugs and Known Issues
@@ -356,9 +356,6 @@ page](https://github.com/personal-robots/SAR-opal-base/issues).
 - Move 'highlight' object with transformer, currently does not follow drag path
   very well
 - Log all log messages locally to tablet
-- Objects can leave the viewable screen on drag, changes margins (this is
-  because we used TouchScript's Transformer for drag, which doesn't have the
-  margins for where not to go)
 - Add some way of easily seeing which objects in the scene are draggable or
   able to be interacted with; used to do the grow-shrink pulse motion, but that
   caused havoc with the collision detection
@@ -370,9 +367,6 @@ page](https://github.com/personal-robots/SAR-opal-base/issues).
   screen without specifying exact coordinates. Adjust the loaded image's
   position until no collisions are detected so it does not overlap with other
   images.
-- Adapt all games to different screen sizes (currently size of images in most
-  games is hard-coded, not scaling - social stories game is the only one that
-  scales properly)
 - Look into ROS .NET for C#. Possible replacement for websocket connection?
 - Add demo and story options to config file so you don't have to recompile and
   redeploy (and/or a start screen that lets you pick whether you want demo

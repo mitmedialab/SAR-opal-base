@@ -152,7 +152,8 @@ namespace opal
             }
             catch (Exception e)
             {
-                Logger.LogError("Could not load image from file: " + filepath + "\nError: " + e.Message 
+                Logger.LogError("Could not load image from file: " + filepath +
+                    "\nError: " + e.Message 
                 + e.StackTrace);
             }
             
@@ -161,5 +162,93 @@ namespace opal
             // not sure why - need to look into this
         }
 
+
+        /// <summary>
+        /// Scale all camera views to the current screen size.
+        /// </summary>
+        /// <returns>True if we should scale to the height (i.e., aspect ratio
+        /// of the screen is wider than it is tall, so we are using the full
+        /// screen height), false if we should scale to the width (i.e., we are
+        /// using the full screen width). </returns>
+        public static bool ScaleCameraViewToScreen()
+        {
+            // The target aspect ratio for the game is 16:9. If the screen has
+            // a different default aspect ratio than this, we will show the game
+            // with empty/black bars filling the extra space on the top or sides
+            // (so the game is shown in the desired aspect ratio). The reason we
+            // set the aspect ratio for our game is because the graphics we are
+            // using fit best at that ratio.
+            float targetAspectRatio = 16.0f / 9.0f;
+
+            // Determine the game screen's current aspect ratio.
+            float currentAspectRatio = (float)Screen.width / (float)Screen.height;
+
+            // We want the game to use the target aspect ratio, so we will scale
+            // the camera's viewport height so the camera view's aspect ratio
+            // matches the target aspect ratio.
+            float scaleHeight = currentAspectRatio / targetAspectRatio;
+
+            // However, we also want the entire game scene to be viewable on
+            // screen. So we have to check whether scaling the height to the
+            // target aspect ratio would be taller than would fit on the device
+            // screen, and if so, shrink the camera view to fit on the device
+            // screen. We create a new rectangle that will be the camera's view
+            // rectangle of the desired size and aspect ratio by scaling the
+            // current camera view rectangle.
+            // We scale the view for each camera we have.
+            foreach (Camera c in Camera.allCameras)
+            {
+                Rect rect = c.rect;
+                if (scaleHeight < 1.0f)
+                {
+                    // The height to scale to is smaller than the current
+                    // screen height , so we use that height, set the
+                    // corresponding width, and set the top left coordinate of
+                    // where to put the camera rectangle on the screen. This is
+                    // how we get evenly distributed empty/black bars above and
+                    // below the game window.
+                    rect.width = 1.0f;
+                    rect.height = scaleHeight;
+                    rect.x = 0;
+                    rect.y = (1.0f - scaleHeight) / 2.0f;
+                    // Now that we have our rectangle, change the camera view.
+                    c.rect = rect;
+                    // We return whether or not we should scale to the height--
+                    // that is, is the aspect ratio of the screen wider than it
+                    // is tall, and thus are we using the full screen height?
+                    // Otherwise, the screen is taller than it is wide, so we
+                    // are using the full screen width instead.
+                    return false;
+                }
+                else
+                {
+                    // Otherwise, the height to scale to is bigger than the
+                    // current screen height, so we set the height as tall as
+                    // we can and scale the width to be smaller and fit too. In
+                    // this case, we set the top left coordinate such that we
+                    // have empty/black bars to the left and right of the game
+                    // window.
+                    rect.width = (1.0f / scaleHeight);
+                    rect.height = 1.0f;
+                    rect.x = (1.0f - (1.0f / scaleHeight)) / 2.0f;
+                    rect.y = 0;
+                    // Now that we have our rectangle, change the camera view.
+                    c.rect = rect;
+                    // Return true to indicate that we should scale based on the
+                    // height, since we are using the full screen height. 
+                    return true;
+                    // Note that we could also set the orthographic size of the
+                    // camera (which is half the vertical height of the view) to
+                    // be the half the height of the screen. But this would not
+                    // necessarily keep our desired aspect ratio, since Unity
+                    // would adjust the horizontal size based on the viewport's
+                    // aspect ratio, which is not necessarily something we
+                    // control.
+                }
+            }
+            // Default return something, but we will always have a camera, so we
+            // should never get here.
+            return true;
+        }
     }
 }

@@ -332,5 +332,28 @@ namespace opal
         {
             return this.correctSlot;
         }
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents the current
+        ///  <see cref="opal.PlayObjectProperties"/>.
+        /// </summary>
+        /// <returns>A <see cref="System.String"/> that represents the current
+        /// <see cref="opal.PlayObjectProperties"/>.</returns>
+        public override string ToString ()
+        {
+            return "Properties:" 
+                + "\n\tName: " + this.Name()
+                + "\n\tTag: " + this.Tag()
+                + "\n\tDraggable: " + this.draggable
+                + "\n\tAudio: " + this.audioFile
+                + "\n\tInitPosn: " + this.initPosn
+                + "\n\tScale: " + this.scale
+                + "\n\tSlot: " + this.slot
+                + "\n\tCorrectSlot: " + this.correctSlot
+                + "\n\tIsAnswerSlot: " + this.isAnswerSlot
+                + "\n\tIsCorrect: " + this.isCorrect
+                + "\n\tIsIncorrect: " + this.isIncorrect;
+
+        }
     }
 }

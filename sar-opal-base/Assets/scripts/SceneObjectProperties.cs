@@ -85,8 +85,15 @@ namespace opal
         * position is within the screen */
         public void SetInitPosition (Vector3 posn)
         {
-        
-            this.initPosn = this.CheckOnScreen(posn);
+
+            // Since we are scaling graphics to fit on the screen, the screen
+            // size may not correspond to the camera view, depending on the
+            // screen's aspect ratio. So this check to make sure new objects are
+            // on the screen may not actually work to keep objects on screen,
+            // and furthermore, may give the wrong answer in terms of screen
+            // coordinates vs. world coordinates. TODO: revisit this and fix.
+            //this.initPosn = this.CheckOnScreen(posn);
+            this.initPosn = posn;
         }
     
         /** get object initial position */

@@ -75,6 +75,10 @@ namespace opal
         // fader for fading out the screen
         private GameObject fader = null; 
 
+        // This flag indicates whether we should scale graphics based on the
+        // screen height (if true) or width (if false).
+        private bool scaleToHeight = false;
+
 
         // config
         private GameConfig gameConfig;
@@ -89,7 +93,11 @@ namespace opal
             if (this.socialStories) Logger.Log("--- RUNNING IN SOCIAL STORIES MODE ---");
         
             string path = "";
-            
+
+            // Scale all camera views to match the screen size of whatever
+            // device we're running on.
+            this.scaleToHeight = Utilities.ScaleCameraViewToScreen();
+
             // find the config file
             #if UNITY_ANDROID
             path = Constants.CONFIG_PATH_ANDROID + Constants.OPAL_CONFIG;
@@ -407,7 +415,8 @@ namespace opal
             // set object name
             go.name = (pops.Name() != "") ? Path.GetFileNameWithoutExtension(pops.Name()) 
                 : UnityEngine.Random.value.ToString();
-            Logger.Log("Creating new play object: " + pops.Name());
+            Logger.Log("Creating new play object: " + pops.Name() + ", with properties: "
+                + pops.ToString());
 
             // set layer based on whether the object is draggable or not
             go.layer = (pops.draggable ? Constants.LAYER_MOVEABLES : Constants.LAYER_STATICS);
@@ -1459,7 +1468,7 @@ namespace opal
         /// <param name="num_answers">Number of answer options for this story</param>
         public void SetupSocialStoryScene(int numScenes, bool scenesInOrder, int numAnswers)
         {
-            // check that we got valid data first
+            // Check that we got valid data first.
             if (numScenes < 1)
             {
                 Logger.LogWarning("Setup Social Story Scene: Told to set up fewer " +
@@ -1467,42 +1476,67 @@ namespace opal
                 return;
             }
 
-            // save whether we are showing a social story in order or not in order
+            // Save whether we are showing a social story in order or not in
+            // order, since we will need that information later.
             this.scenesInOrder = scenesInOrder;
-            
-            // set up camera sizes so the viewport is the size of the screen
-            // TODO move to MainGameController, adapt all scaling etc throughout to scale
-            // propertly for screen size.... not just for social story games
-            foreach (Camera c in Camera.allCameras)
-            {
-                c.orthographicSize = Screen.height/2;
-            }
-            
-            // load background image
+
+            // We have already scaled the cameras so the camera viewport is at
+            // at 16:9 aspect ratio that fits within the device's screen. So
+            // here, we should use the camera viewport size, not the screen
+            // size, to determine how to scale the loaded graphics. This is
+            // because the device screen may not have a 16:9 aspect ratio, so
+            // there may be empty/black bars on either side of the game scene or
+            // at the top and bottom, depending on the screen's aspect ratio. We
+            // don't want any graphics to be shown outside the camera view.
+
+            // Load background image.
             Logger.Log ("Loading background");
             Sprite bk = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + "SSBackground");
             BackgroundObjectProperties bops = new BackgroundObjectProperties(
                 "SSBackground", Constants.TAG_BACKGROUND, 
-                // scale background to size of screen
-                new Vector3((float) Screen.width / bk.bounds.size.x, 
-                        (float)Screen.width / bk.bounds.size.x, 
-                        (float)Screen.width / bk.bounds.size.x));
+                // Scale background to size of camera view.
+                Camera.main.ScreenToWorldPoint(new Vector3(
+                    (float)(this.scaleToHeight ? Camera.main.pixelHeight / bk.bounds.size.y 
+                        : Camera.main.pixelWidth / bk.bounds.size.x),
+                    (float)(this.scaleToHeight ? Camera.main.pixelHeight / bk.bounds.size.y 
+                        : Camera.main.pixelWidth / bk.bounds.size.x), 
+                    (float)(this.scaleToHeight ? Camera.main.pixelHeight / bk.bounds.size.y 
+                        : Camera.main.pixelWidth / bk.bounds.size.x))));
             this.InstantiateBackground(bops, bk);
-            
-            // need to scale scene/answer slots to evenly fit in the screen
-            // scene slots are wider than answer slots - 16:9 ratio
-            // answer slots are square
-            //
-            // they can be bigger if there are fewer slots
-            // but never make them taller than two-fifths the screen height
-            float slotwidth = (float) (Screen.width / numScenes * 0.85);
-            if ((slotwidth * 9/16) > Screen.height / 2) slotwidth = (float) (Screen.height / 2);
-            // save slot width so we can load scenes of the right size later
+
+            // We need to scale the scene and answer slots to evenly fit in the
+            // screen. We'll use the background image in place of the actual
+            // screen. The scene slots are wider than answer slots and have a
+            // 16:9 aspect ratio. The answer slots are square.
+            // Slots can be bigger if there are fewer slots, but we never want
+            // them to be taller than two-fifths of the screen height.
+            float backgroundWidth = GameObject.FindGameObjectWithTag(
+                Constants.TAG_BACKGROUND).GetComponent<Renderer>().bounds.size.x;
+            float backgroundHeight = GameObject.FindGameObjectWithTag(
+                Constants.TAG_BACKGROUND).GetComponent<Renderer>().bounds.size.y;
+            float slotwidth = backgroundWidth / numScenes * 0.88f;
+
+            Logger.Log("Background size = (" + backgroundWidth + ", " + backgroundHeight + ")");
+            Logger.Log("The " + numScenes + " slot(s) will have width " + slotwidth);
+
+            // If the height of the slots is greater than half the camera view
+            // height, shrink the slots so they fit on the top half of the
+            // screen.
+            if ((slotwidth * 9/16) > (backgroundHeight / 2))
+            {
+                Logger.Log("Slots would be too tall based on the width " + slotwidth
+                    + " so we're shrinking them...");
+                slotwidth = (backgroundHeight / 2) * 16/9.0f * 0.95f;
+                Logger.Log("New slot width is " + slotwidth);
+            }
+
+            // Save slot width so we can load scenes of the right size later.
             this.slotWidth = slotwidth;
 
-            // get answer slot width later, if we need to load answer slots
+            // We get the answer slot width later, since we do not always need
+            // to load answer slots.
 
-            // load the number of slots needed for this story
+            // Load the number of slots needed for this story.
             for (int i = 0; i < numScenes; i++)
             {
                 Sprite s = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
@@ -1515,30 +1549,44 @@ namespace opal
                     Logger.LogError("Could not load scene slot image!" );
                     continue;
                 }
-                
+
+                Logger.Log("The x-position of next slot will be: " + 
+                    ((-backgroundWidth / 2) + (backgroundWidth / (numScenes * 2))
+                    + (i * (backgroundWidth / numScenes))));
+
                 PlayObjectProperties pops = new PlayObjectProperties(
-                    Constants.SCENE_SLOT + i, // name
-                    Constants.TAG_PLAY_OBJECT, // tag
-                    false, // draggable
-                    null, // audio
+                    // Slot name is just the name plus a counter.
+                    Constants.SCENE_SLOT + i,
+                    // Tag the slot as a play object so we handle it properly
+                    // elsewhere.
+                    Constants.TAG_PLAY_OBJECT,
+                    // Slots are not draggable.
+                    false,
+                    // Slots have no audio attached.
+                    null,
+                    // Position the object:
+                    // x = left edge + offset to first item +
+                    //     (counter * width of one item without item margins)
+                    // y = near top of screen
+                    // z = specified in constants 
                     new Vector3 (
-                    // left edge + offset to first item + counter * width/count
-                    (-Screen.width/2) 
-                    + (Screen.width / (numScenes * 2)) 
-                    + (i * Screen.width / (numScenes)),
-                    // near top of screen
-                    Screen.height * 0.25f, Constants.Z_SLOT),
-                    // scale slot to one portion of the screen width
-                    new Vector3(slotwidth / s.bounds.size.x,
-                            (slotwidth * 9/16) / s.bounds.size.y,
-                            slotwidth / s.bounds.size.z)
+                        (-backgroundWidth / 2) 
+                            + (backgroundWidth / (numScenes * 2)) 
+                            + (i * (backgroundWidth / numScenes)),
+                        backgroundHeight * 0.25f,
+                        Constants.Z_SLOT),
+                    // Scale slot to one portion of the screen width.
+                    new Vector3(
+                        slotwidth / s.bounds.size.x,
+                        (slotwidth * 9/16) / s.bounds.size.y,
+                        slotwidth / s.bounds.size.z)
                     );
                 
-                // instantiate the scene slot
+                // Instantiate the scene slot with the properties above.
                 this.InstantiatePlayObject(pops, s);
                 
-                // change name and size to make smaller version that we will use
-                // to detect collisions during out-of-order games
+                // Change name and size to make smaller version that we will use
+                // to detect collisions during out-of-order games.
                 if (!scenesInOrder)
                 {
                     pops.SetName(Constants.SCENE_COLLIDE_SLOT + i);
@@ -1549,29 +1597,39 @@ namespace opal
                                               pops.Scale().y / 3, 
                                               pops.Scale().z) / 3);
                     
-                    // instantiate smaller scene collision object
+                    // Instantiate smaller scene collision object.
                     this.InstantiatePlayObject(pops, s);
                 }
             }
             
-            // load answer slots, if we need to
+            // Load answer slots, if we need to.
             if (numAnswers >= 1)
             {
-                // answer slot width
-                float aslotwidth = (float) (Screen.width / numAnswers * 0.8);
-                if (aslotwidth > Screen.height * 2/5) aslotwidth = (float) (Screen.height * 2/5);
-                // save answer slot width so we can load answers of the right size later
+                // Calculate answer slot width so they're evenly spaced.
+                float aslotwidth = (float) (backgroundWidth / numAnswers * 0.8);
+
+                // If the height of the slots is greater than two-fifths of the
+                // camera view height, shrink the slots so they fit in the
+                // bottom half of the screen.
+                if (aslotwidth > backgroundHeight * 2/5)
+                {
+                    aslotwidth = backgroundHeight * 2/5;
+                }
+
+                // Save answer slot width so we can load answer graphics of the
+                // right size later.
                 this.answerSlotWidth = aslotwidth;
 
-                // find the image files for the scenes
-                // load the number of answer slots needed for this story
-                // all answer slots look the same so load one graphic and reuse it
+                // Find the image files for the answer slots and load the number
+                // of answer slots needed for this story. Since all the answer
+                // slots look the same, we can load one graphic and reuse it.
                 Sprite ans = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
                                                     + Constants.SOCIAL_STORY_FILE_PATH
                                                     + Constants.SS_ANSWER_SLOT_PATH
                                                     + Constants.SS_SLOT_NAME);
 
-                // also load graphics for correct and incorrect feedback
+                // We also load graphics for correct and incorrect feedback,
+                // since these will be shown over the answer slots on request.
                 Sprite feedc = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
                                                       + Constants.SOCIAL_STORY_FILE_PATH
                                                       + Constants.SS_FEEDBACK_PATH
@@ -1584,52 +1642,68 @@ namespace opal
                 
                 for (int i = 0; i < numAnswers; i++)
                 {   
-                    // create answer slot
+                    // Create answer slot properties.
                     PlayObjectProperties pops = new PlayObjectProperties(
-                        Constants.ANSWER_SLOT + i, // name
-                        Constants.TAG_ANSWER_SLOT, // tag
-                        false, // draggable
-                        null, // audio
+                        // Slot name is just the name plus a counter.
+                        Constants.ANSWER_SLOT + i,
+                        // Tag the slot as a play object so we handle it properly
+                        // elsewhere.
+                        Constants.TAG_ANSWER_SLOT,
+                        // Slots are not draggable.
+                        false,
+                        // Slots have no audio attached.
+                        null,
+                        // Position the object:
+                        // x = left edge + offset to first item +
+                        //     (counter * width of one item without item margins)
+                        // y = near bottom of screen
+                        // z = specified in constants 
                         new Vector3 (
-                        // left edge + offset to first item + counter * width/count
-                        (-Screen.width/2) 
-                        + (Screen.width / (numAnswers * 2)) 
-                        + (i * Screen.width / (numAnswers)),
-                        // near botton of screen
-                        -Screen.height * 0.25f, Constants.Z_SLOT),
-                        // scale to one portion of the screen width
-                        new Vector3(slotwidth / ans.bounds.size.x,
-                                slotwidth / ans.bounds.size.x,
-                                slotwidth / ans.bounds.size.x)
+                            (-backgroundWidth / 2) 
+                                + (backgroundWidth / (numAnswers * 2)) 
+                                + (i * backgroundWidth / (numAnswers)),
+                            -backgroundHeight * 0.25f,
+                            Constants.Z_SLOT),
+                        // Scale to one portion of the screen width.
+                        new Vector3(
+                            aslotwidth / ans.bounds.size.x,
+                            aslotwidth / ans.bounds.size.x,
+                            aslotwidth / ans.bounds.size.x)
                         );
                     
-                    // instantiate the scene slot
+                    // Instantiate the answer slot.
                     this.InstantiatePlayObject(pops, ans);
                     
-                    // also load answer feedback graphics for answer slots
-                    // we know only one answer will be correct, so load 1 correct, x incorrect
-                    // like with the highlight, keep reference to the answer feedback graphics
-                    // but set them as not visible
+                    // Load answer feedback graphics for each answer slots. We
+                    // know only one answer will be correct, so load 1 correct
+                    // and N incorrect (where N is the number of answer slots
+                    // minus one). Like with the highlight object, keep a 
+                    // reference to each feedback graphic and set them as not
+                    // visible.
                     PlayObjectProperties pobps = new PlayObjectProperties(
-                        (i < numAnswers - 1 ? "feedback-incorrect" + i : "feedback-correct"), // name
+                        // Put "feedback" in the names.
+                        (i < numAnswers - 1 ? "feedback-incorrect" + i : "feedback-correct"),
                         (i < numAnswers - 1 ? Constants.TAG_INCORRECT_FEEDBACK : 
-                     Constants.TAG_CORRECT_FEEDBACK), // tag
-                        false, // draggable
-                        null, // audio
-                        new Vector3 (
-                        // left edge + offset to first item + counter * width/count
-                        (-Screen.width/2) 
-                        + (Screen.width / (numAnswers * 2)) 
-                        + (i * Screen.width / (numAnswers)),
-                        // near botton of screen
-                        -Screen.height * 0.25f, Constants.Z_FEEDBACK),
-                        // scale to one portion of the screen width
-                        new Vector3(aslotwidth / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x * 1.2f,
-                                aslotwidth / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x * 1.2f,
-                                aslotwidth / (i < numAnswers - 1 ? feedic : feedc).bounds.size.x * 1.2f)
+                        // Tas as feedback.
+                         Constants.TAG_CORRECT_FEEDBACK),
+                        // Feedback graphics are not draggable.
+                        false,
+                        // Feedback graphics have no audio attached.
+                        null,
+                        // Position on top of the corresponding answer slot.
+                        pops.InitPosition(),
+                        // Scale to one portion of the screen width, slightly
+                        // bigger than the answer slot beneath it.
+                        new Vector3(
+                            aslotwidth /
+                                (i < numAnswers - 1 ? feedic : feedc).bounds.size.x * 1.2f,
+                            aslotwidth /
+                                (i < numAnswers - 1 ? feedic : feedc).bounds.size.x * 1.2f,
+                            aslotwidth /
+                                (i < numAnswers - 1 ? feedic : feedc).bounds.size.x * 1.2f)
                         );
                     
-                    // instantiate the scene slot
+                    // Instantiate the feedback graphic.
                     this.InstantiatePlayObject(pobps, (i < numAnswers - 1 ? feedic : feedc));
                 }  
             }

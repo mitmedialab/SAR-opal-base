@@ -495,7 +495,7 @@ namespace opal
                     {
                         go.transform.localScale = new Vector3(
                             this.slotWidth / spriteRenderer.sprite.bounds.size.x,
-                            (this.slotWidth * 9/16) / spriteRenderer.sprite.bounds.size.y,
+                            this.slotWidth / spriteRenderer.sprite.bounds.size.y,
                             this.slotWidth / spriteRenderer.sprite.bounds.size.z);
                     }
                 }
@@ -1506,8 +1506,7 @@ namespace opal
 
             // We need to scale the scene and answer slots to evenly fit in the
             // screen. We'll use the background image in place of the actual
-            // screen. The scene slots are wider than answer slots and have a
-            // 16:9 aspect ratio. The answer slots are square.
+            // screen. The scene slots and answer slots are both square.
             // Slots can be bigger if there are fewer slots, but we never want
             // them to be taller than two-fifths of the screen height.
             float backgroundWidth = GameObject.FindGameObjectWithTag(
@@ -1522,11 +1521,11 @@ namespace opal
             // If the height of the slots is greater than half the camera view
             // height, shrink the slots so they fit on the top half of the
             // screen.
-            if ((slotwidth * 9/16) > (backgroundHeight / 2))
+            if (slotwidth > (backgroundHeight / 2))
             {
                 Logger.Log("Slots would be too tall based on the width " + slotwidth
                     + " so we're shrinking them...");
-                slotwidth = (backgroundHeight / 2) * 16/9.0f * 0.95f;
+                slotwidth = (backgroundHeight / 2) * 0.95f;
                 Logger.Log("New slot width is " + slotwidth);
             }
 
@@ -1578,7 +1577,7 @@ namespace opal
                     // Scale slot to one portion of the screen width.
                     new Vector3(
                         slotwidth / s.bounds.size.x,
-                        (slotwidth * 9/16) / s.bounds.size.y,
+                        slotwidth / s.bounds.size.y,
                         slotwidth / s.bounds.size.z)
                     );
                 

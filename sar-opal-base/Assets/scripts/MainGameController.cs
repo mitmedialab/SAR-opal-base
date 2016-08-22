@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using TouchScript.Behaviors;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace opal
 {
@@ -855,7 +856,9 @@ namespace opal
                         this.GetSceneKeyframe(out sos);
                         this.logEvent(this, new LogEvent(LogEvent.EventType.Scene, sos));
                     });
-                }  else {
+                }
+                else
+                {
                     Logger.LogWarning("Was told to send keyframe but logger " +
                                      "doesn't appear to exist.");
                 }
@@ -863,15 +866,65 @@ namespace opal
             
 			else if (cmd == Constants.HIGHLIGHT_OBJECT)
             {
-                // move the highlight behind the specified game object
+                // Move the highlight behind the specified game object, if we
+                // were given an object.
                 MainGameController.ExecuteOnMainThread.Enqueue(() =>
                 { 
-                    GameObject go = GameObject.Find((string)props);
-                    if(go != null) {
-                        this.gestureManager.LightOn(go.transform.position);
-                    } else {
-                        Logger.LogWarning("Was told to highlight " + (string)props + 
-                                         " but could not find the game object!");
+                    if (props == null)
+                    {
+                        Logger.Log("Got no object to highlight. Turning highlight off!");
+                        this.gestureManager.LightOff();
+                    }
+                    else
+                    {
+                        // Try to find the specified game object to highlight.
+                        GameObject go = GameObject.Find((string)props);
+                        if (go != null) 
+                        {
+                            this.gestureManager.LightOn(go.transform.position);
+                        }
+                        else 
+                        {
+                            Logger.LogWarning("Was told to highlight " + (string)props + 
+                                " but could not find the game object! Maybe we need to" +
+                                " highlight a scene? Checking...");
+                            // Try to find a scene to highlight.
+                            if (((string)props).Contains("scene"))
+                            {
+                                Logger.Log("Yes - finding which scene to highlight...");
+                                // Get scene number. Scenes are 0-indexed.
+                                int num = -1;
+                                string result = Regex.Match((string)props, @"\d+").Value;
+                                Logger.Log("result is " + result);
+                                if (int.TryParse(result, out num))
+                                {
+                                    go = GameObject.Find(Constants.SCENE_SLOT + num);
+                                    if (go != null)
+                                    {
+                                        Logger.Log("Highlight will be size " + (this.slotWidth * 1.3f)
+                                            + "\n that's " + this.slotWidth + " / " + " * 1.3f");
+                                        this.gestureManager.LightOn(
+                                            new Vector3(
+                                                this.slotWidth * 2f,
+                                                this.slotWidth * 2f,
+                                                this.slotWidth * 2f
+                                            ),
+                                            go.transform.position); 
+                                   }
+                                }
+                                else
+                                {
+                                    Logger.LogWarning("Could not find scene number for"
+                                        + "scene slot to highlight!");
+                                }
+                            }
+                            else
+                            {
+                                Logger.LogWarning("Nope - did not specify a scene! Turning"
+                                    + " highlight off.");
+                                this.gestureManager.LightOff();
+                            }
+                        }
                     }
                 });  
             }

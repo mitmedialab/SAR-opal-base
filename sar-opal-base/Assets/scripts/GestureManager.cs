@@ -690,6 +690,18 @@ namespace opal
             }
         }
 
+        public void LightOn (Vector3 scale, Vector3 posn)
+        {
+            if(this.highlight != null && this.highlight.GetComponent<Renderer>() != null) 
+            {
+                this.highlight.GetComponent<Renderer>().enabled = true;
+                this.highlight.transform.position = new Vector3(posn.x, posn.y, posn.z + 1);
+                this.highlight.transform.localScale = scale;
+            } else {
+                Logger.Log("Tried to turn light on ... but light is null!");
+            }
+        }   
+   
         /// Deactivates light, returns to specified scale   
         public void LightOff ()
         {

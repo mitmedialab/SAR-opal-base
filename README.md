@@ -126,7 +126,7 @@ indicate whether the sidekick character is done playing back an audio file.
 
 ### OpalCommand LOAD\_OBJECT messages
 
-When Opal receives a LOAD\_OBJECT OpalCommand message, it will attempt to load
+When Opal receives a `LOAD_OBJECT` OpalCommand message, it will attempt to load
 a GameObject with the specified properties. As the
 [/sar\_opal\_msgs](https://github.com/personal-robots/sar_opal_msgs
 "/sar\_opal\_msgs") documentation states, one of the fields you provide when
@@ -147,6 +147,14 @@ is actually a full file path to the desired image (that may or may not be in
 the Resource directory), and attempts to load the graphic from that full file
 path. If this fails, the graphic is not loaded and creation of the GameObject
 will fail.
+
+### OpalCommand HIGHLIGHT\_OBJECT messages
+
+As the [/sar\_opal\_msgs](https://github.com/personal-robots/sar_opal_msgs
+"/sar\_opal\_msgs") documentation states, you can specify the object to
+highlight.  If no object is specified (i.e., the `properties` field is null),
+then the `HIGHLIGHT_OBJECT` command will deactivate the highlight. This way,
+you can highlight objects, then deactivate the light when you are done.
 
 ## Log Files
 

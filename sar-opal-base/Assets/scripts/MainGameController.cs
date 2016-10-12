@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using TouchScript.Behaviors;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace opal
 {
@@ -45,14 +46,26 @@ namespace opal
 
         // STORYBOOK VERSION
         private bool story = false;
+        /// <summary>
+        /// The pages in story.
+        /// </summary>
         public int pagesInStory = 0;
 
         // SOCIAL STORIES VERSION
         private bool socialStories = true;
         private List<GameObject> incorrectFeedback;
         private GameObject correctFeedback;
+        /// <summary>
+        /// The width of the slot.
+        /// </summary>
         public float slotWidth = 1;
+        /// <summary>
+        /// The width of the answer slot.
+        /// </summary>
         public float answerSlotWidth = 1;
+        /// <summary>
+        /// The scenes in order.
+        /// </summary>
         public bool scenesInOrder = true;
         // --------------------------------------
 
@@ -70,6 +83,9 @@ namespace opal
         readonly static Queue<Action> ExecuteOnMainThread = new Queue<Action>();
     
         // for logging stuff
+        /// <summary>
+        /// Occurs when log event.
+        /// </summary>
         public event LogEventHandler logEvent;
         
         // fader for fading out the screen
@@ -495,7 +511,7 @@ namespace opal
                     {
                         go.transform.localScale = new Vector3(
                             this.slotWidth / spriteRenderer.sprite.bounds.size.x,
-                            (this.slotWidth * 9/16) / spriteRenderer.sprite.bounds.size.y,
+                            this.slotWidth / spriteRenderer.sprite.bounds.size.y,
                             this.slotWidth / spriteRenderer.sprite.bounds.size.z);
                     }
                 }
@@ -855,7 +871,9 @@ namespace opal
                         this.GetSceneKeyframe(out sos);
                         this.logEvent(this, new LogEvent(LogEvent.EventType.Scene, sos));
                     });
-                }  else {
+                }
+                else
+                {
                     Logger.LogWarning("Was told to send keyframe but logger " +
                                      "doesn't appear to exist.");
                 }
@@ -863,15 +881,65 @@ namespace opal
             
 			else if (cmd == Constants.HIGHLIGHT_OBJECT)
             {
-                // move the highlight behind the specified game object
+                // Move the highlight behind the specified game object, if we
+                // were given an object.
                 MainGameController.ExecuteOnMainThread.Enqueue(() =>
                 { 
-                    GameObject go = GameObject.Find((string)props);
-                    if(go != null) {
-                        this.gestureManager.LightOn(go.transform.position);
-                    } else {
-                        Logger.LogWarning("Was told to highlight " + (string)props + 
-                                         " but could not find the game object!");
+                    if (props == null)
+                    {
+                        Logger.Log("Got no object to highlight. Turning highlight off!");
+                        this.gestureManager.LightOff();
+                    }
+                    else
+                    {
+                        // Try to find the specified game object to highlight.
+                        GameObject go = GameObject.Find((string)props);
+                        if (go != null) 
+                        {
+                            this.gestureManager.LightOn(go.transform.position);
+                        }
+                        else 
+                        {
+                            Logger.LogWarning("Was told to highlight " + (string)props + 
+                                " but could not find the game object! Maybe we need to" +
+                                " highlight a scene? Checking...");
+                            // Try to find a scene to highlight.
+                            if (((string)props).Contains("scene"))
+                            {
+                                Logger.Log("Yes - finding which scene to highlight...");
+                                // Get scene number. Scenes are 0-indexed.
+                                int num = -1;
+                                string result = Regex.Match((string)props, @"\d+").Value;
+                                Logger.Log("result is " + result);
+                                if (int.TryParse(result, out num))
+                                {
+                                    go = GameObject.Find(Constants.SCENE_SLOT + num);
+                                    if (go != null)
+                                    {
+                                        Logger.Log("Highlight will be size " + (this.slotWidth * 1.3f)
+                                            + "\n that's " + this.slotWidth + " / " + " * 1.3f");
+                                        this.gestureManager.LightOn(
+                                            new Vector3(
+                                                this.slotWidth * 2f,
+                                                this.slotWidth * 2f,
+                                                this.slotWidth * 2f
+                                            ),
+                                            go.transform.position); 
+                                   }
+                                }
+                                else
+                                {
+                                    Logger.LogWarning("Could not find scene number for"
+                                        + "scene slot to highlight!");
+                                }
+                            }
+                            else
+                            {
+                                Logger.LogWarning("Nope - did not specify a scene! Turning"
+                                    + " highlight off.");
+                                this.gestureManager.LightOff();
+                            }
+                        }
                     }
                 });  
             }
@@ -1318,6 +1386,20 @@ namespace opal
         /// <param name="incorrectGameObjects">Incorrect game objects.</param>
         private void SetCorrect(string[] correctGameObjects, string[] incorrectGameObjects)
         {
+            // First, reset all play objects to neither correct nor incorrect.
+            GameObject[] gos = GameObject.FindGameObjectsWithTag(Constants.TAG_PLAY_OBJECT);
+            foreach (GameObject go in gos)
+            {
+                if(go.GetComponent<SavedProperties>() == null) 
+                {
+                    Logger.LogWarning("Tried to reset correct and incorrect flags for " 
+                        + go + " but could not find any saved properties.");
+                } else {
+                    go.GetComponent<SavedProperties>().isCorrect = false;
+                    go.GetComponent<SavedProperties>().isIncorrect = false;
+                } 
+            }
+            
             if (correctGameObjects != null)
             {
                 foreach(string cgo in correctGameObjects)
@@ -1506,8 +1588,7 @@ namespace opal
 
             // We need to scale the scene and answer slots to evenly fit in the
             // screen. We'll use the background image in place of the actual
-            // screen. The scene slots are wider than answer slots and have a
-            // 16:9 aspect ratio. The answer slots are square.
+            // screen. The scene slots and answer slots are both square.
             // Slots can be bigger if there are fewer slots, but we never want
             // them to be taller than two-fifths of the screen height.
             float backgroundWidth = GameObject.FindGameObjectWithTag(
@@ -1522,11 +1603,11 @@ namespace opal
             // If the height of the slots is greater than half the camera view
             // height, shrink the slots so they fit on the top half of the
             // screen.
-            if ((slotwidth * 9/16) > (backgroundHeight / 2))
+            if (slotwidth > (backgroundHeight / 2))
             {
                 Logger.Log("Slots would be too tall based on the width " + slotwidth
                     + " so we're shrinking them...");
-                slotwidth = (backgroundHeight / 2) * 16/9.0f * 0.95f;
+                slotwidth = (backgroundHeight / 2) * 0.95f;
                 Logger.Log("New slot width is " + slotwidth);
             }
 
@@ -1578,7 +1659,7 @@ namespace opal
                     // Scale slot to one portion of the screen width.
                     new Vector3(
                         slotwidth / s.bounds.size.x,
-                        (slotwidth * 9/16) / s.bounds.size.y,
+                        slotwidth / s.bounds.size.y,
                         slotwidth / s.bounds.size.z)
                     );
                 

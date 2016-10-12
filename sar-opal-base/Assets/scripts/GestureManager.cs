@@ -435,7 +435,9 @@ namespace opal
                             gesture.gameObject.name, "press", hit.Point,
                             (gesture.gameObject.name.Contains("start_button") ? "START" 
                             : (gesture.gameObject.name.Contains("no_button") ? "NO"
-                            // TODO what if go doesn't have SavedProperties component?
+                            // If the game object doesn't have SavedProperties component, don't add
+                            // an additional message. Otherwise, log whether it was correct or not.
+                            : gesture.gameObject.GetComponent<SavedProperties>() == null ? ""
                             : (gesture.gameObject.GetComponent<SavedProperties>().isCorrect ? "CORRECT"
                             : (gesture.gameObject.GetComponent<SavedProperties>().isIncorrect ? "INCORRECT"
                             : ""))))));
@@ -690,6 +692,18 @@ namespace opal
             }
         }
 
+        public void LightOn (Vector3 scale, Vector3 posn)
+        {
+            if(this.highlight != null && this.highlight.GetComponent<Renderer>() != null) 
+            {
+                this.highlight.GetComponent<Renderer>().enabled = true;
+                this.highlight.transform.position = new Vector3(posn.x, posn.y, posn.z + 1);
+                this.highlight.transform.localScale = scale;
+            } else {
+                Logger.Log("Tried to turn light on ... but light is null!");
+            }
+        }   
+   
         /// Deactivates light, returns to specified scale   
         public void LightOff ()
         {

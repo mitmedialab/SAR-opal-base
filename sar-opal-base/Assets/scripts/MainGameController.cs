@@ -46,14 +46,26 @@ namespace opal
 
         // STORYBOOK VERSION
         private bool story = false;
+        /// <summary>
+        /// The pages in story.
+        /// </summary>
         public int pagesInStory = 0;
 
         // SOCIAL STORIES VERSION
         private bool socialStories = true;
         private List<GameObject> incorrectFeedback;
         private GameObject correctFeedback;
+        /// <summary>
+        /// The width of the slot.
+        /// </summary>
         public float slotWidth = 1;
+        /// <summary>
+        /// The width of the answer slot.
+        /// </summary>
         public float answerSlotWidth = 1;
+        /// <summary>
+        /// The scenes in order.
+        /// </summary>
         public bool scenesInOrder = true;
         // --------------------------------------
 
@@ -71,6 +83,9 @@ namespace opal
         readonly static Queue<Action> ExecuteOnMainThread = new Queue<Action>();
     
         // for logging stuff
+        /// <summary>
+        /// Occurs when log event.
+        /// </summary>
         public event LogEventHandler logEvent;
         
         // fader for fading out the screen
@@ -1371,6 +1386,20 @@ namespace opal
         /// <param name="incorrectGameObjects">Incorrect game objects.</param>
         private void SetCorrect(string[] correctGameObjects, string[] incorrectGameObjects)
         {
+            // First, reset all play objects to neither correct nor incorrect.
+            GameObject[] gos = GameObject.FindGameObjectsWithTag(Constants.TAG_PLAY_OBJECT);
+            foreach (GameObject go in gos)
+            {
+                if(go.GetComponent<SavedProperties>() == null) 
+                {
+                    Logger.LogWarning("Tried to reset correct and incorrect flags for " 
+                        + go + " but could not find any saved properties.");
+                } else {
+                    go.GetComponent<SavedProperties>().isCorrect = false;
+                    go.GetComponent<SavedProperties>().isIncorrect = false;
+                } 
+            }
+            
             if (correctGameObjects != null)
             {
                 foreach(string cgo in correctGameObjects)

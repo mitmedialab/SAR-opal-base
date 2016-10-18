@@ -7,7 +7,7 @@ mechanics, all using ROS.
 ## Build and Run
 This game was built and tested with:
 
-- Unity 5.3.5
+- Unity 5.4.1f1
 - MonoDevelop 5.9.6
 - rosbridge from ROS Indigo
 - sar\_opal\_msgs 4.0.0

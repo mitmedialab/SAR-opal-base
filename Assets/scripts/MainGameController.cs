@@ -801,7 +801,8 @@ namespace opal
 			
 			// move object to initial position 
 			go.transform.position = sops.InitPosition();
-			
+
+
 			// load sprite/image for object
 			SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
 			
@@ -814,12 +815,15 @@ namespace opal
 					Logger.Log("ERROR could not load sprite: " 
 				          + Constants.GRAPHICS_FILE_PATH + sops.Name());
 			 }
+
+
 			
 			spriteRenderer.sprite = sprite; 
 			
 			// set scale (local scale)
 			if (sops.Scale() != Vector3.zero)
 			{
+				Logger.Log ("set scale runs...");
 				//go.transform.localScale = sops.Scale();
 				float width=Screen.width;
 				float height = Screen.height;
@@ -827,7 +831,7 @@ namespace opal
 				float renderY = go.GetComponent<SpriteRenderer> ().bounds.size.y;
 				float factorX = width / renderX;
 				float factorY = height / renderY;
-				go.transform.localScale = new Vector3 (factorX*0.4f, factorY*0.4f, factorX);
+				go.transform.localScale = new Vector3 (factorX*0.3f, factorY*0.3f, factorX);
 			}
 			else
 			{
@@ -1997,39 +2001,54 @@ namespace opal
                 Constants.AUDIO_ROSTOPIC, true));
         }
 
-		void loadingImages(string [] fileEntries){
+
+
+		public void loadingImages(string [] fileEntries){
 			
 			int counter = 0;
 			foreach (string fileName in fileEntries)
 			{
-				
+				Logger.LogWarning ("fileName is: "+fileName);
+				if (fileName == ".DS_STORE") {
+					Logger.LogWarning ("file is found...");
+					continue;
+				}
 				//load images
 				string imageUrl = "file://"+fileName;
 
+
 				WWW www = new WWW( imageUrl );
 
-				Logger.LogError (www.url);
+				while (www.isDone != true) {
+					//yield return null;
+					if (www.isDone == true)
+						break;
+				}
+				//yield return www;
 
+				//Logger.LogError (www.url);
 
 				Texture2D left = new Texture2D(www.texture.width, www.texture.height, TextureFormat.DXT1, false);
-				
+
 				Sprite spriteImage = Sprite.Create(left,
 					new Rect(0, 0, left.width, left.height),
 					new Vector2(0.5f,0.5f),
 					40);
+
+
 				www.LoadImageIntoTexture(spriteImage.texture);
 
 
-				if (www.isDone == true) {
-					Logger.Log ("www is done");
-					if (www.error!=null) {
-						Logger.LogError ("www has an error..." + www.error);
-					} else {
-						Logger.Log ("no error...");
-					}
-				} else {
-					Logger.Log("www is NOT DONE");
-				}
+//				if (www.isDone == true) {
+//					Logger.LogWarning ("www is done");
+//					if (www.error!=null) {
+//						Logger.LogError ("www has an error..." + www.error);
+//					} else {
+//						Logger.LogWarning ("no error...");
+//					}
+//				} else {
+//					Logger.LogWarning("www is NOT DONE");
+//				}
 				//www.Dispose();
 				this.storyImageSprites[counter]=spriteImage;
 				counter++;
@@ -2042,9 +2061,14 @@ namespace opal
 			
 			//iterate through the folder to get all file names
 			string [] fileEntries = Directory.GetFiles(storyPath);
+
 			this.storyImageSprites = new Sprite[fileEntries.Length];
+
 			loadingImages(fileEntries);
 
+			//foreach(Sprite isprite in this.storyImageSprites){
+			//	isprite.
+			//}
 		}
 
 		/** Load story */
@@ -2055,7 +2079,7 @@ namespace opal
 			string storyName=storyInfo.StoryName;
 
 			//string storyPath = "/Users/huilichen/Downloads/graphics_without_text/images/"+storyName;
-			string storyPath="/sdcard/images/"+storyName;
+			string storyPath="/sdcard/edu.mit.media.prg.sar.opal.base/"+storyName;
 
 			Logger.LogError ("story path: "+storyPath);
 			LoadImages(storyPath);
@@ -2068,7 +2092,7 @@ namespace opal
 					Constants.TAG_BACKGROUND,
 					pageCounter,
 					storyPath+storyName,
-					new Vector3(16,16,16),
+					new Vector3(10,10,10),
 					(pageCounter == 0 ? true : false),
 					(pageCounter == this.storyImageSprites.Length-1 ? true : false),
 					new Vector2 (0f, -50f)

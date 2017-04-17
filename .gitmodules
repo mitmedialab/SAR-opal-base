@@ -1,7 +1,7 @@
 [submodule "TouchScript"]
 	path = Libraries/TouchScript
 	url = https://github.com/TouchScript/TouchScript
-    ignore = dirty
+    ignore = all
 [submodule "LeanTween"]
 	path = Libraries/LeanTween
 	url = https://github.com/dentedpixel/LeanTween

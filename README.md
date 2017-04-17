@@ -7,11 +7,11 @@ mechanics, all using ROS.
 ## Build and Run
 This game was built and tested with:
 
-- Unity 5.3.5
+- Unity 5.4.1f1
 - MonoDevelop 5.9.6
 - rosbridge from ROS Indigo
 - sar\_opal\_msgs 4.0.0
-- TouchScript 8.1
+- TouchScript 8.2
 - LeanTween [no current version number, latest commit was
   78b0458171150ed89aba7435f336099f7a81e26b from June 11, 2016, after 2.32
   release]
@@ -181,12 +181,13 @@ it easy to detect and respond to touch events, such as taps and drags. See the
 wiki [here] (https://github.com/TouchScript/TouchScript/wiki "TouchScript
 wiki") for more information.
 
-We built a unitypackage from the TouchScript 8.1 source, which has been
-imported into the game in the Assets folder.
+You can build a unitypackage from the TouchScript source, or download it from
+their github releases page. The unitypackage has already been imported into the
+game in the Assets folder.
 
 Instructions on building TouchScript's unitypackage from source are online
 [here] (https://github.com/TouchScript/TouchScript/wiki/How-to-Contribute "How
-to Contribute"). For 8.1, the steps are:
+to Contribute"). For 8.2, the steps are:
 
 - init and update TouchScript's git submodules
 - init and update any submodules of those submodules

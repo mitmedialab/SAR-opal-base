@@ -7,13 +7,13 @@ EditorBuildSettings:
   m_Scenes:
   - enabled: 0
     path: Assets/scenes/basic-scene.unity
-  - enabled: 0
+  - enabled: 1
     path: Assets/scenes/demo-intro.unity
-  - enabled: 0
+  - enabled: 1
     path: Assets/scenes/demo-scene1.unity
-  - enabled: 0
+  - enabled: 1
     path: Assets/scenes/demo-scene2.unity
   - enabled: 0
     path: Assets/scenes/frog-where-are-you.unity
-  - enabled: 1
+  - enabled: 0
     path: Assets/scenes/social-stories.unity

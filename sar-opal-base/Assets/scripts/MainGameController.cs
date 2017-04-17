@@ -42,7 +42,7 @@ namespace opal
 
         // --------------- FLAGS ---------------
         // DEMO VERSION
-        private bool demo = false;
+        private bool demo = true;
 
         // STORYBOOK VERSION
         private bool story = false;
@@ -52,7 +52,7 @@ namespace opal
         public int pagesInStory = 0;
 
         // SOCIAL STORIES VERSION
-        private bool socialStories = true;
+        private bool socialStories = false;
         private List<GameObject> incorrectFeedback;
         private GameObject correctFeedback;
         /// <summary>

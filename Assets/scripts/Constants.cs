@@ -75,6 +75,10 @@ namespace opal
 	{
 		public string StoryName;
 		public bool reload;
+		public int current_page;
+		public int total_pages;
+		public bool touch_enabled;
+		public bool buttons_shown;
 	}
 
 
@@ -176,6 +180,9 @@ namespace opal
         public const int HIDE_CORRECT = 17;
         public const int SETUP_STORY_SCENE = 18;
 		public const int STORY_SELECTION = 19;
+		public const int SAME_PAGE = 20;
+		public const int STORY_SHOW_BUTTONS = 21;
+		public const int STORY_HIDE_BUTTONS = 22;
         
         /** next page and previous page */
         public const bool NEXT = true;
@@ -239,6 +246,9 @@ namespace opal
         //   bool done playing
         public static string AUDIO_ROSTOPIC = "/opal_tablet_audio";
         public const string DEFAULT_AUDIO_ROSTOPIC = "/opal_tablet_audio";
-        public const string AUDIO_ROSMSG_TYPE = "/std_msgs/Bool";     
+        public const string AUDIO_ROSMSG_TYPE = "/std_msgs/Bool";
+		public const string STORYBOOK_ROSTOPIC="/storybook_curr_state";
+		public const string STORYBOOK_ROSMSG_TYPE="/sar_opal_msgs/OpalStorybook";
+
     }
 }

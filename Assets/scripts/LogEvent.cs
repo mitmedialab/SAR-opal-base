@@ -105,6 +105,15 @@ namespace opal
             public bool isCorrect;
             public bool isIncorrect;
         }
+
+		public struct StorybookObject
+		{
+			public string book_name;
+			public int current_page;
+			public int total_pages;
+			public bool touch_enabled;
+			public bool buttons_shown;
+		}
     
         public SceneObject[] sceneObjects = null;
     

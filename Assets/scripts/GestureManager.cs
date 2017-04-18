@@ -69,12 +69,18 @@ namespace opal
         
         // SOCIAL STORIES VERSION
         public bool socialStories = false;
+
+		public MainGameController gameController;
+
+		public int currentStoryPage = -1;
         
         /// <summary>
         /// Called on start, use to initialize stuff
         /// </summary>
         void Start ()
         {
+			
+			//gameController = GameObject.FindGameObjectWithTag (Constants.TAG_DIRECTOR);
             // set up light
             this.highlight = GameObject.FindGameObjectWithTag(Constants.TAG_LIGHT);
             if(this.highlight != null) {
@@ -260,6 +266,9 @@ namespace opal
                     this.mostRecentlyDraggedGO.transform.position.z);
             }
             }
+
+			//update current story page
+			this.currentStoryPage  =(int)this.mainCam.transform.position.z+1;
         }
 
         /// <summary>
@@ -351,8 +360,12 @@ namespace opal
         /// <param name="e">E.</param>
         private void tappedHandler (object sender, EventArgs e)
         {
+			
 			Logger.Log("!!!!!!!!!!!!!tapped handler!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            // get the gesture that was sent to us
+
+
+
+			// get the gesture that was sent to us
             // this gesture will tell us what object was touched
             TapGesture gesture = sender as TapGesture;
             TouchHit hit;
@@ -374,6 +387,7 @@ namespace opal
 				if(this.story && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
 				{
 					ChangePage(Constants.PREVIOUS);
+				
 				}
 				else if (this.story && gesture.gameObject.tag.Contains(Constants.TAG_GO_NEXT))
 				{
@@ -763,6 +777,7 @@ namespace opal
 						// don't go past end of story
 						if (this.mainCam.transform.position.z < this.pagesInStory-1)
 						{
+							
 							this.mainCam.transform.Translate(new Vector3(0,0,1));
 							GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT).transform.Translate(new Vector3(0,0,1));
 							GameObject.FindGameObjectWithTag(Constants.TAG_BACK).transform.Translate(new Vector3(0,0,1));
@@ -800,6 +815,8 @@ namespace opal
                     }
                 }
             }
+
+			gameController.sendStoryState2ROS ();
   		}
   
   

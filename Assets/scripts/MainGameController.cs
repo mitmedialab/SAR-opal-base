@@ -124,8 +124,10 @@ namespace opal
             string path = "";
 
 			//set the default story name here
-			this.storyInfo.StoryName = "i_see";
+			this.storyInfo.StoryName="None";
 			this.storyInfo.reload = false;
+			this.storyInfo.touch_enabled = true;
+			this.storyInfo.buttons_shown = true;
 
 
             // Scale all camera views to match the screen size of whatever
@@ -211,7 +213,6 @@ namespace opal
             // toucan - but in the unity editor there's an unused 'fader_all' that
             // can fade out everything including the toucan, just switch this tag
             // to "TAG_FADER_ALL" to use that fader instead!
-			Logger.LogError("!!!!!!!!!!!!!!!!!!! set up fader !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
 
 //            	this.fader = GameObject.FindGameObjectWithTag(Constants.TAG_FADER);
@@ -224,7 +225,6 @@ namespace opal
 //                	Logger.LogError("ERROR: No fader found");
 //            }
 
-			Logger.LogError("!!!!!!!!!!!!!!!!!!! after fader !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             // subscribe to all log events from existing play objects 
             // with collision managers
             this.SubscribeToLogEvents(new string[] { Constants.TAG_PLAY_OBJECT });
@@ -245,13 +245,11 @@ namespace opal
         /// </summary>
         void Start()
         {
-			Logger.LogError("!!!!!!!!!!!!!!!!!!! start() running !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             // set up rosbridge websocket client
             // note: does not attempt to reconnect if connection fails!
             // demo mode does not use ROS!
             if(this.clientSocket == null && !this.demo)
             {	
-				Logger.LogError("!!!!!!!!!!!!!!!!!!! socket setup!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 // load file
 
                 if (this.gameConfig.server.Equals("") || this.gameConfig.port.Equals("")) {
@@ -264,12 +262,10 @@ namespace opal
                     this.clientSocket = new RosbridgeWebSocketClient(
                     this.gameConfig.server, // can pass hostname or IP address
                     this.gameConfig.port);  
-					Logger.LogError("!!!!!!!!!!!!!!!!!!! ros bridge web ..!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 }
             
                 if (this.clientSocket.SetupSocket())
                 {
-					Logger.LogError("!!!!!!!!!!!!!!!!!!! socket setup successful!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                     this.clientSocket.receivedMsgEvent += 
                     new ReceivedMessageEventHandler(HandleClientSocketReceivedMsgEvent);
                     
@@ -352,6 +348,9 @@ namespace opal
 
 					Logger.LogError("!!!!!!!!!!!!!!!!!!! setting up all ros topics !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
+					// publicsh storybook basic information (e.g., current story page, which state, end page of book, # of pages)
+					this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+						Constants.STORYBOOK_ROSTOPIC, Constants.STORYBOOK_ROSMSG_TYPE));
                 }
                 else {
                     Logger.LogError("Could not set up websocket!");
@@ -423,6 +422,10 @@ namespace opal
                     Logger.LogError("Error when invoking actions on main thread!\n" + ex);
                 }
             }
+
+			//update storybook current state
+			this.storyInfo.current_page=gestureManager.currentStoryPage;
+
         }
 
         /// <summary>
@@ -913,249 +916,174 @@ namespace opal
             // is, weird things happen.
             // *** swapped switch for if-else so this problem should be fixed. Leaving
             // note as info in case someone in the future wants to switch to a switch.
-            if (cmd == Constants.REQUEST_KEYFRAME)
-            {
-                // fire event indicating we want to log the state of the current scene
-                if(this.logEvent != null)
-                {
-                    // get keyframe and send it
-                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                    {
-                        LogEvent.SceneObject[] sos = null;
-                        this.GetSceneKeyframe(out sos);
-                        this.logEvent(this, new LogEvent(LogEvent.EventType.Scene, sos));
-                    });
-                }
-                else
-                {
-                    Logger.LogWarning("Was told to send keyframe but logger " +
-                                     "doesn't appear to exist.");
-                }
-            }
-            
-			else if (cmd == Constants.HIGHLIGHT_OBJECT)
-            {
-                // Move the highlight behind the specified game object, if we
-                // were given an object.
-                MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                { 
-                    if (props == null)
-                    {
-                        Logger.Log("Got no object to highlight. Turning highlight off!");
-                        this.gestureManager.LightOff();
-                    }
-                    else
-                    {
-                        // Try to find the specified game object to highlight.
-                        GameObject go = GameObject.Find((string)props);
-                        if (go != null) 
-                        {
-                            this.gestureManager.LightOn(go.transform.position);
-                        }
-                        else 
-                        {
-                            Logger.LogWarning("Was told to highlight " + (string)props + 
-                                " but could not find the game object! Maybe we need to" +
-                                " highlight a scene? Checking...");
-                            // Try to find a scene to highlight.
-                            if (((string)props).Contains("scene"))
-                            {
-                                Logger.Log("Yes - finding which scene to highlight...");
-                                // Get scene number. Scenes are 0-indexed.
-                                int num = -1;
-                                string result = Regex.Match((string)props, @"\d+").Value;
-                                Logger.Log("result is " + result);
-                                if (int.TryParse(result, out num))
-                                {
-                                    go = GameObject.Find(Constants.SCENE_SLOT + num);
-                                    if (go != null)
-                                    {
-                                        Logger.Log("Highlight will be size " + (this.slotWidth * 1.3f)
-                                            + "\n that's " + this.slotWidth + " / " + " * 1.3f");
-                                        this.gestureManager.LightOn(
-                                            new Vector3(
-                                                this.slotWidth * 2f,
-                                                this.slotWidth * 2f,
-                                                this.slotWidth * 2f
-                                            ),
-                                            go.transform.position); 
-                                   }
-                                }
-                                else
-                                {
-                                    Logger.LogWarning("Could not find scene number for"
-                                        + "scene slot to highlight!");
-                                }
-                            }
-                            else
-                            {
-                                Logger.LogWarning("Nope - did not specify a scene! Turning"
-                                    + " highlight off.");
-                                this.gestureManager.LightOff();
-                            }
-                        }
-                    }
-                });  
-            }
-            
-			else if (cmd == Constants.DISABLE_TOUCH)
-            {
-                // disable touch events from user
-                this.gestureManager.allowTouch = false; 
-                MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                { 
-                    this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
-                        Constants.TAG_PLAY_OBJECT }, false);
-                });
-            }
-            
-			else if (cmd == Constants.ENABLE_TOUCH)
-            {
-                // enable touch events from user
-                if (this.gestureManager != null)
-                    this.gestureManager.allowTouch = true;
-                MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                { 
-                    this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
-                        Constants.TAG_PLAY_OBJECT }, true);
-                });
-            }
-            
-			else if (cmd == Constants.RESET)
-            {
-               // reload the current level
-                // e.g., when the robot's turn starts, want all characters back in their
-                // starting configuration for use with automatic playbacks
-                MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                { 
-                    this.ReloadScene();
-                });
-            }
-            
-			else if (cmd == Constants.SIDEKICK_DO)
-            {
-                if(props == null)
-                {
-                    Logger.LogWarning("Sidekick was told to do something, but got no properties!");
-                }
-                else if(this.gameConfig.sidekick && props is String)
-                {
-                    // trigger animation for sidekick character
-                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                    { 
-                        this.sidekickScript.SidekickDo((string)props);
-                    }); 
-                }
-            }
-            
-			else if (cmd == Constants.SIDEKICK_SAY)
-            {
-                if(props == null)
-                {
-                    Logger.LogWarning("Sidekick was told to say something, but got no properties!");
-                }
-                else if (this.gameConfig.sidekick && props is String) 
-                {
-                    // trigger playback of speech for sidekick character
-                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                    { 
-                        this.sidekickScript.SidekickSay((string)props);
-                    }); 
-                }
-            }
-        
-			else if (cmd == Constants.CLEAR)
-            {
-                try 
-                {                   
-                    if (props == null)
-                    {
-                        // if no properties,  remove all play objects and background
-                        // objects from scene, hide highlight
-                        MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                        { 
-                            this.ClearScene(); 
-                        });
-                    }
-                    else 
-                    {
-                        MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                        {
-                            this.ClearObjects((string)props);
-                        });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex);
-                }
-        	}
-
-			else if (cmd == Constants.LOAD_OBJECT)
-            {
-                // load the specified game object
-                if(props == null) 
-                {
-                    Logger.LogWarning("Was told to load an object, but got no properties!");
-                }
-                else
-                {
-                    try {
-    	                SceneObjectProperties sops = (SceneObjectProperties)props;
+			if (cmd == Constants.REQUEST_KEYFRAME) {
+				// fire event indicating we want to log the state of the current scene
+				if (this.logEvent != null) {
+					// get keyframe and send it
+					MainGameController.ExecuteOnMainThread.Enqueue (() => {
+						LogEvent.SceneObject[] sos = null;
+						this.GetSceneKeyframe (out sos);
+						this.logEvent (this, new LogEvent (LogEvent.EventType.Scene, sos));
+					});
+				} else {
+					Logger.LogWarning ("Was told to send keyframe but logger " +
+					"doesn't appear to exist.");
+				}
+			} else if (cmd == Constants.HIGHLIGHT_OBJECT) {
+				// Move the highlight behind the specified game object, if we
+				// were given an object.
+				MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+					if (props == null) {
+						Logger.Log ("Got no object to highlight. Turning highlight off!");
+						this.gestureManager.LightOff ();
+					} else {
+						// Try to find the specified game object to highlight.
+						GameObject go = GameObject.Find ((string)props);
+						if (go != null) {
+							this.gestureManager.LightOn (go.transform.position);
+						} else {
+							Logger.LogWarning ("Was told to highlight " + (string)props +
+							" but could not find the game object! Maybe we need to" +
+							" highlight a scene? Checking...");
+							// Try to find a scene to highlight.
+							if (((string)props).Contains ("scene")) {
+								Logger.Log ("Yes - finding which scene to highlight...");
+								// Get scene number. Scenes are 0-indexed.
+								int num = -1;
+								string result = Regex.Match ((string)props, @"\d+").Value;
+								Logger.Log ("result is " + result);
+								if (int.TryParse (result, out num)) {
+									go = GameObject.Find (Constants.SCENE_SLOT + num);
+									if (go != null) {
+										Logger.Log ("Highlight will be size " + (this.slotWidth * 1.3f)
+										+ "\n that's " + this.slotWidth + " / " + " * 1.3f");
+										this.gestureManager.LightOn (
+											new Vector3 (
+												this.slotWidth * 2f,
+												this.slotWidth * 2f,
+												this.slotWidth * 2f
+											),
+											go.transform.position); 
+									}
+								} else {
+									Logger.LogWarning ("Could not find scene number for"
+									+ "scene slot to highlight!");
+								}
+							} else {
+								Logger.LogWarning ("Nope - did not specify a scene! Turning"
+								+ " highlight off.");
+								this.gestureManager.LightOff ();
+							}
+						}
+					}
+				});  
+			} else if (cmd == Constants.DISABLE_TOUCH) {
+				// disable touch events from user
+				this.gestureManager.allowTouch = false; 
+				MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+					this.SetTouch (new string[] { Constants.TAG_BACKGROUND,
+						Constants.TAG_PLAY_OBJECT
+					}, false);
+				});
+				this.storyInfo.touch_enabled = false;
+			} else if (cmd == Constants.ENABLE_TOUCH) {
+				// enable touch events from user
+				if (this.gestureManager != null)
+					this.gestureManager.allowTouch = true;
+				MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+					this.SetTouch (new string[] { Constants.TAG_BACKGROUND,
+						Constants.TAG_PLAY_OBJECT
+					}, true);
+				});
+				this.storyInfo.touch_enabled = true;
+			} else if (cmd == Constants.RESET) {
+				// reload the current level
+				// e.g., when the robot's turn starts, want all characters back in their
+				// starting configuration for use with automatic playbacks
+				MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+					this.ReloadScene ();
+				});
+			} else if (cmd == Constants.SIDEKICK_DO) {
+				if (props == null) {
+					Logger.LogWarning ("Sidekick was told to do something, but got no properties!");
+				} else if (this.gameConfig.sidekick && props is String) {
+					// trigger animation for sidekick character
+					MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+						this.sidekickScript.SidekickDo ((string)props);
+					}); 
+				}
+			} else if (cmd == Constants.SIDEKICK_SAY) {
+				if (props == null) {
+					Logger.LogWarning ("Sidekick was told to say something, but got no properties!");
+				} else if (this.gameConfig.sidekick && props is String) {
+					// trigger playback of speech for sidekick character
+					MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+						this.sidekickScript.SidekickSay ((string)props);
+					}); 
+				}
+			} else if (cmd == Constants.CLEAR) {
+				try {                   
+					if (props == null) {
+						// if no properties,  remove all play objects and background
+						// objects from scene, hide highlight
+						MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+							this.ClearScene (); 
+						});
+					} else {
+						MainGameController.ExecuteOnMainThread.Enqueue (() => {
+							this.ClearObjects ((string)props);
+						});
+					}
+				} catch (Exception ex) {
+					Logger.LogError (ex);
+				}
+			} else if (cmd == Constants.LOAD_OBJECT) {
+				// load the specified game object
+				if (props == null) {
+					Logger.LogWarning ("Was told to load an object, but got no properties!");
+				} else {
+					try {
+						SceneObjectProperties sops = (SceneObjectProperties)props;
  
-    	                // load new background image with the specified properties
-    	                if(sops.Tag().Equals(Constants.TAG_BACKGROUND) ||
-    	                    sops.Tag().Equals(Constants.TAG_FOREGROUND))
-                        {
-    	                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                            {
-    	                        this.InstantiateBackground((BackgroundObjectProperties)sops, null);
-    	                    }); 
-    	                }
+						// load new background image with the specified properties
+						if (sops.Tag ().Equals (Constants.TAG_BACKGROUND) ||
+						                  sops.Tag ().Equals (Constants.TAG_FOREGROUND)) {
+							MainGameController.ExecuteOnMainThread.Enqueue (() => {
+								this.InstantiateBackground ((BackgroundObjectProperties)sops, null);
+							}); 
+						}
     	                // or instantiate new playobject with the specified properties
-    	                else if(sops.Tag().Equals(Constants.TAG_PLAY_OBJECT))
-                        {
-    	                    //Logger.Log("play object");
-    	                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                            { 
-    	                        this.InstantiatePlayObject((PlayObjectProperties)sops, null);
-    	                    });
-    	                }
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogWarning("Was told to load an object, but could not convert properties " 
-                            + "provided to SceneObjectProperties!\n" + e);
-                    }
-                }
-            }
-
-			else if (cmd == Constants.MOVE_OBJECT)
-            {
-                if(props == null) 
-                {
-                    Logger.LogWarning("Was told to move an object but did not " +
-                              "get name of which one or position to move to.");
-                    return;
-                }
-                try
-                {
-                    MoveObject mo = (MoveObject)props;
-                    // use LeanTween to move object from curr_posn to new_posn
-                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                    { 
-                        GameObject go = GameObject.Find(mo.name);
-                        if(go != null)
-                            LeanTween.move(go, mo.destination, 2.0f).setEase(
-                                LeanTweenType.easeOutSine); 
-                    });
-                }
-                catch (Exception e)
-                {
-                    Logger.LogWarning("Was told to move an object, but properties were not for "
-                        + "moving an object!\n" + e);
-                }
-            }
+    	                else if (sops.Tag ().Equals (Constants.TAG_PLAY_OBJECT)) {
+							//Logger.Log("play object");
+							MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+								this.InstantiatePlayObject ((PlayObjectProperties)sops, null);
+							});
+						}
+					} catch (Exception e) {
+						Logger.LogWarning ("Was told to load an object, but could not convert properties "
+						+ "provided to SceneObjectProperties!\n" + e);
+					}
+				}
+			} else if (cmd == Constants.MOVE_OBJECT) {
+				if (props == null) {
+					Logger.LogWarning ("Was told to move an object but did not " +
+					"get name of which one or position to move to.");
+					return;
+				}
+				try {
+					MoveObject mo = (MoveObject)props;
+					// use LeanTween to move object from curr_posn to new_posn
+					MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+						GameObject go = GameObject.Find (mo.name);
+						if (go != null)
+							LeanTween.move (go, mo.destination, 2.0f).setEase (
+								LeanTweenType.easeOutSine); 
+					});
+				} catch (Exception e) {
+					Logger.LogWarning ("Was told to move an object, but properties were not for "
+					+ "moving an object!\n" + e);
+				}
+			}
             
 //			else if (cmd == Constants.FADE_SCREEN)
 //            {
@@ -1178,107 +1106,97 @@ namespace opal
 //                });
 //            }
 
-			else if (cmd == Constants.NEXT_PAGE)
-            {
-                // in a story game, goes to the next page in the story
-            	MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                {
-                    if (this.gestureManager != null)
-                		this.gestureManager.ChangePage(Constants.NEXT);
-        		});
-            }
-			else if (cmd == Constants.PREV_PAGE)
-			{
-                // in a story game, goes to the previous page in the story
-				MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                {
-                    if (this.gestureManager != null)
-    					this.gestureManager.ChangePage(Constants.PREVIOUS);
+			else if (cmd == Constants.NEXT_PAGE) {
+				
+				// in a story game, goes to the next page in the story
+				MainGameController.ExecuteOnMainThread.Enqueue (() => {
+					if (this.gestureManager != null)
+						this.gestureManager.ChangePage (Constants.NEXT);
 				});
-			}
-            else if (cmd == Constants.EXIT)
-            {
-                // exit the program
-                MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                {
-                    Application.Quit();
-                });
-            }
-            else if (cmd == Constants.SET_CORRECT)
-            {
-                // given two lists of object names, set as correct or incorrect
-                // set object flags for correct or incorrect
-                if(props == null) {
-                    Logger.LogWarning("Was told to set objects as correct/incorrect, " +
-                    "but got no properties!");
-                }
-                else 
-                {
-                    try
-                    {
-                        SetCorrectObject sco = (SetCorrectObject)props;
-                        MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                        {
-                            this.SetCorrect(sco.correct, sco.incorrect);
-                        });
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogWarning("Was told to set objects as correct/incorrect, but "
-                            + "could not convert properties to SetCorrectobject!\n" + e);
-                    }
-                }
-            }
-            else if (cmd == Constants.SHOW_CORRECT)
-            {
-                // show all objects for visual feedback tagged 'correct' or 'incorrect'
-                MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                {
-                    this.ToggleCorrect(true);
-                });
-            }
-            else if (cmd == Constants.HIDE_CORRECT)
-            {
-                // hide all objects for visual feedback tagged 'correct' or 'incorrect'
-                MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                {
-                    this.ToggleCorrect(false);
-                });
-            }
-            else if (cmd == Constants.SETUP_STORY_SCENE)
-            {
-                // setup story scene
-                try
-                {
-                    SetupStorySceneObject ssso = (SetupStorySceneObject)props;
-                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                    {
-                        this.SetupSocialStoryScene(ssso.numScenes, ssso.scenesInOrder,
-                            ssso.numAnswers);
-                    });
-                }
-                catch (Exception e)
-                {
-                    Logger.LogWarning("Supposed to set up story scene, but did not get "
-                        + "properties for setting up a story scene!\n" + e);
-                }
-            }
-			else if (cmd == Constants.STORY_SELECTION)
-			{
+			} else if (cmd == Constants.PREV_PAGE) {
+				
+				// in a story game, goes to the previous page in the story
+				MainGameController.ExecuteOnMainThread.Enqueue (() => {
+					if (this.gestureManager != null)
+						this.gestureManager.ChangePage (Constants.PREVIOUS);
+				});
+			} else if (cmd == Constants.EXIT) {
+				// exit the program
+				MainGameController.ExecuteOnMainThread.Enqueue (() => {
+					Application.Quit ();
+				});
+			} else if (cmd == Constants.SET_CORRECT) {
+				// given two lists of object names, set as correct or incorrect
+				// set object flags for correct or incorrect
+				if (props == null) {
+					Logger.LogWarning ("Was told to set objects as correct/incorrect, " +
+					"but got no properties!");
+				} else {
+					try {
+						SetCorrectObject sco = (SetCorrectObject)props;
+						MainGameController.ExecuteOnMainThread.Enqueue (() => {
+							this.SetCorrect (sco.correct, sco.incorrect);
+						});
+					} catch (Exception e) {
+						Logger.LogWarning ("Was told to set objects as correct/incorrect, but "
+						+ "could not convert properties to SetCorrectobject!\n" + e);
+					}
+				}
+			} else if (cmd == Constants.SHOW_CORRECT) {
+				// show all objects for visual feedback tagged 'correct' or 'incorrect'
+				MainGameController.ExecuteOnMainThread.Enqueue (() => {
+					this.ToggleCorrect (true);
+				});
+			} else if (cmd == Constants.HIDE_CORRECT) {
+				// hide all objects for visual feedback tagged 'correct' or 'incorrect'
+				MainGameController.ExecuteOnMainThread.Enqueue (() => {
+					this.ToggleCorrect (false);
+				});
+			} else if (cmd == Constants.SETUP_STORY_SCENE) {
+				// setup story scene
+				try {
+					SetupStorySceneObject ssso = (SetupStorySceneObject)props;
+					MainGameController.ExecuteOnMainThread.Enqueue (() => {
+						this.SetupSocialStoryScene (ssso.numScenes, ssso.scenesInOrder,
+							ssso.numAnswers);
+					});
+				} catch (Exception e) {
+					Logger.LogWarning ("Supposed to set up story scene, but did not get "
+					+ "properties for setting up a story scene!\n" + e);
+				}
+			} else if (cmd == Constants.STORY_SELECTION) {
 				// select story to load
 				//TODO: story name must be valid 
 				string storyName = (string)props;
-				Logger.LogError("!!!!!!!story selection!!!!!");
+				Logger.LogError ("!!!!!!!story selection!!!!!");
+				MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+					Logger.LogError ("!!!!!!!story selection 22222!!!!!");
+					this.storyInfo.StoryName = storyName;
+					this.storyInfo.reload = true;
+					//clear all background images
+					this.DestroyObjectsByTag (new string[] {
+						Constants.TAG_BACKGROUND
+					});
+					this.LoadStory ();
+					this.Update ();
+				});
+			} else if (cmd == Constants.SAME_PAGE) {
+				Logger.Log ("...same page...");
+			}
+			else if (cmd == Constants.STORY_SHOW_BUTTONS)
+			{
+				// show flip page buttons
 				MainGameController.ExecuteOnMainThread.Enqueue(() =>
-					{ 
-						Logger.LogError("!!!!!!!story selection 22222!!!!!");
-						this.storyInfo.StoryName=storyName;
-						this.storyInfo.reload=true;
-						//clear all background images
-						this.DestroyObjectsByTag(new string[] {
-							Constants.TAG_BACKGROUND});
-						this.LoadStory();
-						this.Update();
+					{
+						this.ShowPageButtons(true);
+					});
+			}
+			else if (cmd == Constants.STORY_HIDE_BUTTONS)
+			{
+				// hide all objects for visual feedback tagged 'correct' or 'incorrect'
+				MainGameController.ExecuteOnMainThread.Enqueue(() =>
+					{
+						this.ShowPageButtons(false);
 					});
 			}
 
@@ -1287,7 +1205,22 @@ namespace opal
 				Logger.LogError("Got a message that doesn't match any we expect!");
 	            
         	}
+			sendStoryState2ROS ();
+
         }
+
+		public void sendStoryState2ROS(){
+			Logger.LogError ("send story state 2 ROS");
+			//send storybook state message to ROS
+			LogEvent.StorybookObject storyObj= new LogEvent.StorybookObject();
+			storyObj.book_name = storyInfo.StoryName;
+			storyObj.current_page = storyInfo.current_page;
+			storyObj.total_pages = storyInfo.total_pages;
+			storyObj.buttons_shown = storyInfo.buttons_shown;
+			storyObj.touch_enabled = storyInfo.touch_enabled;
+			this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStorybookMsg(
+				Constants.STORYBOOK_ROSTOPIC, storyObj));
+		}
     
     #region utilities
         /// <summary>
@@ -1505,6 +1438,27 @@ namespace opal
                 }
             }
         }
+
+		/// <summary>
+		/// Show or hide flip page buttons
+		/// </summary>
+		private void ShowPageButtons(bool show){
+			
+			GameObject go_goNext = GameObject.FindGameObjectWithTag (Constants.TAG_GO_NEXT);
+			GameObject go_goBack = GameObject.FindGameObjectWithTag (Constants.TAG_BACK);
+			if (show) {
+				Logger.LogError (" show pages ...");
+				go_goNext.GetComponent<Renderer>().enabled = true;
+				go_goBack.GetComponent<Renderer>().enabled = true;
+				this.storyInfo.buttons_shown = true;
+			} else {
+				Logger.LogError (" hide pages...");
+				go_goNext.GetComponent<Renderer>().enabled = false;
+				go_goBack.GetComponent<Renderer>().enabled = false;
+				this.storyInfo.buttons_shown = false;
+			}
+		}
+
         
         /// <summary>
         /// Show or hide visual feedback for correct and incorrect responses
@@ -2020,13 +1974,9 @@ namespace opal
 				WWW www = new WWW( imageUrl );
 
 				while (www.isDone != true) {
-					//yield return null;
 					if (www.isDone == true)
 						break;
 				}
-				//yield return www;
-
-				//Logger.LogError (www.url);
 
 				Texture2D left = new Texture2D(www.texture.width, www.texture.height, TextureFormat.DXT1, false);
 
@@ -2038,18 +1988,8 @@ namespace opal
 
 				www.LoadImageIntoTexture(spriteImage.texture);
 
+			
 
-//				if (www.isDone == true) {
-//					Logger.LogWarning ("www is done");
-//					if (www.error!=null) {
-//						Logger.LogError ("www has an error..." + www.error);
-//					} else {
-//						Logger.LogWarning ("no error...");
-//					}
-//				} else {
-//					Logger.LogWarning("www is NOT DONE");
-//				}
-				//www.Dispose();
 				this.storyImageSprites[counter]=spriteImage;
 				counter++;
 			}
@@ -2064,11 +2004,10 @@ namespace opal
 
 			this.storyImageSprites = new Sprite[fileEntries.Length];
 
+			storyInfo.total_pages = fileEntries.Length;
+
 			loadingImages(fileEntries);
 
-			//foreach(Sprite isprite in this.storyImageSprites){
-			//	isprite.
-			//}
 		}
 
 		/** Load story */
@@ -2088,7 +2027,7 @@ namespace opal
 			foreach (Sprite s in this.storyImageSprites)
 			{
 				StorypageObjectProperties sops = new StorypageObjectProperties(
-					s.name,
+					pageCounter.ToString(),
 					Constants.TAG_BACKGROUND,
 					pageCounter,
 					storyPath+storyName,

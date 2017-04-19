@@ -183,6 +183,7 @@ namespace opal
 		public const int SAME_PAGE = 20;
 		public const int STORY_SHOW_BUTTONS = 21;
 		public const int STORY_HIDE_BUTTONS = 22;
+		public const int STORY_GO_TO_PAGE = 23;
         
         /** next page and previous page */
         public const bool NEXT = true;

@@ -751,6 +751,29 @@ namespace opal
             }
         }
   
+		/// <summary>
+		/// Goes to a specific page in the story book
+		/// </summary>
+		/// <param name="pageNum"> the specific page number </param>
+		public void GoToPage(int pageNum){
+			if (pageNum <= this.pagesInStory && pageNum >= 0) {
+				this.mainCam.transform.position = new Vector3 (0, 0, pageNum - 1);
+				GameObject tb = GameObject.FindGameObjectWithTag (Constants.TAG_BACK);
+				GameObject tn = GameObject.FindGameObjectWithTag (Constants.TAG_GO_NEXT);
+				tb.transform.position = new Vector3 (tb.transform.position.x, tb.transform.position.y, pageNum);
+				tn.transform.position = new Vector3 (tn.transform.position.x, tn.transform.position.y, pageNum);
+			} else {
+				Logger.LogError ("invalid page number: "+pageNum.ToString());
+			}
+		}
+
+		public void GoToFirstPage(){
+			this.mainCam.transform.position = new Vector3(0,0,-1);
+			GameObject tb = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
+			GameObject tn = GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT);
+			tb.transform.position = new Vector3(tb.transform.position.x,tb.transform.position.y,0);
+			tn.transform.position = new Vector3(tn.transform.position.x,tn.transform.position.y,0);
+		}
   
   		/// <summary>
   		/// Changes the page.
@@ -784,11 +807,7 @@ namespace opal
 						}
 						else // this is the end page, loop back to beginning of story
 						{
-							this.mainCam.transform.position = new Vector3(0,0,-1);
-							GameObject tb = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
-							GameObject tn = GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT);
-							tb.transform.position = new Vector3(tb.transform.position.x,tb.transform.position.y,0);
-							tn.transform.position = new Vector3(tn.transform.position.x,tn.transform.position.y,0);
+							GoToFirstPage ();
 						}
 					}
 					else {

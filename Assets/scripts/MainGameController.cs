@@ -109,6 +109,7 @@ namespace opal
 		// loaded story information
 		public StoryInfo storyInfo;
 		public Sprite[] storyImageSprites;
+		public float targetTime = 1.0f;
 
 
 
@@ -351,6 +352,7 @@ namespace opal
 					// publicsh storybook basic information (e.g., current story page, which state, end page of book, # of pages)
 					this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
 						Constants.STORYBOOK_ROSTOPIC, Constants.STORYBOOK_ROSMSG_TYPE));
+
                 }
                 else {
                     Logger.LogError("Could not set up websocket!");
@@ -393,9 +395,7 @@ namespace opal
                 // unsubscribe from received message events
                 this.clientSocket.receivedMsgEvent -= HandleClientSocketReceivedMsgEvent;
             }
-            
-            
-        
+         
             Logger.Log("destroyed main game controller");
         }
     
@@ -426,6 +426,13 @@ namespace opal
 			//update storybook current state
 			this.storyInfo.current_page=gestureManager.currentStoryPage;
 
+			//send storybook current state to ROS
+			targetTime -= Time.deltaTime;
+
+			if (targetTime <= 0.0f && storyInfo.StoryName!="None") {
+				sendStoryState2ROS ();
+				targetTime = 1.0f;
+			}
         }
 
         /// <summary>
@@ -832,7 +839,9 @@ namespace opal
 				float height = Screen.height;
 				float renderX = go.GetComponent<SpriteRenderer> ().bounds.size.x;
 				float renderY = go.GetComponent<SpriteRenderer> ().bounds.size.y;
-				float factorX = width / renderX;
+				//Logger.LogError ("render X is: "+renderX.ToString());
+				//Logger.LogError ("render Y is: "+renderY.ToString());
+				float factorX = width /renderX;
 				float factorY = height / renderY;
 				go.transform.localScale = new Vector3 (factorX*0.3f, factorY*0.3f, factorX);
 			}
@@ -899,6 +908,7 @@ namespace opal
         void HandleClientSocketReceivedMsgEvent (object sender, int cmd, object props)
         {
 			Logger.LogError("!!!!!!!!!!!!!!!1!!!!MSG received from remote: " + cmd);
+			Logger.LogError ("props: "+props);
             if (this.clientSocket != null)
             {
                 this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
@@ -1168,9 +1178,7 @@ namespace opal
 				// select story to load
 				//TODO: story name must be valid 
 				string storyName = (string)props;
-				Logger.LogError ("!!!!!!!story selection!!!!!");
 				MainGameController.ExecuteOnMainThread.Enqueue (() => { 
-					Logger.LogError ("!!!!!!!story selection 22222!!!!!");
 					this.storyInfo.StoryName = storyName;
 					this.storyInfo.reload = true;
 					//clear all background images
@@ -1178,6 +1186,7 @@ namespace opal
 						Constants.TAG_BACKGROUND
 					});
 					this.LoadStory ();
+					this.gestureManager.GoToFirstPage();
 					this.Update ();
 				});
 			} else if (cmd == Constants.SAME_PAGE) {
@@ -1198,19 +1207,27 @@ namespace opal
 					{
 						this.ShowPageButtons(false);
 					});
-			}
+			}else if (cmd == Constants.STORY_GO_TO_PAGE) {
+				// go to a specific page in the story
+				string tmp = (string)props;
+				Logger.LogError ("get tmp..");
+				int storyPage = Convert.ToInt32 (tmp);
 
+				MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+						Logger.LogError("go to XX story page:"+ storyPage.ToString() );
+						if (this.gestureManager != null)
+						this.gestureManager.GoToPage(storyPage);
+					});
+			}
             else
 	        {
 				Logger.LogError("Got a message that doesn't match any we expect!");
 	            
         	}
-			sendStoryState2ROS ();
 
         }
 
 		public void sendStoryState2ROS(){
-			Logger.LogError ("send story state 2 ROS");
 			//send storybook state message to ROS
 			LogEvent.StorybookObject storyObj= new LogEvent.StorybookObject();
 			storyObj.book_name = storyInfo.StoryName;
@@ -2017,8 +2034,8 @@ namespace opal
 
 			string storyName=storyInfo.StoryName;
 
-			//string storyPath = "/Users/huilichen/Downloads/graphics_without_text/images/"+storyName;
-			string storyPath="/sdcard/edu.mit.media.prg.sar.opal.base/"+storyName;
+			string storyPath = "/Users/huilichen/Downloads/graphics_without_text/images/"+storyName;
+			//string storyPath="/sdcard/edu.mit.media.prg.sar.opal.base/"+storyName;
 
 			Logger.LogError ("story path: "+storyPath);
 			LoadImages(storyPath);

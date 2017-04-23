@@ -807,7 +807,7 @@ namespace opal
 						}
 						else // this is the end page, loop back to beginning of story
 						{
-							GoToFirstPage ();
+							//GoToFirstPage ();
 						}
 					}
 					else {

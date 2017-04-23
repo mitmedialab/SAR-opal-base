@@ -62,6 +62,8 @@ namespace opal
         private bool socialStories = false;
         private List<GameObject> incorrectFeedback;
         private GameObject correctFeedback;
+
+
         /// <summary>
         /// The width of the slot.
         /// </summary>
@@ -110,6 +112,10 @@ namespace opal
 		public StoryInfo storyInfo;
 		public Sprite[] storyImageSprites;
 		public float targetTime = 1.0f;
+		public string storyFolder;
+
+
+
 
 
 
@@ -139,11 +145,15 @@ namespace opal
             #if UNITY_ANDROID
             path = Constants.CONFIG_PATH_ANDROID + Constants.OPAL_CONFIG;
             Logger.Log("trying android path: " + path);
+			//string storyPath = "/Users/huilichen/Downloads/graphics_without_text/images/"+storyName;
+			storyFolder="/sdcard/edu.mit.media.prg.sar.opal.base/";
             #endif
             
             #if UNITY_EDITOR
             path = Application.dataPath + Constants.CONFIG_PATH_OSX + Constants.OPAL_CONFIG;
             Logger.Log("trying os x path: " + path);
+			storyFolder = "/Users/huilichen/Downloads/graphics_without_text/images/";
+
             #endif
 
             #if UNITY_STANDALONE_LINUX
@@ -362,8 +372,16 @@ namespace opal
  			
             }
 
+//			storyPanel = GameObject.FindGameObjectWithTag ("Panel2");
+//			GameObject goback = GameObject.FindGameObjectWithTag (Constants.TAG_BACK);
+//			GameObject gonext = GameObject.FindGameObjectWithTag (Constants.TAG_GO_NEXT);
+//			goback.transform.position = new 
 
         }
+
+	
+
+
 
 
         /** On enable, initialize stuff */
@@ -813,6 +831,7 @@ namespace opal
 			go.transform.position = sops.InitPosition();
 
 
+
 			// load sprite/image for object
 			SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
 			
@@ -843,7 +862,7 @@ namespace opal
 				//Logger.LogError ("render Y is: "+renderY.ToString());
 				float factorX = width /renderX;
 				float factorY = height / renderY;
-				go.transform.localScale = new Vector3 (factorX*0.3f, factorY*0.3f, factorX);
+				go.transform.localScale = new Vector3 (factorX*0.2f, factorY*0.2f, factorX);
 			}
 			else
 			{
@@ -851,6 +870,29 @@ namespace opal
 			//float height = Screen.height*0.8f;
 				go.transform.localScale = new Vector3(100, 100, 0);
 			}
+
+//			if (sops.Scale() != Vector3.zero)
+//			{
+//				Logger.Log ("set scale runs...");
+//				//go.transform.localScale = sops.Scale();
+//				RectTransform panel_rt=storyPanel.GetComponent<RectTransform>();
+//				float width = panel_rt.rect.width;
+//				float height = panel_rt.rect.height;
+//				float renderX = go.GetComponent<SpriteRenderer> ().bounds.size.x;
+//				float renderY = go.GetComponent<SpriteRenderer> ().bounds.size.y;
+//				//Logger.LogError ("render X is: "+renderX.ToString());
+//				//Logger.LogError ("render Y is: "+renderY.ToString());
+//				float factorX = width /renderX;
+//				float factorY = height / renderY;
+//				go.transform.localScale = new Vector3 (factorX*0.8f, factorY*0.8f, factorX);
+//			}
+//			else
+//			{
+//				//float width=Screen.width;
+//				//float height = Screen.height*0.8f;
+//				go.transform.localScale = new Vector3(100, 100, 0);
+//			}
+
 
 			
 			// add polygon collider and set as a trigger so enter/exit events
@@ -2033,13 +2075,14 @@ namespace opal
 
 
 			string storyName=storyInfo.StoryName;
+			string storyPath=storyFolder + storyName;
 
-			string storyPath = "/Users/huilichen/Downloads/graphics_without_text/images/"+storyName;
-			//string storyPath="/sdcard/edu.mit.media.prg.sar.opal.base/"+storyName;
 
 			Logger.LogError ("story path: "+storyPath);
 			LoadImages(storyPath);
 			int pageCounter = 0;
+
+
 
 			foreach (Sprite s in this.storyImageSprites)
 			{

@@ -788,6 +788,9 @@ namespace opal
 				this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
 				                                 "", "flick", new Vector3(0,0,0)));
 			}
+
+			//before changing the page, hide the current page
+			gameController.storyImageObjects[this.currentStoryPage].GetComponent<Renderer>().enabled = false;
 			
 			if(this.allowTouch)
 			{	
@@ -836,6 +839,8 @@ namespace opal
             }
 
 			gameController.sendStoryState2ROS ();
+			//before changing the page, hide the current page
+			gameController.storyImageObjects[(int)this.mainCam.transform.position.z+1].GetComponent<Renderer>().enabled = true;
   		}
   
   

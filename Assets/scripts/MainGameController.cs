@@ -113,8 +113,9 @@ namespace opal
 		public Sprite[] storyImageSprites;
 		public float targetTime = 1.0f;
 		public string storyFolder;
-
+		public string inputStoryName;
 		public GameObject[] storyImageObjects;
+
 
 
 
@@ -233,6 +234,9 @@ namespace opal
         /// </summary>
         void Start()
         {
+			//let the screen stay on all the time
+			Screen.sleepTimeout = SleepTimeout.NeverSleep;
+
             // set up rosbridge websocket client
             // note: does not attempt to reconnect if connection fails!
             // demo mode does not use ROS!
@@ -905,9 +909,8 @@ namespace opal
 				//TODO: story name must be valid 
 				string storyName = (string)props;
 				MainGameController.ExecuteOnMainThread.Enqueue (() => { 
-					this.storyInfo.StoryName = storyName;
-					this.storyInfo.reload = true;
-					this.storyInfo.current_page=0;
+					this.inputStoryName= storyName;
+
 					//clear all background images
 					this.DestroyObjectsByTag (new string[] {
 						Constants.TAG_BACKGROUND
@@ -1443,6 +1446,7 @@ namespace opal
 			//iterate through the folder to get all file names
 			string [] fileEntries = Directory.GetFiles(storyPath);
 
+
 			this.storyImageSprites = new Sprite[fileEntries.Length];
 
 			this.storyImageObjects = new GameObject[fileEntries.Length];
@@ -1456,16 +1460,30 @@ namespace opal
 		/** Load story */
 		public void LoadStory()
 		{
+			//this.storyInfo.reload = true;
+			//this.storyInfo.current_page=0;
 
-
-			string storyName=storyInfo.StoryName;
+			string storyName=this.inputStoryName;
 			string storyPath=storyFolder + storyName;
 
 
 			Logger.LogError ("story path: "+storyPath);
-			LoadImages(storyPath);
-			int pageCounter = 0;
 
+			//check whether the story path is valid
+			if (!Directory.Exists (storyPath)) {
+				Logger.LogError ("story name is not valid");
+				this.storyInfo.StoryName = "Invalid";
+				this.storyInfo.total_pages = 0;
+				this.storyInfo.current_page = 0;
+				return; 
+			} else {
+				this.storyInfo.StoryName = this.inputStoryName;
+				this.storyInfo.current_page = 0;
+				this.storyInfo.reload = true;
+				LoadImages (storyPath);
+
+			}
+			int pageCounter = 0;
 			Logger.LogError ("!!!!!!!!!!after loading images.....!!!!!!!!!!!");
 
 			for (int index=0; index<this.storyImageSprites.Length;index++ )

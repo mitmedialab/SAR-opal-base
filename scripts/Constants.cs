@@ -75,6 +75,10 @@ namespace opal
 	{
 		public string StoryName;
 		public bool reload;
+		public int current_page;
+		public int total_pages;
+		public bool touch_enabled;
+		public bool buttons_shown;
 	}
 
 
@@ -116,6 +120,7 @@ namespace opal
         public const string TAG_CORRECT_FEEDBACK = "CorrectFeedback";
         public const string TAG_INCORRECT_FEEDBACK = "IncorrectFeedback";
         public const string TAG_ANSWER_SLOT = "AnswerSlot";
+		public const string TAG_INPUT_TEXT_FIELD="IpInput";
     
         // DEMO - scene numbers (by index -- see list of scenes in build settings)
         public const int SCENE_DEMO_INTRO = 0;
@@ -176,6 +181,10 @@ namespace opal
         public const int HIDE_CORRECT = 17;
         public const int SETUP_STORY_SCENE = 18;
 		public const int STORY_SELECTION = 19;
+		public const int SAME_PAGE = 20;
+		public const int STORY_SHOW_BUTTONS = 21;
+		public const int STORY_HIDE_BUTTONS = 22;
+		public const int STORY_GO_TO_PAGE = 23;
         
         /** next page and previous page */
         public const bool NEXT = true;
@@ -208,6 +217,8 @@ namespace opal
         public const string CONFIG_PATH_ANDROID = "mnt/sdcard/edu.mit.media.prg.sar.opal.base/";
         // if a linux game:
         public const string CONFIG_PATH_LINUX = "/Resources/";
+		// ROS IP address
+		public const string ROS_IP_ADDRESS_FILE = "ROS_IP_address.txt";
     
     
         /** Default ROS-related constants: topics and message types */
@@ -239,6 +250,9 @@ namespace opal
         //   bool done playing
         public static string AUDIO_ROSTOPIC = "/opal_tablet_audio";
         public const string DEFAULT_AUDIO_ROSTOPIC = "/opal_tablet_audio";
-        public const string AUDIO_ROSMSG_TYPE = "/std_msgs/Bool";     
+        public const string AUDIO_ROSMSG_TYPE = "/std_msgs/Bool";
+		public const string STORYBOOK_ROSTOPIC="/storybook_curr_state";
+		public const string STORYBOOK_ROSMSG_TYPE="/sar_opal_msgs/OpalStorybook";
+
     }
 }

@@ -128,8 +128,30 @@ namespace opal
             return Json.Serialize(rosPublish);
         }
 
-       
-    
+		public static string GetROSJsonPublishStorybookMsg (string topic,LogEvent.StorybookObject obj)
+		{
+			// build a dictionary of things to include in the message
+			Dictionary<string,object> rosPublish = new Dictionary<string, object>();
+			rosPublish.Add("op", "publish");
+			rosPublish.Add("topic", topic);
+			Dictionary<string,object> rosMessage = new Dictionary<string, object>();
+
+			//build a ros json message 
+			Dictionary<string,object> objd = new Dictionary<string, object>();
+			rosMessage.Add("bookName", obj.book_name);
+			rosMessage.Add("currentPage", obj.current_page);
+			rosMessage.Add("totalNumPages", obj.total_pages);
+			rosMessage.Add("touchEnabled",obj.touch_enabled);
+			rosMessage.Add("buttonsShown", obj.buttons_shown);
+
+			// add header to message
+			rosMessage.Add("header", GetROSHeader());
+			rosPublish.Add("msg", rosMessage);
+
+			return Json.Serialize(rosPublish);
+		}
+
+
         /// <summary>
         /// Builds a JSON scene 'keyframe' log message to publish over rosbridge
         /// </summary>

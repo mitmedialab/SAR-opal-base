@@ -69,12 +69,18 @@ namespace opal
         
         // SOCIAL STORIES VERSION
         public bool socialStories = false;
+
+		public MainGameController gameController;
+
+		public int currentStoryPage = -1;
         
         /// <summary>
         /// Called on start, use to initialize stuff
         /// </summary>
         void Start ()
         {
+			
+			//gameController = GameObject.FindGameObjectWithTag (Constants.TAG_DIRECTOR);
             // set up light
             this.highlight = GameObject.FindGameObjectWithTag(Constants.TAG_LIGHT);
             if(this.highlight != null) {
@@ -260,6 +266,9 @@ namespace opal
                     this.mostRecentlyDraggedGO.transform.position.z);
             }
             }
+
+			//update current story page
+			this.currentStoryPage  =(int)this.mainCam.transform.position.z+1;
         }
 
         /// <summary>
@@ -351,8 +360,12 @@ namespace opal
         /// <param name="e">E.</param>
         private void tappedHandler (object sender, EventArgs e)
         {
+			
 			Logger.Log("!!!!!!!!!!!!!tapped handler!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            // get the gesture that was sent to us
+
+
+
+			// get the gesture that was sent to us
             // this gesture will tell us what object was touched
             TapGesture gesture = sender as TapGesture;
             TouchHit hit;
@@ -374,6 +387,7 @@ namespace opal
 				if(this.story && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
 				{
 					ChangePage(Constants.PREVIOUS);
+				
 				}
 				else if (this.story && gesture.gameObject.tag.Contains(Constants.TAG_GO_NEXT))
 				{
@@ -737,6 +751,29 @@ namespace opal
             }
         }
   
+		/// <summary>
+		/// Goes to a specific page in the story book
+		/// </summary>
+		/// <param name="pageNum"> the specific page number </param>
+		public void GoToPage(int pageNum){
+			if (pageNum <= this.pagesInStory && pageNum >= 0) {
+				this.mainCam.transform.position = new Vector3 (0, 0, pageNum - 1);
+				GameObject tb = GameObject.FindGameObjectWithTag (Constants.TAG_BACK);
+				GameObject tn = GameObject.FindGameObjectWithTag (Constants.TAG_GO_NEXT);
+				tb.transform.position = new Vector3 (tb.transform.position.x, tb.transform.position.y, pageNum);
+				tn.transform.position = new Vector3 (tn.transform.position.x, tn.transform.position.y, pageNum);
+			} else {
+				Logger.LogError ("invalid page number: "+pageNum.ToString());
+			}
+		}
+
+		public void GoToFirstPage(){
+			this.mainCam.transform.position = new Vector3(0,0,-1);
+			GameObject tb = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
+			GameObject tn = GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT);
+			tb.transform.position = new Vector3(tb.transform.position.x,tb.transform.position.y,0);
+			tn.transform.position = new Vector3(tn.transform.position.x,tn.transform.position.y,0);
+		}
   
   		/// <summary>
   		/// Changes the page.
@@ -751,6 +788,9 @@ namespace opal
 				this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
 				                                 "", "flick", new Vector3(0,0,0)));
 			}
+
+			//before changing the page, hide the current page
+			gameController.storyImageObjects[this.currentStoryPage].GetComponent<Renderer>().enabled = false;
 			
 			if(this.allowTouch)
 			{	
@@ -763,17 +803,14 @@ namespace opal
 						// don't go past end of story
 						if (this.mainCam.transform.position.z < this.pagesInStory-1)
 						{
+							
 							this.mainCam.transform.Translate(new Vector3(0,0,1));
 							GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT).transform.Translate(new Vector3(0,0,1));
 							GameObject.FindGameObjectWithTag(Constants.TAG_BACK).transform.Translate(new Vector3(0,0,1));
 						}
 						else // this is the end page, loop back to beginning of story
 						{
-							this.mainCam.transform.position = new Vector3(0,0,-1);
-							GameObject tb = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
-							GameObject tn = GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT);
-							tb.transform.position = new Vector3(tb.transform.position.x,tb.transform.position.y,0);
-							tn.transform.position = new Vector3(tn.transform.position.x,tn.transform.position.y,0);
+							//GoToFirstPage ();
 						}
 					}
 					else {
@@ -800,6 +837,10 @@ namespace opal
                     }
                 }
             }
+
+			gameController.sendStoryState2ROS ();
+			//before changing the page, hide the current page
+			gameController.storyImageObjects[(int)this.mainCam.transform.position.z+1].GetComponent<Renderer>().enabled = true;
   		}
   
   

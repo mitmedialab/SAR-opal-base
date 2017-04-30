@@ -29,6 +29,8 @@ using TouchScript.Behaviors;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Collections;
+using UnityEngine.UI;
+using System.Text.RegularExpressions;
 
 namespace opal
 {
@@ -62,6 +64,8 @@ namespace opal
         private bool socialStories = false;
         private List<GameObject> incorrectFeedback;
         private GameObject correctFeedback;
+
+
         /// <summary>
         /// The width of the slot.
         /// </summary>
@@ -109,9 +113,20 @@ namespace opal
 		// loaded story information
 		public StoryInfo storyInfo;
 		public Sprite[] storyImageSprites;
+		public float targetTime = 1.0f;
+		public string storyFolder;
+		public string inputStoryName;
+		public GameObject[] storyImageObjects;
+
+		//UI on the screen
+		public GameObject RosButton;
+		public InputField IpInput;
+
+		// config file & ros ip address file path
+		public string ros_ip_path = "";
 
 
-
+	
         /// <summary>
         /// Called first, use to initialize stuff
         /// </summary>
@@ -121,12 +136,15 @@ namespace opal
             if (this.story) Logger.Log ("--- RUNNING IN STORYBOOK MODE ---");
             if (this.socialStories) Logger.Log("--- RUNNING IN SOCIAL STORIES MODE ---");
         
-            string path = "";
+            
 
 			//set the default story name here
-			this.storyInfo.StoryName = "i_see";
+			this.storyInfo.StoryName="None";
 			this.storyInfo.reload = false;
+			this.storyInfo.touch_enabled = true;
+			this.storyInfo.buttons_shown = true;
 
+			string path = "";
 
             // Scale all camera views to match the screen size of whatever
             // device we're running on.
@@ -135,12 +153,18 @@ namespace opal
             // find the config file
             #if UNITY_ANDROID
             path = Constants.CONFIG_PATH_ANDROID + Constants.OPAL_CONFIG;
+			ros_ip_path = Constants.CONFIG_PATH_ANDROID;
             Logger.Log("trying android path: " + path);
+			//string storyPath = "/Users/huilichen/Downloads/graphics_without_text/images/"+storyName;
+			storyFolder="/sdcard/edu.mit.media.prg.sar.opal.base/";
             #endif
             
             #if UNITY_EDITOR
             path = Application.dataPath + Constants.CONFIG_PATH_OSX + Constants.OPAL_CONFIG;
+			ros_ip_path = Application.dataPath + Constants.CONFIG_PATH_OSX;
             Logger.Log("trying os x path: " + path);
+			storyFolder = "/Users/huilichen/Downloads/images/";
+
             #endif
 
             #if UNITY_STANDALONE_LINUX
@@ -206,37 +230,10 @@ namespace opal
                 }
             }
  
-            // set up fader
-            // NOTE right now we're just using one fader that fades out all but the
-            // toucan - but in the unity editor there's an unused 'fader_all' that
-            // can fade out everything including the toucan, just switch this tag
-            // to "TAG_FADER_ALL" to use that fader instead!
-			Logger.LogError("!!!!!!!!!!!!!!!!!!! set up fader !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
-
-//            	this.fader = GameObject.FindGameObjectWithTag(Constants.TAG_FADER);
-//				this.fader.GetComponent<Renderer>().enabled = false;
-//
-//            if(this.fader != null) {
-//                	
-//                	Logger.Log("Got fader: " + this.fader.name);
-//            } else {
-//                	Logger.LogError("ERROR: No fader found");
-//            }
-
-			Logger.LogError("!!!!!!!!!!!!!!!!!!! after fader !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             // subscribe to all log events from existing play objects 
             // with collision managers
             this.SubscribeToLogEvents(new string[] { Constants.TAG_PLAY_OBJECT });
-
-            if (this.demo)
-            {
-                foreach (GameObject go in GameObject.FindGameObjectsWithTag(
-                    Constants.TAG_PLAY_OBJECT))
-                {
-                    this.gestureManager.AddAndSubscribeToGestures(go, true, false);
-                }
-            }
 
         }
 
@@ -245,124 +242,159 @@ namespace opal
         /// </summary>
         void Start()
         {
-			Logger.LogError("!!!!!!!!!!!!!!!!!!! start() running !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            // set up rosbridge websocket client
-            // note: does not attempt to reconnect if connection fails!
-            // demo mode does not use ROS!
-            if(this.clientSocket == null && !this.demo)
-            {	
-				Logger.LogError("!!!!!!!!!!!!!!!!!!! socket setup!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                // load file
+			//let the screen stay on all the time
+			Screen.sleepTimeout = SleepTimeout.NeverSleep;
+			loadIP();
 
-                if (this.gameConfig.server.Equals("") || this.gameConfig.port.Equals("")) {
-                    Logger.LogWarning("Do not have opal configuration... trying "
+        }
+
+		void loadIP(){
+			string IP = File.ReadAllText(ros_ip_path+Constants.ROS_IP_ADDRESS_FILE);
+			gameConfig.server = IP;
+			IpInput.text = IP;
+			Logger.Log ("ROS IP Address: "+IP);
+			if (IP == null) {
+				Logger.LogError ("cannot find ROS IP address");
+			}
+		}
+
+		void getIP(){
+			//TODO: check whether the input ip address is correct
+			this.gameConfig.server = IpInput.text;
+			//write the current ip input adress to the ip address file
+			Utilities.WriteConfig (ros_ip_path + Constants.ROS_IP_ADDRESS_FILE ,gameConfig.server);
+		}
+
+		public void startROS(){
+
+			getIP ();
+			Logger.LogError ("IP Address: "+gameConfig.server);
+			if (this.gameConfig.server.Equals("")) {
+
+				Logger.LogError ("ROS IP Address cannot be null");
+				return;
+			}
+			// set up rosbridge websocket client
+			// note: does not attempt to reconnect if connection fails!
+			// demo mode does not use ROS!
+			if(this.clientSocket == null )
+			{	
+				// load file
+
+				this.gameConfig.port="9090";
+				if (this.gameConfig.server.Equals("") || this.gameConfig.port.Equals("")) {
+					Logger.LogWarning("Do not have opal configuration... trying "
 						+ "hardcoded IP 192.168.1.103 and port 9090");
-                    this.clientSocket = new RosbridgeWebSocketClient(
-					"192.168.1.103",// server, // can pass hostname or IP address
-                    "9090"); //port);   
-                } else {
-                    this.clientSocket = new RosbridgeWebSocketClient(
-                    this.gameConfig.server, // can pass hostname or IP address
-                    this.gameConfig.port);  
-					Logger.LogError("!!!!!!!!!!!!!!!!!!! ros bridge web ..!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                }
-            
-                if (this.clientSocket.SetupSocket())
-                {
-					Logger.LogError("!!!!!!!!!!!!!!!!!!! socket setup successful!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                    this.clientSocket.receivedMsgEvent += 
-                    new ReceivedMessageEventHandler(HandleClientSocketReceivedMsgEvent);
-                    
+//					this.clientSocket = new RosbridgeWebSocketClient(
+//						"192.168.1.103",// server, // can pass hostname or IP address
+//						"9090"); //port);   
+				} else {
+					this.clientSocket = new RosbridgeWebSocketClient(
+						this.gameConfig.server, // can pass hostname or IP address
+						this.gameConfig.port);  
+				}
+
+				if (this.clientSocket.SetupSocket())
+				{
+					this.clientSocket.receivedMsgEvent += 
+						new ReceivedMessageEventHandler(HandleClientSocketReceivedMsgEvent);
+
 					Logger.LogError("!!!!!!!!!!!!!!!!!!! after received meessage event handler!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                    
-                    // advertise that we will publish opal action messages                
-                    if (this.gameConfig.opalActionTopic == "")
-                    {
-                        Logger.LogWarning("Do not have opal configuration... trying "
-                                          + "default topic " + Constants.DEFAULT_ACTION_ROSTOPIC);
-                        Constants.ACTION_ROSTOPIC = Constants.DEFAULT_ACTION_ROSTOPIC;
-                    }
-                    else 
-                    {   
-                        Constants.ACTION_ROSTOPIC = this.gameConfig.opalActionTopic;
-                    }
-                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
-                        Constants.ACTION_ROSTOPIC, Constants.ACTION_ROSMSG_TYPE));
-                    
-                    // advertise that we will publish opal audio messages
-                    if (this.gameConfig.opalAudioTopic == "")
-                    {
-                        Logger.LogWarning("Do not have opal configuration... trying "
-                                          + "default topic " + Constants.DEFAULT_AUDIO_ROSTOPIC);
-                        Constants.AUDIO_ROSTOPIC = Constants.DEFAULT_AUDIO_ROSTOPIC;
-                    }
-                    else 
-                    {
-                        Constants.AUDIO_ROSTOPIC = this.gameConfig.opalAudioTopic;
-                    }
-                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
-                        Constants.AUDIO_ROSTOPIC, Constants.AUDIO_ROSMSG_TYPE));
-                    
-                    // advertise that we will subscribe to opal command messages
-                    if (this.gameConfig.opalCommandTopic == "")
-                    {
-                        Logger.LogWarning("Do not have opal configuration... trying "
-                                          + "default topic " + Constants.DEFAULT_CMD_ROSTOPIC);
-                        
-                        Constants.CMD_ROSTOPIC = Constants.DEFAULT_CMD_ROSTOPIC;
-                    }
-                    else 
-                    {
-                        Constants.CMD_ROSTOPIC = this.gameConfig.opalCommandTopic;
-                    }
-                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonSubscribeMsg(
-                        Constants.CMD_ROSTOPIC, Constants.CMD_ROSMSG_TYPE));
-                    
-                    // advertise that we will publish opal log messages
-                    if (this.gameConfig.opalLogTopic == "")
-                    {
-                        Logger.LogWarning("Do not have opal configuration... trying "
-                                          + "default topic " + Constants.DEFAULT_LOG_ROSTOPIC);
-                        Constants.LOG_ROSTOPIC = Constants.DEFAULT_LOG_ROSTOPIC;
-                    }
-                    else 
-                    {
-                        Constants.LOG_ROSTOPIC = this.gameConfig.opalLogTopic;
-                    }
-                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
-                        Constants.LOG_ROSTOPIC, Constants.LOG_ROSMSG_TYPE));
-                    
-                    // advertise that we will publish opal scene messages
-                    if (this.gameConfig.opalSceneTopic == "")
-                    {
-                        Logger.LogWarning("Do not have opal configuration... trying "
-                                          + "default topic " + Constants.DEFAULT_SCENE_ROSTOPIC);
-                        Constants.SCENE_ROSTOPIC = Constants.DEFAULT_SCENE_ROSTOPIC;
-                    }
-                    else 
-                    {
-                        Constants.SCENE_ROSTOPIC = this.gameConfig.opalSceneTopic;
-                    }
-                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonSubscribeMsg(
-                        Constants.SCENE_ROSTOPIC, Constants.SCENE_ROSMSG_TYPE));
-                    
-                    // publish log message to opal log topic
-                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
-                        Constants.LOG_ROSTOPIC, "Opal game checking in!"));
+
+					// advertise that we will publish opal action messages                
+					if (this.gameConfig.opalActionTopic == "")
+					{
+						Logger.LogWarning("Do not have opal configuration... trying "
+							+ "default topic " + Constants.DEFAULT_ACTION_ROSTOPIC);
+						Constants.ACTION_ROSTOPIC = Constants.DEFAULT_ACTION_ROSTOPIC;
+					}
+					else 
+					{   
+						Constants.ACTION_ROSTOPIC = this.gameConfig.opalActionTopic;
+					}
+					this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+						Constants.ACTION_ROSTOPIC, Constants.ACTION_ROSMSG_TYPE));
+
+					// advertise that we will publish opal audio messages
+					if (this.gameConfig.opalAudioTopic == "")
+					{
+						Logger.LogWarning("Do not have opal configuration... trying "
+							+ "default topic " + Constants.DEFAULT_AUDIO_ROSTOPIC);
+						Constants.AUDIO_ROSTOPIC = Constants.DEFAULT_AUDIO_ROSTOPIC;
+					}
+					else 
+					{
+						Constants.AUDIO_ROSTOPIC = this.gameConfig.opalAudioTopic;
+					}
+					this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+						Constants.AUDIO_ROSTOPIC, Constants.AUDIO_ROSMSG_TYPE));
+
+					// advertise that we will subscribe to opal command messages
+					if (this.gameConfig.opalCommandTopic == "")
+					{
+						Logger.LogWarning("Do not have opal configuration... trying "
+							+ "default topic " + Constants.DEFAULT_CMD_ROSTOPIC);
+
+						Constants.CMD_ROSTOPIC = Constants.DEFAULT_CMD_ROSTOPIC;
+					}
+					else 
+					{
+						Constants.CMD_ROSTOPIC = this.gameConfig.opalCommandTopic;
+					}
+					this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonSubscribeMsg(
+						Constants.CMD_ROSTOPIC, Constants.CMD_ROSMSG_TYPE));
+
+					// advertise that we will publish opal log messages
+					if (this.gameConfig.opalLogTopic == "")
+					{
+						Logger.LogWarning("Do not have opal configuration... trying "
+							+ "default topic " + Constants.DEFAULT_LOG_ROSTOPIC);
+						Constants.LOG_ROSTOPIC = Constants.DEFAULT_LOG_ROSTOPIC;
+					}
+					else 
+					{
+						Constants.LOG_ROSTOPIC = this.gameConfig.opalLogTopic;
+					}
+					this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+						Constants.LOG_ROSTOPIC, Constants.LOG_ROSMSG_TYPE));
+
+					// advertise that we will publish opal scene messages
+					if (this.gameConfig.opalSceneTopic == "")
+					{
+						Logger.LogWarning("Do not have opal configuration... trying "
+							+ "default topic " + Constants.DEFAULT_SCENE_ROSTOPIC);
+						Constants.SCENE_ROSTOPIC = Constants.DEFAULT_SCENE_ROSTOPIC;
+					}
+					else 
+					{
+						Constants.SCENE_ROSTOPIC = this.gameConfig.opalSceneTopic;
+					}
+					this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonSubscribeMsg(
+						Constants.SCENE_ROSTOPIC, Constants.SCENE_ROSMSG_TYPE));
+
+					// publish log message to opal log topic
+					this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
+						Constants.LOG_ROSTOPIC, "Opal game checking in!"));
 
 					Logger.LogError("!!!!!!!!!!!!!!!!!!! setting up all ros topics !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
-                }
-                else {
-                    Logger.LogError("Could not set up websocket!");
-                }            
-            // register log callback for Logger.Log calls
-            Application.logMessageReceivedThreaded += HandleApplicationLogMessageReceived;
- 			
-            }
+					// publicsh storybook basic information (e.g., current story page, which state, end page of book, # of pages)
+					this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+						Constants.STORYBOOK_ROSTOPIC, Constants.STORYBOOK_ROSMSG_TYPE));
 
+				}
+				else {
+					Logger.LogError("Could not set up websocket!");
+				}            
+				// register log callback for Logger.Log calls
+				Application.logMessageReceivedThreaded += HandleApplicationLogMessageReceived;
 
-        }
+			}
+
+			//destroy UI button and input field after connecting to ROS
+			Destroy(RosButton);
+			DestroyObjectsByTag (new string[] {Constants.TAG_INPUT_TEXT_FIELD});
+		}
 
 
         /** On enable, initialize stuff */
@@ -394,9 +426,7 @@ namespace opal
                 // unsubscribe from received message events
                 this.clientSocket.receivedMsgEvent -= HandleClientSocketReceivedMsgEvent;
             }
-            
-            
-        
+         
             Logger.Log("destroyed main game controller");
         }
     
@@ -423,6 +453,17 @@ namespace opal
                     Logger.LogError("Error when invoking actions on main thread!\n" + ex);
                 }
             }
+
+			//update storybook current state
+			this.storyInfo.current_page=gestureManager.currentStoryPage;
+
+			//send storybook current state to ROS
+			targetTime -= Time.deltaTime;
+
+			if (targetTime <= 0.0f && storyInfo.StoryName!="None") {
+				sendStoryState2ROS ();
+				targetTime = 1.0f;
+			}
         }
 
         /// <summary>
@@ -459,262 +500,7 @@ namespace opal
 
         #region Instantiate game objects
 
-        /// <summary>
-        /// Instantiate a new game object with the specified properties
-        /// </summary>
-        /// <param name="pops">properties of the play object.</param>
-        public void InstantiatePlayObject (PlayObjectProperties pops, Sprite spri)
-        {
-            GameObject go = new GameObject();
-
-            // set object name
-            go.name = (pops.Name() != "") ? Path.GetFileNameWithoutExtension(pops.Name()) 
-                : UnityEngine.Random.value.ToString();
-            Logger.Log("Creating new play object: " + pops.Name() + ", with properties: "
-                + pops.ToString());
-
-            // set layer based on whether the object is draggable or not
-            go.layer = (pops.draggable ? Constants.LAYER_MOVEABLES : Constants.LAYER_STATICS);
-
-            // load sprite/image for object
-            SpriteRenderer spriteRenderer = go.AddComponent<SpriteRenderer>();
-            // if we were not given a sprite for this object, try loading one
-            if (spri == null)
-            {
-                // don't need file extension to load from resources folder -- strip if it exists
-                Sprite sprite = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH 
-                    // if this is a social stories game, load from the directory of
-                    // social stories graphics
-                    + (this.socialStories ? Constants.SOCIAL_STORY_FILE_PATH : "")
-                    + Path.ChangeExtension(pops.Name(), null));
-                if(sprite == null)
-                {
-                    Logger.LogWarning("Could not load sprite from Resources: " 
-                        + Constants.GRAPHICS_FILE_PATH  
-                        + (this.socialStories ? Constants.SOCIAL_STORY_FILE_PATH : "")
-                        + pops.Name()
-                        + "\nGoing to try file path...");
-                    
-                    // TODO add filepath to pops! don't use Name
-                    sprite = Utilities.LoadSpriteFromFile(pops.Name());
-                    if(sprite == null)
-                    {
-                        Logger.LogError("Could not load sprite from file path: " 
-                                        + pops.Name());
-                        // still don't have image - failed to load!
-                        // delete game object and return
-                        Logger.LogError("Could not load sprite: " + pops.Name());
-                        GameObject.Destroy(go);
-                        return;
-                    }
-                }
-                
-                // got sprite!
-                spriteRenderer.sprite = sprite; 
-            }
-            // otherwise, we were given a sprite, try using that one
-            else
-            {
-                spriteRenderer.sprite = spri;
-            }
-            
-            // if a slot number was assigned and we're in a social stories game,
-            // use that slot to figure out where to put the object
-            if (pops.Slot() != -1 && this.socialStories)
-            {
-                // get either the scene slot or answer slot object
-                GameObject slot = GameObject.Find((pops.isAnswerSlot ? Constants.ANSWER_SLOT : 
-                    Constants.SCENE_SLOT) + (pops.Slot() - 1)); // slots 1-indexed
-                if (slot != null)
-                {
-                    Logger.Log("Slot found: " + slot.name + " at position " 
-                            + slot.transform.position + " -- putting object here.");
-                    go.transform.position = new Vector3(slot.transform.position.x,
-                                                        slot.transform.position.y,
-                                                        Constants.Z_PLAY_OBJECT);
-                    // make slot visible again
-                    slot.GetComponent<Renderer>().enabled = true;
-
-                    // set scale of sprite
-                    // scale slot to one portion of the screen width, using the saved
-                    // width of a slot 
-                    if (pops.isAnswerSlot)
-                    {
-                        go.transform.localScale = new Vector3(
-                            this.answerSlotWidth / spriteRenderer.sprite.bounds.size.x,
-                            this.answerSlotWidth / spriteRenderer.sprite.bounds.size.y,
-                            this.answerSlotWidth / spriteRenderer.sprite.bounds.size.z);
-                    }
-                    // use scene slot width, not answer slot width, to scale
-                    else
-                    {
-                        go.transform.localScale = new Vector3(
-                            this.slotWidth / spriteRenderer.sprite.bounds.size.x,
-                            this.slotWidth / spriteRenderer.sprite.bounds.size.y,
-                            this.slotWidth / spriteRenderer.sprite.bounds.size.z);
-                    }
-                }
-                else
-                {
-                    Logger.LogError("Tried to get position and scale of scene or answer slot so we"
-                        + " could load an object at that position, but slot was null! Defaulting"
-                        + " to position (0,0,0) and scale (1,1,1).");
-                        go.transform.position = Vector3.zero;
-                        go.transform.localScale = new Vector3(1,1,1);
-                }
-            }
-            else
-            {
-                // move object to specified initial position 
-                go.transform.position = pops.InitPosition();
-
-                // set the scale of the sprite to the specified scale
-                go.transform.localScale = pops.Scale();
-            }
-            
-            // save the initial position in case we need to reset this object later
-            // can save other stuff in these properties too!
-            SavedProperties sp = go.AddComponent<SavedProperties>();
-            sp.initialPosition = go.transform.position;
-            
-            if (this.socialStories)
-            {
-                sp.correctSlot = pops.CorrectSlot();
-                sp.isCorrect = pops.isCorrect;
-                sp.isIncorrect = pops.isIncorrect;
-            }
-            
-            // set tag
-            go.tag = pops.Tag();
-
-            // if tag is FEEDBACK, keep reference and set as invisible
-            if (go.tag.Equals(Constants.TAG_CORRECT_FEEDBACK)
-                && go.GetComponent<Renderer>() != null)
-            {
-                this.correctFeedback = go;
-                go.GetComponent<Renderer>().enabled = false;
-            }
-            else if (go.tag.Equals(Constants.TAG_INCORRECT_FEEDBACK)
-                && go.GetComponent<Renderer>() != null)
-            {
-                // this list is cleared when the scene is cleared
-                if (this.incorrectFeedback == null) 
-                {
-                    this.incorrectFeedback = new List<GameObject>();
-                }
-                this.incorrectFeedback.Add(go);
-                go.GetComponent<Renderer>().enabled = false;
-            }
-
-            // if this is an answer feedback slot graphic, we set it invisible
-            // until the associated answer is loaded
-            if (go.tag.Equals(Constants.TAG_ANSWER_SLOT))
-                go.GetComponent<Renderer>().enabled = false;
-
-            // load audio - add an audio source component to the object if there
-            // is an audio file to load
-            if(pops.AudioFile() != null) {
-                AudioSource audioSource = go.AddComponent<AudioSource>();
-                try {
-                    // to load a sound file this way, the sound file needs to be in an existing 
-                    // Assets/Resources folder or subfolder 
-                    audioSource.clip = Resources.Load(Constants.AUDIO_FILE_PATH + 
-                        pops.AudioFile()) as AudioClip;
-                } catch(UnityException e) {
-                    Logger.LogError("Could not load audio: " + pops.AudioFile() + "\n" + e);
-                }
-                audioSource.loop = false;
-                audioSource.playOnAwake = false;
-            }
-            
-            if (pops.draggable)
-            {
-                // add rigidbody if this is a draggable object
-                Rigidbody2D rb2d = go.AddComponent<Rigidbody2D>();
-                // remove object from physics engine's control, because we don't want
-                // the object to move with gravity, forces, etc - we do the moving
-                rb2d.isKinematic = true; 
-                // don't want gravity, otherwise objects will fall
-                // though with the isKinematic flag set this may not matter
-                rb2d.gravityScale = 0; 
-                // set collision detection to 'continuous' instead of discrete
-                rb2d.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-                
-                // add collision manager so we get trigger enter/exit events
-                CollisionManager cm = go.AddComponent<CollisionManager>();
-                // subscribe to log events from the collision manager
-                cm.logEvent += new LogEventHandler(HandleLogEvent);
-                // pass on info about whether scenes are in order or not
-                cm.scenesInOrder = this.scenesInOrder;
-                
-                // and add transformer so it automatically moves on drag
-                // note that the AddAndSubscribeToGestures function also
-                // checks to add a transformer if there isn't one if the 
-                // object is supposed to be draggable
-                Transformer trans = go.GetComponent<Transformer>();
-                if (trans == null) 
-                {
-                    trans = go.AddComponent<Transformer>();
-                    trans.enabled = true;
-                }
-            }
-            // if the object is not draggable, then we don't need a rigidbody because
-            // it is a static object (won't move even if there are collisions)
-
-            // add circle collider - used in detecting touches and dragging.
-            // if the collider on the object is too small, touches won't 
-            // collide very often or very well, and movement (e.g. drags)
-            // will be choppy and weird. don't set as trigger so that this 
-            // collider doesn't trigger enter/exit events (because it is bigger
-            // than the object and we'd get too many collisions)
-            // !! this is now obselete because we're using the transformer that
-            // came with TouchScript which works great even with a small collider
-            // - so clearly something in how we were dragging stuff before was just
-            // wrong, and we can now not bother with the circle collider
-            //CircleCollider2D cc = go.AddComponent<CircleCollider2D>();
-            //cc.radius = .7f;
-            
-            // add polygon collider that matches shape of object and set as a 
-            // trigger so enter/exit events fire when this collider is hit
-            PolygonCollider2D pc = go.AddComponent<PolygonCollider2D>();
-            pc.isTrigger = true;
-            
-            // add and subscribe to gestures
-            if(this.gestureManager == null) {
-                Logger.Log("ERROR no gesture manager");
-                FindGestureManager();
-            }
-            
-            try {
-                // add gestures and register to get event notifications
-                this.gestureManager.AddAndSubscribeToGestures(go, pops.draggable, false);
-            }
-            catch (Exception e)
-            {
-                Logger.LogError("Tried to subscribe to gestures but failed! " + e);
-            }
-           
-            // add pulsing behavior (draws attention to actionable objects)
-            // go.AddComponent<GrowShrinkBehavior>();
-            // Removing this because it messes with collision detection when
-            // objects are close to each other (continuously colliding/uncolliding)
-            // go.GetComponent<GrowShrinkBehavior>().StartPulsing();
         
-            // HACK to get drag to work right after object is loaded
-            // for some reason if we disable then enable the Transformer2D 
-            // component, drag will work. if we don't, then the Transformer2D 
-            // component will be enabled but dragging will do nothing. not 
-            // sure why...
-            // TODO is this still needed? trying without!
-            //if (go.GetComponent<Transformer>() != null)
-            //{
-            //    go.GetComponent<Transformer>().enabled = false;
-            //}
-            if (go.GetComponent<Transformer>() != null)
-            {
-                go.GetComponent<Transformer>().enabled = true;
-            }
-        }
     
         /// <summary>
         /// Instantiates a background image object
@@ -784,7 +570,7 @@ namespace opal
         /// Instantiates a story page
         /// </summary>
         /// <param name="sops">story page object properties</param>
-        public void InstantiateStoryPage (StorypageObjectProperties sops, Sprite sprite)
+		public void InstantiateStoryPage (StorypageObjectProperties sops, Sprite sprite,int index)
         {
 			// now make a new background
 			GameObject go = new GameObject();
@@ -825,13 +611,21 @@ namespace opal
 			{
 				Logger.Log ("set scale runs...");
 				//go.transform.localScale = sops.Scale();
-				float width=Screen.width;
-				float height = Screen.height;
+				float width=Screen.width*0.5f;
+				float height = Screen.height * 0.75f * 0.5f;
 				float renderX = go.GetComponent<SpriteRenderer> ().bounds.size.x;
 				float renderY = go.GetComponent<SpriteRenderer> ().bounds.size.y;
-				float factorX = width / renderX;
+		
+				float factorX = width /renderX;
 				float factorY = height / renderY;
-				go.transform.localScale = new Vector3 (factorX*0.3f, factorY*0.3f, factorX);
+				float scale = factorX;
+				if (factorX > factorY)
+					scale = factorY;
+
+				//Logger.LogError ("width: "+width.ToString()+" | height: "+height.ToString());
+				//Logger.LogError ("renderX: "+renderX.ToString()+" | renderY: "+renderY.ToString());
+				//Logger.LogError ("factorX: "+factorX.ToString()+" | factorY: "+factorY.ToString());
+				go.transform.localScale = new Vector3 (scale, scale, scale);
 			}
 			else
 			{
@@ -840,7 +634,7 @@ namespace opal
 				go.transform.localScale = new Vector3(100, 100, 0);
 			}
 
-			
+		
 			// add polygon collider and set as a trigger so enter/exit events
 			// fire when this collider is hit -- needed to recognize touch events!
 			PolygonCollider2D pc = go.AddComponent<PolygonCollider2D>();
@@ -867,6 +661,11 @@ namespace opal
 			sp.initialPosition = sops.InitPosition(); 
 			sp.isStartPage = sops.IsStart();
 			sp.isEndPage = sops.IsEnd();
+
+			// hide the image first
+			go.GetComponent<Renderer>().enabled = false;
+			this.storyImageObjects[index]=go;
+
             
         }
         
@@ -896,6 +695,7 @@ namespace opal
         void HandleClientSocketReceivedMsgEvent (object sender, int cmd, object props)
         {
 			Logger.LogError("!!!!!!!!!!!!!!!1!!!!MSG received from remote: " + cmd);
+			Logger.LogError ("props: "+props);
             if (this.clientSocket != null)
             {
                 this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
@@ -913,381 +713,300 @@ namespace opal
             // is, weird things happen.
             // *** swapped switch for if-else so this problem should be fixed. Leaving
             // note as info in case someone in the future wants to switch to a switch.
-            if (cmd == Constants.REQUEST_KEYFRAME)
-            {
-                // fire event indicating we want to log the state of the current scene
-                if(this.logEvent != null)
-                {
-                    // get keyframe and send it
-                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                    {
-                        LogEvent.SceneObject[] sos = null;
-                        this.GetSceneKeyframe(out sos);
-                        this.logEvent(this, new LogEvent(LogEvent.EventType.Scene, sos));
-                    });
-                }
-                else
-                {
-                    Logger.LogWarning("Was told to send keyframe but logger " +
-                                     "doesn't appear to exist.");
-                }
-            }
-            
-			else if (cmd == Constants.HIGHLIGHT_OBJECT)
-            {
-                // Move the highlight behind the specified game object, if we
-                // were given an object.
-                MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                { 
-                    if (props == null)
-                    {
-                        Logger.Log("Got no object to highlight. Turning highlight off!");
-                        this.gestureManager.LightOff();
-                    }
-                    else
-                    {
-                        // Try to find the specified game object to highlight.
-                        GameObject go = GameObject.Find((string)props);
-                        if (go != null) 
-                        {
-                            this.gestureManager.LightOn(go.transform.position);
-                        }
-                        else 
-                        {
-                            Logger.LogWarning("Was told to highlight " + (string)props + 
-                                " but could not find the game object! Maybe we need to" +
-                                " highlight a scene? Checking...");
-                            // Try to find a scene to highlight.
-                            if (((string)props).Contains("scene"))
-                            {
-                                Logger.Log("Yes - finding which scene to highlight...");
-                                // Get scene number. Scenes are 0-indexed.
-                                int num = -1;
-                                string result = Regex.Match((string)props, @"\d+").Value;
-                                Logger.Log("result is " + result);
-                                if (int.TryParse(result, out num))
-                                {
-                                    go = GameObject.Find(Constants.SCENE_SLOT + num);
-                                    if (go != null)
-                                    {
-                                        Logger.Log("Highlight will be size " + (this.slotWidth * 1.3f)
-                                            + "\n that's " + this.slotWidth + " / " + " * 1.3f");
-                                        this.gestureManager.LightOn(
-                                            new Vector3(
-                                                this.slotWidth * 2f,
-                                                this.slotWidth * 2f,
-                                                this.slotWidth * 2f
-                                            ),
-                                            go.transform.position); 
-                                   }
-                                }
-                                else
-                                {
-                                    Logger.LogWarning("Could not find scene number for"
-                                        + "scene slot to highlight!");
-                                }
-                            }
-                            else
-                            {
-                                Logger.LogWarning("Nope - did not specify a scene! Turning"
-                                    + " highlight off.");
-                                this.gestureManager.LightOff();
-                            }
-                        }
-                    }
-                });  
-            }
-            
-			else if (cmd == Constants.DISABLE_TOUCH)
-            {
-                // disable touch events from user
-                this.gestureManager.allowTouch = false; 
-                MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                { 
-                    this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
-                        Constants.TAG_PLAY_OBJECT }, false);
-                });
-            }
-            
-			else if (cmd == Constants.ENABLE_TOUCH)
-            {
-                // enable touch events from user
-                if (this.gestureManager != null)
-                    this.gestureManager.allowTouch = true;
-                MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                { 
-                    this.SetTouch(new string[] { Constants.TAG_BACKGROUND,
-                        Constants.TAG_PLAY_OBJECT }, true);
-                });
-            }
-            
-			else if (cmd == Constants.RESET)
-            {
-               // reload the current level
-                // e.g., when the robot's turn starts, want all characters back in their
-                // starting configuration for use with automatic playbacks
-                MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                { 
-                    this.ReloadScene();
-                });
-            }
-            
-			else if (cmd == Constants.SIDEKICK_DO)
-            {
-                if(props == null)
-                {
-                    Logger.LogWarning("Sidekick was told to do something, but got no properties!");
-                }
-                else if(this.gameConfig.sidekick && props is String)
-                {
-                    // trigger animation for sidekick character
-                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                    { 
-                        this.sidekickScript.SidekickDo((string)props);
-                    }); 
-                }
-            }
-            
-			else if (cmd == Constants.SIDEKICK_SAY)
-            {
-                if(props == null)
-                {
-                    Logger.LogWarning("Sidekick was told to say something, but got no properties!");
-                }
-                else if (this.gameConfig.sidekick && props is String) 
-                {
-                    // trigger playback of speech for sidekick character
-                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                    { 
-                        this.sidekickScript.SidekickSay((string)props);
-                    }); 
-                }
-            }
-        
-			else if (cmd == Constants.CLEAR)
-            {
-                try 
-                {                   
-                    if (props == null)
-                    {
-                        // if no properties,  remove all play objects and background
-                        // objects from scene, hide highlight
-                        MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                        { 
-                            this.ClearScene(); 
-                        });
-                    }
-                    else 
-                    {
-                        MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                        {
-                            this.ClearObjects((string)props);
-                        });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex);
-                }
-        	}
-
-			else if (cmd == Constants.LOAD_OBJECT)
-            {
-                // load the specified game object
-                if(props == null) 
-                {
-                    Logger.LogWarning("Was told to load an object, but got no properties!");
-                }
-                else
-                {
-                    try {
-    	                SceneObjectProperties sops = (SceneObjectProperties)props;
- 
-    	                // load new background image with the specified properties
-    	                if(sops.Tag().Equals(Constants.TAG_BACKGROUND) ||
-    	                    sops.Tag().Equals(Constants.TAG_FOREGROUND))
-                        {
-    	                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                            {
-    	                        this.InstantiateBackground((BackgroundObjectProperties)sops, null);
-    	                    }); 
-    	                }
-    	                // or instantiate new playobject with the specified properties
-    	                else if(sops.Tag().Equals(Constants.TAG_PLAY_OBJECT))
-                        {
-    	                    //Logger.Log("play object");
-    	                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                            { 
-    	                        this.InstantiatePlayObject((PlayObjectProperties)sops, null);
-    	                    });
-    	                }
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogWarning("Was told to load an object, but could not convert properties " 
-                            + "provided to SceneObjectProperties!\n" + e);
-                    }
-                }
-            }
-
-			else if (cmd == Constants.MOVE_OBJECT)
-            {
-                if(props == null) 
-                {
-                    Logger.LogWarning("Was told to move an object but did not " +
-                              "get name of which one or position to move to.");
-                    return;
-                }
-                try
-                {
-                    MoveObject mo = (MoveObject)props;
-                    // use LeanTween to move object from curr_posn to new_posn
-                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                    { 
-                        GameObject go = GameObject.Find(mo.name);
-                        if(go != null)
-                            LeanTween.move(go, mo.destination, 2.0f).setEase(
-                                LeanTweenType.easeOutSine); 
-                    });
-                }
-                catch (Exception e)
-                {
-                    Logger.LogWarning("Was told to move an object, but properties were not for "
-                        + "moving an object!\n" + e);
-                }
-            }
-            
-//			else if (cmd == Constants.FADE_SCREEN)
-//            {
-//                // places a white cloud-like object over the scene to give the
-//                // appearance that the scene is faded out
-//                MainGameController.ExecuteOnMainThread.Enqueue(() =>
-//                { 
-//                    if (this.fader != null)
-//                        this.fader.GetComponent<Renderer>().enabled = true;
-//                });
-//            }
-//                
-//			else if (cmd == Constants.UNFADE_SCREEN)
-//            {
-//                // remove the fader so the scene is clearly visible again
-//                MainGameController.ExecuteOnMainThread.Enqueue(() =>
-//                { 
-//                    if (this.fader != null)
-//                        this.fader.GetComponent<Renderer>().enabled = false;
-//                });
-//            }
-
-			else if (cmd == Constants.NEXT_PAGE)
-            {
-                // in a story game, goes to the next page in the story
-            	MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                {
-                    if (this.gestureManager != null)
-                		this.gestureManager.ChangePage(Constants.NEXT);
-        		});
-            }
-			else if (cmd == Constants.PREV_PAGE)
-			{
-                // in a story game, goes to the previous page in the story
-				MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                {
-                    if (this.gestureManager != null)
-    					this.gestureManager.ChangePage(Constants.PREVIOUS);
+			if (cmd == Constants.REQUEST_KEYFRAME) {
+//				// fire event indicating we want to log the state of the current scene
+//				if (this.logEvent != null) {
+//					// get keyframe and send it
+//					MainGameController.ExecuteOnMainThread.Enqueue (() => {
+//						LogEvent.SceneObject[] sos = null;
+//						this.GetSceneKeyframe (out sos);
+//						this.logEvent (this, new LogEvent (LogEvent.EventType.Scene, sos));
+//					});
+//				} else {
+//					Logger.LogWarning ("Was told to send keyframe but logger " +
+//					"doesn't appear to exist.");
+//				}
+			} else if (cmd == Constants.HIGHLIGHT_OBJECT) {
+				// Move the highlight behind the specified game object, if we
+				// were given an object.
+				MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+					if (props == null) {
+						Logger.Log ("Got no object to highlight. Turning highlight off!");
+						this.gestureManager.LightOff ();
+					} else {
+						// Try to find the specified game object to highlight.
+						GameObject go = GameObject.Find ((string)props);
+						if (go != null) {
+							this.gestureManager.LightOn (go.transform.position);
+						} else {
+							Logger.LogWarning ("Was told to highlight " + (string)props +
+							" but could not find the game object! Maybe we need to" +
+							" highlight a scene? Checking...");
+							// Try to find a scene to highlight.
+							if (((string)props).Contains ("scene")) {
+								Logger.Log ("Yes - finding which scene to highlight...");
+								// Get scene number. Scenes are 0-indexed.
+								int num = -1;
+								string result = Regex.Match ((string)props, @"\d+").Value;
+								Logger.Log ("result is " + result);
+								if (int.TryParse (result, out num)) {
+									go = GameObject.Find (Constants.SCENE_SLOT + num);
+									if (go != null) {
+										Logger.Log ("Highlight will be size " + (this.slotWidth * 1.3f)
+										+ "\n that's " + this.slotWidth + " / " + " * 1.3f");
+										this.gestureManager.LightOn (
+											new Vector3 (
+												this.slotWidth * 2f,
+												this.slotWidth * 2f,
+												this.slotWidth * 2f
+											),
+											go.transform.position); 
+									}
+								} else {
+									Logger.LogWarning ("Could not find scene number for"
+									+ "scene slot to highlight!");
+								}
+							} else {
+								Logger.LogWarning ("Nope - did not specify a scene! Turning"
+								+ " highlight off.");
+								this.gestureManager.LightOff ();
+							}
+						}
+					}
+				});  
+			} else if (cmd == Constants.DISABLE_TOUCH) {
+				// disable touch events from user
+				this.gestureManager.allowTouch = false; 
+				MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+					this.SetTouch (new string[] { Constants.TAG_BACKGROUND,
+						Constants.TAG_PLAY_OBJECT
+					}, false);
 				});
+				this.storyInfo.touch_enabled = false;
+			} else if (cmd == Constants.ENABLE_TOUCH) {
+				// enable touch events from user
+				if (this.gestureManager != null)
+					this.gestureManager.allowTouch = true;
+				MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+					this.SetTouch (new string[] { Constants.TAG_BACKGROUND,
+						Constants.TAG_PLAY_OBJECT
+					}, true);
+				});
+				this.storyInfo.touch_enabled = true;
+			} else if (cmd == Constants.RESET) {
+				// reload the current level
+				// e.g., when the robot's turn starts, want all characters back in their
+				// starting configuration for use with automatic playbacks
+				MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+					this.ReloadScene ();
+				});
+			} else if (cmd == Constants.SIDEKICK_DO) {
+				if (props == null) {
+					Logger.LogWarning ("Sidekick was told to do something, but got no properties!");
+				} else if (this.gameConfig.sidekick && props is String) {
+					// trigger animation for sidekick character
+					MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+						this.sidekickScript.SidekickDo ((string)props);
+					}); 
+				}
+			} else if (cmd == Constants.SIDEKICK_SAY) {
+				if (props == null) {
+					Logger.LogWarning ("Sidekick was told to say something, but got no properties!");
+				} else if (this.gameConfig.sidekick && props is String) {
+					// trigger playback of speech for sidekick character
+					MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+						this.sidekickScript.SidekickSay ((string)props);
+					}); 
+				}
+			} else if (cmd == Constants.CLEAR) {
+				try {                   
+					if (props == null) {
+						// if no properties,  remove all play objects and background
+						// objects from scene, hide highlight
+						MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+							this.ClearScene (); 
+						});
+					} else {
+						MainGameController.ExecuteOnMainThread.Enqueue (() => {
+							this.ClearObjects ((string)props);
+						});
+					}
+				} catch (Exception ex) {
+					Logger.LogError (ex);
+				}
+			} else if (cmd == Constants.LOAD_OBJECT) {
+				// load the specified game object
+				if (props == null) {
+					Logger.LogWarning ("Was told to load an object, but got no properties!");
+				} else {
+					try {
+						SceneObjectProperties sops = (SceneObjectProperties)props;
+ 
+						// load new background image with the specified properties
+						if (sops.Tag ().Equals (Constants.TAG_BACKGROUND) ||
+						                  sops.Tag ().Equals (Constants.TAG_FOREGROUND)) {
+							MainGameController.ExecuteOnMainThread.Enqueue (() => {
+								this.InstantiateBackground ((BackgroundObjectProperties)sops, null);
+							}); 
+						}
+    	                // or instantiate new playobject with the specified properties
+    	                else if (sops.Tag ().Equals (Constants.TAG_PLAY_OBJECT)) {
+							//Logger.Log("play object");
+							MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+								//this.InstantiatePlayObject ((PlayObjectProperties)sops, null);
+							});
+						}
+					} catch (Exception e) {
+						Logger.LogWarning ("Was told to load an object, but could not convert properties "
+						+ "provided to SceneObjectProperties!\n" + e);
+					}
+				}
+			} else if (cmd == Constants.MOVE_OBJECT) {
+				if (props == null) {
+					Logger.LogWarning ("Was told to move an object but did not " +
+					"get name of which one or position to move to.");
+					return;
+				}
+				try {
+					MoveObject mo = (MoveObject)props;
+					// use LeanTween to move object from curr_posn to new_posn
+					MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+						GameObject go = GameObject.Find (mo.name);
+						if (go != null)
+							LeanTween.move (go, mo.destination, 2.0f).setEase (
+								LeanTweenType.easeOutSine); 
+					});
+				} catch (Exception e) {
+					Logger.LogWarning ("Was told to move an object, but properties were not for "
+					+ "moving an object!\n" + e);
+				}
 			}
-            else if (cmd == Constants.EXIT)
-            {
-                // exit the program
-                MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                {
-                    Application.Quit();
-                });
-            }
-            else if (cmd == Constants.SET_CORRECT)
-            {
-                // given two lists of object names, set as correct or incorrect
-                // set object flags for correct or incorrect
-                if(props == null) {
-                    Logger.LogWarning("Was told to set objects as correct/incorrect, " +
-                    "but got no properties!");
-                }
-                else 
-                {
-                    try
-                    {
-                        SetCorrectObject sco = (SetCorrectObject)props;
-                        MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                        {
-                            this.SetCorrect(sco.correct, sco.incorrect);
-                        });
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogWarning("Was told to set objects as correct/incorrect, but "
-                            + "could not convert properties to SetCorrectobject!\n" + e);
-                    }
-                }
-            }
-            else if (cmd == Constants.SHOW_CORRECT)
-            {
-                // show all objects for visual feedback tagged 'correct' or 'incorrect'
-                MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                {
-                    this.ToggleCorrect(true);
-                });
-            }
-            else if (cmd == Constants.HIDE_CORRECT)
-            {
-                // hide all objects for visual feedback tagged 'correct' or 'incorrect'
-                MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                {
-                    this.ToggleCorrect(false);
-                });
-            }
-            else if (cmd == Constants.SETUP_STORY_SCENE)
-            {
-                // setup story scene
-                try
-                {
-                    SetupStorySceneObject ssso = (SetupStorySceneObject)props;
-                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
-                    {
-                        this.SetupSocialStoryScene(ssso.numScenes, ssso.scenesInOrder,
-                            ssso.numAnswers);
-                    });
-                }
-                catch (Exception e)
-                {
-                    Logger.LogWarning("Supposed to set up story scene, but did not get "
-                        + "properties for setting up a story scene!\n" + e);
-                }
-            }
-			else if (cmd == Constants.STORY_SELECTION)
-			{
+            
+
+			else if (cmd == Constants.NEXT_PAGE) {
+				
+				// in a story game, goes to the next page in the story
+				MainGameController.ExecuteOnMainThread.Enqueue (() => {
+					if (this.gestureManager != null)
+						this.gestureManager.ChangePage (Constants.NEXT);
+				});
+			} else if (cmd == Constants.PREV_PAGE) {
+				
+				// in a story game, goes to the previous page in the story
+				MainGameController.ExecuteOnMainThread.Enqueue (() => {
+					if (this.gestureManager != null)
+						this.gestureManager.ChangePage (Constants.PREVIOUS);
+				});
+			} else if (cmd == Constants.EXIT) {
+				// exit the program
+				MainGameController.ExecuteOnMainThread.Enqueue (() => {
+					Application.Quit ();
+				});
+			} else if (cmd == Constants.SET_CORRECT) {
+				// given two lists of object names, set as correct or incorrect
+				// set object flags for correct or incorrect
+				if (props == null) {
+					Logger.LogWarning ("Was told to set objects as correct/incorrect, " +
+					"but got no properties!");
+				} else {
+					try {
+						SetCorrectObject sco = (SetCorrectObject)props;
+						MainGameController.ExecuteOnMainThread.Enqueue (() => {
+							this.SetCorrect (sco.correct, sco.incorrect);
+						});
+					} catch (Exception e) {
+						Logger.LogWarning ("Was told to set objects as correct/incorrect, but "
+						+ "could not convert properties to SetCorrectobject!\n" + e);
+					}
+				}
+			} else if (cmd == Constants.SHOW_CORRECT) {
+				// show all objects for visual feedback tagged 'correct' or 'incorrect'
+				MainGameController.ExecuteOnMainThread.Enqueue (() => {
+					this.ToggleCorrect (true);
+				});
+			} else if (cmd == Constants.HIDE_CORRECT) {
+				// hide all objects for visual feedback tagged 'correct' or 'incorrect'
+				MainGameController.ExecuteOnMainThread.Enqueue (() => {
+					this.ToggleCorrect (false);
+				});
+			} else if (cmd == Constants.SETUP_STORY_SCENE) {
+				// setup story scene
+				try {
+					SetupStorySceneObject ssso = (SetupStorySceneObject)props;
+					MainGameController.ExecuteOnMainThread.Enqueue (() => {
+					//	this.SetupSocialStoryScene (ssso.numScenes, ssso.scenesInOrder,
+					//		ssso.numAnswers);
+					});
+				} catch (Exception e) {
+					Logger.LogWarning ("Supposed to set up story scene, but did not get "
+					+ "properties for setting up a story scene!\n" + e);
+				}
+			} else if (cmd == Constants.STORY_SELECTION) {
 				// select story to load
 				//TODO: story name must be valid 
 				string storyName = (string)props;
-				Logger.LogError("!!!!!!!story selection!!!!!");
+				MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+					this.inputStoryName= storyName;
+
+					//clear all background images
+					this.DestroyObjectsByTag (new string[] {
+						Constants.TAG_BACKGROUND
+					});
+					Array.Clear(this.storyImageObjects,0,this.storyImageObjects.Length);
+					Array.Clear(this.storyImageSprites,0,this.storyImageSprites.Length);
+					this.LoadStory ();
+					this.gestureManager.GoToFirstPage();
+					this.Update ();
+				});
+			} else if (cmd == Constants.SAME_PAGE) {
+				Logger.Log ("...same page...");
+			}
+			else if (cmd == Constants.STORY_SHOW_BUTTONS)
+			{
+				// show flip page buttons
 				MainGameController.ExecuteOnMainThread.Enqueue(() =>
-					{ 
-						Logger.LogError("!!!!!!!story selection 22222!!!!!");
-						this.storyInfo.StoryName=storyName;
-						this.storyInfo.reload=true;
-						//clear all background images
-						this.DestroyObjectsByTag(new string[] {
-							Constants.TAG_BACKGROUND});
-						this.LoadStory();
-						this.Update();
+					{
+						this.ShowPageButtons(true);
 					});
 			}
+			else if (cmd == Constants.STORY_HIDE_BUTTONS)
+			{
+				// hide all objects for visual feedback tagged 'correct' or 'incorrect'
+				MainGameController.ExecuteOnMainThread.Enqueue(() =>
+					{
+						this.ShowPageButtons(false);
+					});
+			}else if (cmd == Constants.STORY_GO_TO_PAGE) {
+				// go to a specific page in the story
+				string tmp = (string)props;
+				Logger.LogError ("get tmp..");
+				int storyPage = Convert.ToInt32 (tmp);
 
+				MainGameController.ExecuteOnMainThread.Enqueue (() => { 
+						Logger.LogError("go to XX story page:"+ storyPage.ToString() );
+						if (this.gestureManager != null)
+						this.gestureManager.GoToPage(storyPage);
+					});
+			}
             else
 	        {
 				Logger.LogError("Got a message that doesn't match any we expect!");
 	            
         	}
+
         }
+
+		public void sendStoryState2ROS(){
+			//send storybook state message to ROS
+			LogEvent.StorybookObject storyObj= new LogEvent.StorybookObject();
+			storyObj.book_name = storyInfo.StoryName;
+			storyObj.current_page = storyInfo.current_page;
+			storyObj.total_pages = storyInfo.total_pages;
+			storyObj.buttons_shown = storyInfo.buttons_shown;
+			storyObj.touch_enabled = storyInfo.touch_enabled;
+			this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStorybookMsg(
+				Constants.STORYBOOK_ROSTOPIC, storyObj));
+		}
     
     #region utilities
         /// <summary>
@@ -1505,6 +1224,27 @@ namespace opal
                 }
             }
         }
+
+		/// <summary>
+		/// Show or hide flip page buttons
+		/// </summary>
+		private void ShowPageButtons(bool show){
+			
+			GameObject go_goNext = GameObject.FindGameObjectWithTag (Constants.TAG_GO_NEXT);
+			GameObject go_goBack = GameObject.FindGameObjectWithTag (Constants.TAG_BACK);
+			if (show) {
+				Logger.LogError (" show pages ...");
+				go_goNext.GetComponent<Renderer>().enabled = true;
+				go_goBack.GetComponent<Renderer>().enabled = true;
+				this.storyInfo.buttons_shown = true;
+			} else {
+				Logger.LogError (" hide pages...");
+				go_goNext.GetComponent<Renderer>().enabled = false;
+				go_goBack.GetComponent<Renderer>().enabled = false;
+				this.storyInfo.buttons_shown = false;
+			}
+		}
+
         
         /// <summary>
         /// Show or hide visual feedback for correct and incorrect responses
@@ -1615,314 +1355,9 @@ namespace opal
             }
         }
         
-        /// <summary>
-        /// Sets up the social story scene.
-        /// </summary>
-        /// <param name="num_scenes">Number of scenes in this story</param>
-        /// <param name="scenes_in_order">If set to <c>true</c> scenes are in order.</param>
-        /// <param name="num_answers">Number of answer options for this story</param>
-        public void SetupSocialStoryScene(int numScenes, bool scenesInOrder, int numAnswers)
-        {
-            // Check that we got valid data first.
-            if (numScenes < 1)
-            {
-                Logger.LogWarning("Setup Social Story Scene: Told to set up fewer " +
-                    "than 1 scene. Not setting up.");
-                return;
-            }
-
-            // Save whether we are showing a social story in order or not in
-            // order, since we will need that information later.
-            this.scenesInOrder = scenesInOrder;
-
-            // We have already scaled the cameras so the camera viewport is at
-            // at 16:9 aspect ratio that fits within the device's screen. So
-            // here, we should use the camera viewport size, not the screen
-            // size, to determine how to scale the loaded graphics. This is
-            // because the device screen may not have a 16:9 aspect ratio, so
-            // there may be empty/black bars on either side of the game scene or
-            // at the top and bottom, depending on the screen's aspect ratio. We
-            // don't want any graphics to be shown outside the camera view.
-
-            // Load background image.
-            Logger.Log ("Loading background");
-            Sprite bk = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + "SSBackground");
-            BackgroundObjectProperties bops = new BackgroundObjectProperties(
-                "SSBackground", Constants.TAG_BACKGROUND, 
-                // Scale background to size of camera view.
-                Camera.main.ScreenToWorldPoint(new Vector3(
-                    (float)(this.scaleToHeight ? Camera.main.pixelHeight / bk.bounds.size.y 
-                        : Camera.main.pixelWidth / bk.bounds.size.x),
-                    (float)(this.scaleToHeight ? Camera.main.pixelHeight / bk.bounds.size.y 
-                        : Camera.main.pixelWidth / bk.bounds.size.x), 
-                    (float)(this.scaleToHeight ? Camera.main.pixelHeight / bk.bounds.size.y 
-                        : Camera.main.pixelWidth / bk.bounds.size.x))));
-            this.InstantiateBackground(bops, bk);
-
-            // We need to scale the scene and answer slots to evenly fit in the
-            // screen. We'll use the background image in place of the actual
-            // screen. The scene slots and answer slots are both square.
-            // Slots can be bigger if there are fewer slots, but we never want
-            // them to be taller than two-fifths of the screen height.
-            float backgroundWidth = GameObject.FindGameObjectWithTag(
-                Constants.TAG_BACKGROUND).GetComponent<Renderer>().bounds.size.x;
-            float backgroundHeight = GameObject.FindGameObjectWithTag(
-                Constants.TAG_BACKGROUND).GetComponent<Renderer>().bounds.size.y;
-            float slotwidth = backgroundWidth / numScenes * 0.88f;
-
-            Logger.Log("Background size = (" + backgroundWidth + ", " + backgroundHeight + ")");
-            Logger.Log("The " + numScenes + " slot(s) will have width " + slotwidth);
-
-            // If the height of the slots is greater than half the camera view
-            // height, shrink the slots so they fit on the top half of the
-            // screen.
-            if (slotwidth > (backgroundHeight / 2))
-            {
-                Logger.Log("Slots would be too tall based on the width " + slotwidth
-                    + " so we're shrinking them...");
-                slotwidth = (backgroundHeight / 2) * 0.95f;
-                Logger.Log("New slot width is " + slotwidth);
-            }
-
-            // Save slot width so we can load scenes of the right size later.
-            this.slotWidth = slotwidth;
-
-            // We get the answer slot width later, since we do not always need
-            // to load answer slots.
-
-            // Load the number of slots needed for this story.
-            for (int i = 0; i < numScenes; i++)
-            {
-                Sprite s = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
-                                                  + Constants.SOCIAL_STORY_FILE_PATH
-                                                  + Constants.SS_SCENESLOT_PATH
-                                                  + Constants.SS_SLOT_NAME
-                                                  + (scenesInOrder ? "" : (i+1).ToString()));
-                if (s == null)
-                {
-                    Logger.LogError("Could not load scene slot image!" );
-                    continue;
-                }
-
-                Logger.Log("The x-position of next slot will be: " + 
-                    ((-backgroundWidth / 2) + (backgroundWidth / (numScenes * 2))
-                    + (i * (backgroundWidth / numScenes))));
-
-                PlayObjectProperties pops = new PlayObjectProperties(
-                    // Slot name is just the name plus a counter.
-                    Constants.SCENE_SLOT + i,
-                    // Tag the slot as a play object so we handle it properly
-                    // elsewhere.
-                    Constants.TAG_PLAY_OBJECT,
-                    // Slots are not draggable.
-                    false,
-                    // Slots have no audio attached.
-                    null,
-                    // Position the object:
-                    // x = left edge + offset to first item +
-                    //     (counter * width of one item without item margins)
-                    // y = near top of screen
-                    // z = specified in constants 
-                    new Vector3 (
-                        (-backgroundWidth / 2) 
-                            + (backgroundWidth / (numScenes * 2)) 
-                            + (i * (backgroundWidth / numScenes)),
-                        backgroundHeight * 0.25f,
-                        Constants.Z_SLOT),
-                    // Scale slot to one portion of the screen width.
-                    new Vector3(
-                        slotwidth / s.bounds.size.x,
-                        slotwidth / s.bounds.size.y,
-                        slotwidth / s.bounds.size.z)
-                    );
-                
-                // Instantiate the scene slot with the properties above.
-                this.InstantiatePlayObject(pops, s);
-                
-                // Change name and size to make smaller version that we will use
-                // to detect collisions during out-of-order games.
-                if (!scenesInOrder)
-                {
-                    pops.SetName(Constants.SCENE_COLLIDE_SLOT + i);
-                    pops.SetInitPosition(new Vector3(pops.InitPosition().x,
-                                                     pops.InitPosition().y, 
-                                                     Constants.Z_COLLIDE_SLOT));
-                    pops.SetScale(new Vector3(pops.Scale().x / 3, 
-                                              pops.Scale().y / 3, 
-                                              pops.Scale().z) / 3);
-                    
-                    // Instantiate smaller scene collision object.
-                    this.InstantiatePlayObject(pops, s);
-                }
-            }
-            
-            // Load answer slots, if we need to.
-            if (numAnswers >= 1)
-            {
-                // Calculate answer slot width so they're evenly spaced.
-                float aslotwidth = (float) (backgroundWidth / numAnswers * 0.8);
-
-                // If the height of the slots is greater than two-fifths of the
-                // camera view height, shrink the slots so they fit in the
-                // bottom half of the screen.
-                if (aslotwidth > backgroundHeight * 2/5)
-                {
-                    aslotwidth = backgroundHeight * 2/5;
-                }
-
-                // Save answer slot width so we can load answer graphics of the
-                // right size later.
-                this.answerSlotWidth = aslotwidth;
-
-                // Find the image files for the answer slots and load the number
-                // of answer slots needed for this story. Since all the answer
-                // slots look the same, we can load one graphic and reuse it.
-                Sprite ans = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
-                                                    + Constants.SOCIAL_STORY_FILE_PATH
-                                                    + Constants.SS_ANSWER_SLOT_PATH
-                                                    + Constants.SS_SLOT_NAME);
-
-                // We also load graphics for correct and incorrect feedback,
-                // since these will be shown over the answer slots on request.
-                Sprite feedc = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
-                                                      + Constants.SOCIAL_STORY_FILE_PATH
-                                                      + Constants.SS_FEEDBACK_PATH
-                                                      + Constants.SS_CORRECT_FEEDBACK_NAME);  
-                
-                Sprite feedic = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH
-                                                       + Constants.SOCIAL_STORY_FILE_PATH
-                                                       + Constants.SS_FEEDBACK_PATH
-                                                       + Constants.SS_INCORRECT_FEEDBACK_NAME);                                       
-                
-                for (int i = 0; i < numAnswers; i++)
-                {   
-                    // Create answer slot properties.
-                    PlayObjectProperties pops = new PlayObjectProperties(
-                        // Slot name is just the name plus a counter.
-                        Constants.ANSWER_SLOT + i,
-                        // Tag the slot as a play object so we handle it properly
-                        // elsewhere.
-                        Constants.TAG_ANSWER_SLOT,
-                        // Slots are not draggable.
-                        false,
-                        // Slots have no audio attached.
-                        null,
-                        // Position the object:
-                        // x = left edge + offset to first item +
-                        //     (counter * width of one item without item margins)
-                        // y = near bottom of screen
-                        // z = specified in constants 
-                        new Vector3 (
-                            (-backgroundWidth / 2) 
-                                + (backgroundWidth / (numAnswers * 2)) 
-                                + (i * backgroundWidth / (numAnswers)),
-                            -backgroundHeight * 0.25f,
-                            Constants.Z_SLOT),
-                        // Scale to one portion of the screen width.
-                        new Vector3(
-                            aslotwidth / ans.bounds.size.x,
-                            aslotwidth / ans.bounds.size.x,
-                            aslotwidth / ans.bounds.size.x)
-                        );
-                    
-                    // Instantiate the answer slot.
-                    this.InstantiatePlayObject(pops, ans);
-                    
-                    // Load answer feedback graphics for each answer slots. We
-                    // know only one answer will be correct, so load 1 correct
-                    // and N incorrect (where N is the number of answer slots
-                    // minus one). Like with the highlight object, keep a 
-                    // reference to each feedback graphic and set them as not
-                    // visible.
-                    PlayObjectProperties pobps = new PlayObjectProperties(
-                        // Put "feedback" in the names.
-                        (i < numAnswers - 1 ? "feedback-incorrect" + i : "feedback-correct"),
-                        (i < numAnswers - 1 ? Constants.TAG_INCORRECT_FEEDBACK : 
-                        // Tas as feedback.
-                         Constants.TAG_CORRECT_FEEDBACK),
-                        // Feedback graphics are not draggable.
-                        false,
-                        // Feedback graphics have no audio attached.
-                        null,
-                        // Position on top of the corresponding answer slot.
-                        pops.InitPosition(),
-                        // Scale to one portion of the screen width, slightly
-                        // bigger than the answer slot beneath it.
-                        new Vector3(
-                            aslotwidth /
-                                (i < numAnswers - 1 ? feedic : feedc).bounds.size.x * 1.2f,
-                            aslotwidth /
-                                (i < numAnswers - 1 ? feedic : feedc).bounds.size.x * 1.2f,
-                            aslotwidth /
-                                (i < numAnswers - 1 ? feedic : feedc).bounds.size.x * 1.2f)
-                        );
-                    
-                    // Instantiate the feedback graphic.
-                    this.InstantiatePlayObject(pobps, (i < numAnswers - 1 ? feedic : feedc));
-                }  
-            }
-        }
-    
-        /// <summary>
-        /// Logs the state of the current scene and sends as a ROS message
-        /// </summary>
-        private void GetSceneKeyframe (out LogEvent.SceneObject[] sceneObjects)
-        {
-            // find background image name
-            GameObject backg = GameObject.FindGameObjectWithTag(Constants.TAG_BACKGROUND);
-            
-            // find all game objects currently in scene
-            GameObject[] gos = GameObject.FindGameObjectsWithTag(Constants.TAG_PLAY_OBJECT);
-            
-            // TODO find any other game objects with other tags?
-            
-            // make array of scene objects plus one for the background
-            sceneObjects = new LogEvent.SceneObject[gos.Length + ((backg != null) ? 1 : 0)];
-            // add background image if it exists
-            if (backg != null)
-            {
-                LogEvent.SceneObject bo = new LogEvent.SceneObject();
-                bo.name = backg.name;
-                bo.tag = backg.tag;
-                bo.position = new float[] { backg.transform.position.x,
-                    backg.transform.position.y, backg.transform.position.z };
-                bo.scale = new float[] { backg.transform.localScale.x,
-                    backg.transform.localScale.y, backg.transform.localScale.z };
-                bo.draggable = false;
-                bo.audio = "";
-                sceneObjects[sceneObjects.Length-1] = bo;
-            }
-            
-            // for each game object, get the relevant properties for the keyframe
-            // i.e., name, tag, and position
-            // though strictly speaking tag isn't necessary unless we're building an
-            // array of stuff that's not just play objects - which may be the case
-            // later! so we're keeping it as a field anyway
-            for(int i = 0; i < gos.Length; i++) 
-            {
-                LogEvent.SceneObject so = new LogEvent.SceneObject();
-                so.name = gos[i].name;
-                so.position = new float[] { gos[i].transform.position.x,
-                    gos[i].transform.position.y, gos[i].transform.position.z };
-                so.tag = gos[i].tag;
-                so.scale = new float[] { gos[i].transform.localScale.x,
-                    gos[i].transform.localScale.y, gos[i].transform.localScale.z };
-                // is this object draggable?
-                so.draggable = (gos[i].GetComponent<Transformer>() != null);
-                // get audio clip name
-                AudioSource auds = gos[i].GetComponent<AudioSource>();
-                if(auds != null && auds.clip != null) { so.audio = auds.clip.name; }
-                // get saved properties
-                SavedProperties sp = gos[i].GetComponent<SavedProperties>();
-                if (sp != null)
-                {
-                    so.correctSlot = sp.correctSlot;
-                    so.isCorrect = sp.isCorrect;
-                    so.isIncorrect = sp.isIncorrect;
-                }
-                sceneObjects[i] = so;
-            }
-        }
+       
+                      
+     
     #endregion
     
         /// <summary>
@@ -2020,13 +1455,9 @@ namespace opal
 				WWW www = new WWW( imageUrl );
 
 				while (www.isDone != true) {
-					//yield return null;
 					if (www.isDone == true)
 						break;
 				}
-				//yield return www;
-
-				//Logger.LogError (www.url);
 
 				Texture2D left = new Texture2D(www.texture.width, www.texture.height, TextureFormat.DXT1, false);
 
@@ -2038,18 +1469,8 @@ namespace opal
 
 				www.LoadImageIntoTexture(spriteImage.texture);
 
+			
 
-//				if (www.isDone == true) {
-//					Logger.LogWarning ("www is done");
-//					if (www.error!=null) {
-//						Logger.LogError ("www has an error..." + www.error);
-//					} else {
-//						Logger.LogWarning ("no error...");
-//					}
-//				} else {
-//					Logger.LogWarning("www is NOT DONE");
-//				}
-				//www.Dispose();
 				this.storyImageSprites[counter]=spriteImage;
 				counter++;
 			}
@@ -2062,33 +1483,52 @@ namespace opal
 			//iterate through the folder to get all file names
 			string [] fileEntries = Directory.GetFiles(storyPath);
 
+
 			this.storyImageSprites = new Sprite[fileEntries.Length];
+
+			this.storyImageObjects = new GameObject[fileEntries.Length];
+
+			storyInfo.total_pages = fileEntries.Length;
 
 			loadingImages(fileEntries);
 
-			//foreach(Sprite isprite in this.storyImageSprites){
-			//	isprite.
-			//}
 		}
 
 		/** Load story */
 		public void LoadStory()
 		{
+			//this.storyInfo.reload = true;
+			//this.storyInfo.current_page=0;
 
+			string storyName=this.inputStoryName;
+			string storyPath=storyFolder + storyName;
 
-			string storyName=storyInfo.StoryName;
-
-			//string storyPath = "/Users/huilichen/Downloads/graphics_without_text/images/"+storyName;
-			string storyPath="/sdcard/edu.mit.media.prg.sar.opal.base/"+storyName;
 
 			Logger.LogError ("story path: "+storyPath);
-			LoadImages(storyPath);
-			int pageCounter = 0;
 
-			foreach (Sprite s in this.storyImageSprites)
+			//check whether the story path is valid
+			if (!Directory.Exists (storyPath)) {
+				Logger.LogError ("story name is not valid");
+				this.storyInfo.StoryName = "Invalid";
+				this.storyInfo.total_pages = 0;
+				this.storyInfo.current_page = 0;
+				return; 
+			} else {
+				this.storyInfo.StoryName = this.inputStoryName;
+				this.storyInfo.current_page = 0;
+				this.storyInfo.reload = true;
+				LoadImages (storyPath);
+
+			}
+			int pageCounter = 0;
+			Logger.LogError ("!!!!!!!!!!after loading images.....!!!!!!!!!!!");
+
+			for (int index=0; index<this.storyImageSprites.Length;index++ )
 			{
+				Logger.LogError ("!!!!!!!!!!in for loop.....!!!!!!!!!!!:::::"+index.ToString());
+				Sprite s = this.storyImageSprites[index];
 				StorypageObjectProperties sops = new StorypageObjectProperties(
-					s.name,
+					pageCounter.ToString(),
 					Constants.TAG_BACKGROUND,
 					pageCounter,
 					storyPath+storyName,
@@ -2103,11 +1543,14 @@ namespace opal
 				if (GameObject.Find (s.name) == null || this.storyInfo.reload==true ) // skip duplicates
 				{
 					pagesInStory = pageCounter;
-					InstantiateStoryPage(sops, s);
+					InstantiateStoryPage(sops, s,index);
 				}
 
 				pageCounter++;
 			}
+			Logger.LogError ("!!!!!!!!!!after loading images for loop.....!!!!!!!!!!!");
+			// show the first story page
+			this.storyImageObjects[this.storyInfo.current_page].GetComponent<Renderer>().enabled = true;
 	
 		}
 

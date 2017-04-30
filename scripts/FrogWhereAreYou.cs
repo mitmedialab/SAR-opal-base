@@ -52,7 +52,8 @@ namespace opal
 			}
         
             // load "Frog, where are you?" story
-			this.mgc.LoadStory();
+
+			//this.mgc.LoadStory();
             //LoadStory();
         }
         

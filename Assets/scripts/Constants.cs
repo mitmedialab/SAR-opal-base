@@ -120,6 +120,7 @@ namespace opal
         public const string TAG_CORRECT_FEEDBACK = "CorrectFeedback";
         public const string TAG_INCORRECT_FEEDBACK = "IncorrectFeedback";
         public const string TAG_ANSWER_SLOT = "AnswerSlot";
+		public const string TAG_INPUT_TEXT_FIELD="IpInput";
     
         // DEMO - scene numbers (by index -- see list of scenes in build settings)
         public const int SCENE_DEMO_INTRO = 0;
@@ -216,6 +217,8 @@ namespace opal
         public const string CONFIG_PATH_ANDROID = "mnt/sdcard/edu.mit.media.prg.sar.opal.base/";
         // if a linux game:
         public const string CONFIG_PATH_LINUX = "/Resources/";
+		// ROS IP address
+		public const string ROS_IP_ADDRESS_FILE = "ROS_IP_address.txt";
     
     
         /** Default ROS-related constants: topics and message types */

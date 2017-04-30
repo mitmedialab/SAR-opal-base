@@ -33,6 +33,14 @@ namespace opal
 {
     public static class Utilities
     {
+
+		public static void WriteConfig (string path, 
+			string contents)
+		{
+			Logger.LogError ("writing config test...");
+			File.WriteAllText (path,contents);
+
+		}
         /// <summary>
         /// Decodes the JSON config file
         /// </summary>
@@ -60,6 +68,7 @@ namespace opal
             //    return;
             //}
             string config = "";
+
             try {
                 config = File.ReadAllText(path);
                 Logger.Log("got config: " + config);

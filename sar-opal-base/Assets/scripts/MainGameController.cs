@@ -1573,7 +1573,15 @@ namespace opal
 
             // Load background image.
             Logger.Log ("Loading background");
-            Sprite bk = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + "SSBackground");
+            Sprite bk;
+            try {
+                bk = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + "SSBackground");
+            }
+            catch (NullReferenceException e) {
+                Logger.LogError("Could not find background graphic! Tried to load: " +
+                     Constants.GRAPHICS_FILE_PATH + "SSBackground");
+            }
+
             BackgroundObjectProperties bops = new BackgroundObjectProperties(
                 "SSBackground", Constants.TAG_BACKGROUND, 
                 // Scale background to size of camera view.
@@ -1585,6 +1593,7 @@ namespace opal
                     (float)(this.scaleToHeight ? Camera.main.pixelHeight / bk.bounds.size.y 
                         : Camera.main.pixelWidth / bk.bounds.size.x))));
             this.InstantiateBackground(bops, bk);
+           
 
             // We need to scale the scene and answer slots to evenly fit in the
             // screen. We'll use the background image in place of the actual

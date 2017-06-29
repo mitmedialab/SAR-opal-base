@@ -94,14 +94,14 @@ PlayerSettings:
     16:10: 0
     16:9: 1
     Others: 0
-  bundleIdentifier: mit.media.cyber.opal.base
-  bundleVersion: 3.3.0
+  bundleIdentifier: mit.media.prg.opal
+  bundleVersion: 3.5.3
   preloadedAssets: []
   metroEnableIndependentInputSource: 0
   xboxOneDisableKinectGpuReservation: 0
   singlePassStereoRendering: 0
   protectGraphicsMemory: 0
-  AndroidBundleVersionCode: 30300
+  AndroidBundleVersionCode: 30503
   AndroidMinSdkVersion: 9
   AndroidPreferredInstallLocation: 1
   aotOptions: 

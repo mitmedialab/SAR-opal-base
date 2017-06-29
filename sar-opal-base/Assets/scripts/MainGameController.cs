@@ -1573,18 +1573,26 @@ namespace opal
 
             // Load background image.
             Logger.Log ("Loading background");
-            Sprite bk = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + "SSBackground");
-            BackgroundObjectProperties bops = new BackgroundObjectProperties(
-                "SSBackground", Constants.TAG_BACKGROUND, 
-                // Scale background to size of camera view.
-                Camera.main.ScreenToWorldPoint(new Vector3(
-                    (float)(this.scaleToHeight ? Camera.main.pixelHeight / bk.bounds.size.y 
-                        : Camera.main.pixelWidth / bk.bounds.size.x),
-                    (float)(this.scaleToHeight ? Camera.main.pixelHeight / bk.bounds.size.y 
-                        : Camera.main.pixelWidth / bk.bounds.size.x), 
-                    (float)(this.scaleToHeight ? Camera.main.pixelHeight / bk.bounds.size.y 
-                        : Camera.main.pixelWidth / bk.bounds.size.x))));
-            this.InstantiateBackground(bops, bk);
+            Sprite bk;
+            try {
+                bk = Resources.Load<Sprite>(Constants.GRAPHICS_FILE_PATH + "SSBackground");
+            
+                BackgroundObjectProperties bops = new BackgroundObjectProperties(
+                    "SSBackground", Constants.TAG_BACKGROUND, 
+                    // Scale background to size of camera view.
+                    Camera.main.ScreenToWorldPoint(new Vector3(
+                        (float)(this.scaleToHeight ? Camera.main.pixelHeight / bk.bounds.size.y 
+                            : Camera.main.pixelWidth / bk.bounds.size.x),
+                        (float)(this.scaleToHeight ? Camera.main.pixelHeight / bk.bounds.size.y 
+                            : Camera.main.pixelWidth / bk.bounds.size.x), 
+                        (float)(this.scaleToHeight ? Camera.main.pixelHeight / bk.bounds.size.y 
+                            : Camera.main.pixelWidth / bk.bounds.size.x))));
+                this.InstantiateBackground(bops, bk);
+            }
+            catch (NullReferenceException e) {
+                Logger.LogError("Could not find background graphic! Tried to load: " +
+                     Constants.GRAPHICS_FILE_PATH + "SSBackground\n" + e.ToString());
+            }
 
             // We need to scale the scene and answer slots to evenly fit in the
             // screen. We'll use the background image in place of the actual

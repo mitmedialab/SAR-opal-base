@@ -70,14 +70,14 @@ the command line with the flag `-force-opengl`, i.e., `./executable-name
   basic log messages
 - opal\_scene\_topic: [string] the ROS topic to publish OpalScene messages to
 
-#### Server & port On startup, the game will try to connect to the specified IP
+#### Server & port
 
-address or host name with the specified port. The server listed should be the
-IP address or hostname of the machine running roscore and the
-rosbridge\_server.
+On startup, the game will try to connect to the specified IP address or host
+name with the specified port. The server listed should be the IP address or
+hostname of the machine running roscore and the rosbridge\_server.
 
 You can start the rosbridge\_server with the command `roslaunch
-rosbridge\_server rosbridge\_websocket.launch`.
+rosbridge_server rosbridge_websocket.launch`.
 
 If the specified server address does not exist on the network, there is a 90s
 timeout before it'll give up trying (hardcoded in the websocket library, so one
@@ -346,39 +346,3 @@ be deployed to these devices.
 
 Please report all bugs and issues on the [SAR-opal-base github issues
 page](https://github.com/personal-robots/SAR-opal-base/issues).
-
-## TODO
-
-- 'next page' appears to not work when touch disabled
-- Add filepath to SceneObjectProperties so objects can be loaded from outside
-  build directory
-- LoadSpriteFromFile does not fail when a non-image file, such as a text file,
-  is loaded, but should fail
-- Add guidelines for where to put images on tablet for loading images from
-  outside build directory and test with tablet
-- Load sounds from a folder outside build directory
-- Update to load images and audio from folders on the tablet's sdcard
-  (currently, must load from the Resources folder, which gets compiled in to
-  the Unity game)
-- Create demo version of the game that only uses graphics that are checked in
-  to the repository.
-- Move 'highlight' object with transformer, currently does not follow drag path
-  very well
-- Log all log messages locally to tablet
-- Add some way of easily seeing which objects in the scene are draggable or
-  able to be interacted with; used to do the grow-shrink pulse motion, but that
-  caused havoc with the collision detection
-- Right now, the sidekick configuration is a simple true/false; you can't start
-  out without a sidekick and add it in later. Consider adding a sar\_opal\_msg
-  that enables or disables the sidekick, so that it can appear or disappear as
-  needed.
-- Add capability to load an image on the "top left" or "bottom right" of the
-  screen without specifying exact coordinates. Adjust the loaded image's
-  position until no collisions are detected so it does not overlap with other
-  images.
-- Look into ROS .NET for C#. Possible replacement for websocket connection?
-- Add demo and story options to config file so you don't have to recompile and
-  redeploy (and/or a start screen that lets you pick whether you want demo
-  mode, story mode, etc when you start the game - use "load scene" function to
-  pick the right one).
-- Rarely, we get a "websocket closed 1005" error. Why? Fix.

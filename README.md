@@ -10,7 +10,7 @@ This game was built and tested with:
 - Unity 5.4.1f1
 - MonoDevelop 5.9.6
 - rosbridge from ROS Indigo
-- sar\_opal\_msgs 4.0.0
+- opal\_msgs 4.0.0
 - TouchScript 8.2
 - LeanTween [no current version number, latest commit was
   78b0458171150ed89aba7435f336099f7a81e26b from June 11, 2016, after 2.32
@@ -101,25 +101,21 @@ The topics listed here are the default names of the topics subscribed and
 published to. You can change these defaults in the config file.
 
 The game subscribes to the ROS topic `opal\_tablet\_command` to receive
-messages of type
-"/[sar\_opal\_msgs](https://github.com/personal-robots/sar_opal_msgs
-"/sar\_opal\_msgs")/OpalCommand".
+messages of type "/[opal\_msgs](https://github.com/mitmedialab/opal_msgs
+"/opal_msgs")/OpalCommand".
 
 The game publishes /std\_msgs/String messages to the ROS topic `opal\_tablet`.
 
-The game publishes
-"/[sar\_opal\_msgs](https://github.com/personal-robots/sar_opal_msgs
-"/sar\_opal\_msgs")/OpalAction" to the ROS topic `opal\_tablet\_action`. See
-[/sar\_opal\_msgs] (https://github.com/personal-robots/sar_opal_msgs
-"/sar\_opal\_msgs") for more info.
+The game publishes "/[opal\_msgs](https://github.com/mitmedialab/opal_msgs
+"/opal_msgs")/OpalAction" to the ROS topic `opal\_tablet\_action`. See
+[/opal\_msgs] (https://github.com/mitmedialab/opal_msgs "/opal_msgs") for more
+info.
 
-The game publishes
-"/[sar\_opal\_msgs](https://github.com/personal-robots/sar_opal_msgs
-"/sar\_opal\_msgs")/OpalScene" to the ROS topic `opal\_tablet\_scene`. Usually
-this message will only be published after receiving a "request keyframe"
-command - see
-[/sar\_opal\_msgs](https://github.com/personal-robots/sar_opal_msgs
-"/sar\_opal\_msgs") for more info.
+The game publishes "/[opal\_msgs](https://github.com/mitmedialab/opal_msgs
+"/opal_msgs")/OpalScene" to the ROS topic `opal\_tablet\_scene`. Usually this
+message will only be published after receiving a "request keyframe" command -
+see [/opal\_msgs](https://github.com/mitmedialab/opal_msgs "/opal_msgs") for
+more info.
 
 The game publishes "/std\_msgs/Bool" to the ROS topic `opal\_tablet\_audio`, to
 indicate whether the sidekick character is done playing back an audio file.
@@ -128,10 +124,10 @@ indicate whether the sidekick character is done playing back an audio file.
 
 When Opal receives a `LOAD_OBJECT` OpalCommand message, it will attempt to load
 a GameObject with the specified properties. As the
-[/sar\_opal\_msgs](https://github.com/personal-robots/sar_opal_msgs
-"/sar\_opal\_msgs") documentation states, one of the fields you provide when
-telling Opal to load an object is the name of the associated graphic to load.
-Opal tries to load the graphic from two places:
+[opal\_msgs](https://github.com/mitmedialab/opal_msgs "/opal_msgs")
+documentation states, one of the fields you provide when telling Opal to load
+an object is the name of the associated graphic to load.  Opal tries to load
+the graphic from two places:
 
 1) `Assets/Resources/graphics/base-images` directory. If the game is a social
 stories game (see below for different game descriptions), Opal assumes all
@@ -150,8 +146,8 @@ will fail.
 
 ### OpalCommand HIGHLIGHT\_OBJECT messages
 
-As the [/sar\_opal\_msgs](https://github.com/personal-robots/sar_opal_msgs
-"/sar\_opal\_msgs") documentation states, you can specify the object to
+As the [/opal\_msgs](https://github.com/mitmedialab/opal_msgs
+"/_opal_msgs") documentation states, you can specify the object to
 highlight.  If no object is specified (i.e., the `properties` field is null),
 then the `HIGHLIGHT_OBJECT` command will deactivate the highlight. This way,
 you can highlight objects, then deactivate the light when you are done.
@@ -345,4 +341,4 @@ be deployed to these devices.
 ### Reporting Bugs
 
 Please report all bugs and issues on the [SAR-opal-base github issues
-page](https://github.com/personal-robots/SAR-opal-base/issues).
+page](https://github.com/mitmedialab/SAR-opal-base/issues).

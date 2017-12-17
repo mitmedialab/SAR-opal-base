@@ -234,7 +234,7 @@ namespace opal
             {
                 // Send the highlight to the position of the dragged object so it
                 // shows up in the right place.
-                LightOn(1, this.mostRecentlyDraggedGO.transform.position));
+                LightOn(1, this.mostRecentlyDraggedGO.transform.position);
 
                 if (this.mostRecentlyDraggedGO.transform.position.x
                         < this.cameraRect.xMin

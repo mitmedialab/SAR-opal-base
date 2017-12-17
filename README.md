@@ -306,6 +306,33 @@ To build and deploy the demo version, do the following:
 The demo version of the game requires some graphics that are not included in
 the demo.
 
+### General game, with Toucan
+
+This game uses the "basic" game configuration -- no special setup. It requires
+a specific set of graphics and audio, some of which were pre-arranged into
+scenes for ease of loading, but these scenes were not necessary for the whole
+game to run -- all the objects in these scenes were dynamically loaded via
+remote ROS commands when those scenes were loaded.
+
+To build and deploy the SAR Year 3 Toucan game, do the following:
+
+1. You will need to get the SAR 3 Toucan audio files and put them in the
+   "Resources/audio" directory.
+2. In Unity > Build Settings > Scenes, check the following scenes: demo-scene1,
+   s2-zoo, s3-... through s8-airplane, curious1, and either start-scene or
+   basic-scene (as of writing this I'm not entirely sure which it was). I also
+   thought there was a s1-packing scene, but the demo-scene1 has that content,
+   so it may have been renamed.  2.
+3. In Unity > Build Settings > Player Settings, change the deployed name of the
+   game to be "SAR Year 3" and the bundle identifier to be "sar3" instead of
+   "base". Technically, this step is not necessary, but if you have another
+   version of Opal deployed on your device, you'll want to change these
+   settings so you can have both side by side.
+4. In the MainGameController, set the flag `story` to false, `demo` to false,
+   and `socialStories` to false.
+5. Build and deploy.
+
+
 ### Storybook Version
 
 To build and deploy the Frog Where Are You storybook, do the following:

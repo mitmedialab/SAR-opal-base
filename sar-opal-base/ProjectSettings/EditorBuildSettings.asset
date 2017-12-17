@@ -5,15 +5,21 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
+  - enabled: 1
     path: Assets/scenes/basic-scene.unity
+    guid: 4cbe727232750448b9a1e098e89161c7
   - enabled: 0
     path: Assets/scenes/demo-intro.unity
+    guid: 4320fdb5ed12942ea8426181e8830374
   - enabled: 0
     path: Assets/scenes/demo-scene1.unity
+    guid: 6def5c5729a5e4efeaab1474e0f4162a
   - enabled: 0
     path: Assets/scenes/demo-scene2.unity
-  - enabled: 0
-    path: Assets/scenes/frog-where-are-you.unity
+    guid: dfed0c46e6f6a4537aae12c944826b60
   - enabled: 1
+    path: Assets/scenes/frog-where-are-you.unity
+    guid: f4d33ea7fca854d44b5967df29b5be2a
+  - enabled: 0
     path: Assets/scenes/social-stories.unity
+    guid: 2cfa6e4d8e40d4580be51b3514086aea

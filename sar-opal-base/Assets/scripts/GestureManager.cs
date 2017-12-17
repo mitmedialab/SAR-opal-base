@@ -26,6 +26,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
 using TouchScript.Gestures;
+using TouchScript.Gestures.TransformGestures;
 using TouchScript.Behaviors;
 using TouchScript.Hit;
 
@@ -231,6 +232,10 @@ namespace opal
             // screen boundaries -- if not, move it so it is.
             if (this.mostRecentlyDraggedGO != null)
             {
+                // Send the highlight to the position of the dragged object so it
+                // shows up in the right place.
+                LightOn(1, this.mostRecentlyDraggedGO.transform.position));
+
                 if (this.mostRecentlyDraggedGO.transform.position.x
                         < this.cameraRect.xMin
                     || this.mostRecentlyDraggedGO.transform.position.x
@@ -239,7 +244,7 @@ namespace opal
                         < this.cameraRect.yMin
                     || this.mostRecentlyDraggedGO.transform.position.y
                         > this.cameraRect.yMax)
-            {
+                {
                 // if the game object is not within the screen boundaries, move
                 // it so that it is
                 Logger.Log(this.mostRecentlyDraggedGO.name +
@@ -250,7 +255,7 @@ namespace opal
                     Mathf.Clamp(this.mostRecentlyDraggedGO.transform.position.y,
                         this.cameraRect.yMin, this.cameraRect.yMax),
                     this.mostRecentlyDraggedGO.transform.position.z);
-            }
+                }
             }
         }
 
@@ -278,14 +283,13 @@ namespace opal
                 TransformGesture trg = go.GetComponent<TransformGesture>();
                 if(trg == null) {
                     trg = go.AddComponent<TransformGesture>();
-                    trg.Type = TouchScript.Gestures.Base.TransformGestureBase.TransformType.Translation;
+                    trg.Type = TransformGesture.TransformType.Translation;
                 }
                 if(trg != null) {
-                    trg.CombineTouchesInterval = 0.2f;
                     trg.TransformStarted += transformStartedHandler;
-                    trg.Transformed -= transformedHandler;
+                    trg.Transformed += transformedHandler;
                     trg.TransformCompleted += transformCompleteHandler;
-                    Logger.Log(go.name + " subscribed to pan events");
+                    Logger.Log(go.name + " subscribed to drag events");
                 }
                 
                 // make sure we do have a transformer if we're draggable
@@ -346,61 +350,56 @@ namespace opal
             // get the gesture that was sent to us
             // this gesture will tell us what object was touched
             TapGesture gesture = sender as TapGesture;
-            TouchHit hit;
+            HitData hit = gesture.GetScreenPositionHitData();
             // get info about where the hit object was located when the gesture was
             // recognized - i.e., where on the object (in screen dimensions) did
             // the tap occur?
-            if(gesture.GetTargetHitResult(out hit)) {
-                // want the info as a 2D point 
-                Logger.Log("TAP registered on " + gesture.gameObject.name + " at " + hit.Point);
+            // want the info as a 2D point
+            Logger.Log("TAP on " + gesture.gameObject.name + " at " + hit.Point);
             
-                // fire event indicating that we received a message
-                if(this.logEvent != null) {
-                    // only send subset of msg that is actual message
-                    this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                    gesture.gameObject.name, "tap", hit.Point));
-                }
-                
-				// if this is a story, use arrows to go next/back in pages
-				if(this.story && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
-				{
-					ChangePage(Constants.PREVIOUS);
-				}
-				else if (this.story && gesture.gameObject.tag.Contains(Constants.TAG_GO_NEXT))
-				{
-					ChangePage(Constants.NEXT);
-				}
-				
-                // if this is the demo app, and if the tap was on the back arrow,
-                // go back to the demo intro scene
-                else if(this.demo && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
-                {
-                    SceneManager.LoadScene(Constants.SCENE_DEMO_INTRO);
-                }
- 
-                // if this is a demo app, play sidekick animation if it is touched
-                else if (this.demo && gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK))
-                {   
-                    // tell the sidekick to animate
-                    if (Constants.DEMO_SIDEKICK_SPEECH[this.demospeech].Equals(""))
-                    {
-                        gesture.gameObject.GetComponent<Sidekick>().SidekickDo(Constants.ANIM_FLAP);
-                    }
-                    else {
-                        gesture.gameObject.GetComponent<Sidekick>().SidekickSay(
-                            Constants.DEMO_SIDEKICK_SPEECH[this.demospeech]);
-                    }
-                    this.demospeech = (this.demospeech + 1) % Constants.DEMO_SIDEKICK_SPEECH.Length;
-                    
-                }
-                
-                // trigger sound on tap
-                //Logger.Log("going to play a sound for " + gesture.gameObject.name);
-                //if(this.allowTouch) PlaySoundAndPulse(gesture.gameObject);
-            } else {
-                // this probably won't ever happen, but in case it does, we'll log it
-                Logger.LogWarning("!! could not register where TAP was located!");
+            // fire event indicating that we received a message
+            if(this.logEvent != null) {
+                // only send subset of msg that is actual message
+                this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+                gesture.gameObject.name, "tap", hit.Point));
             }
+
+			// if this is a story, use arrows to go next/back in pages
+			if(this.story && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
+			{
+				ChangePage(Constants.PREVIOUS);
+			}
+			else if (this.story && gesture.gameObject.tag.Contains(Constants.TAG_GO_NEXT))
+			{
+				ChangePage(Constants.NEXT);
+			}
+
+            // if this is the demo app, and if the tap was on the back arrow,
+            // go back to the demo intro scene
+            else if(this.demo && gesture.gameObject.tag.Contains(Constants.TAG_BACK))
+            {
+                SceneManager.LoadScene(Constants.SCENE_DEMO_INTRO);
+            }
+
+            // if this is a demo app, play sidekick animation if it is touched
+            else if (this.demo && gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK))
+            {   
+                // tell the sidekick to animate
+                if (Constants.DEMO_SIDEKICK_SPEECH[this.demospeech].Equals(""))
+                {
+                    gesture.gameObject.GetComponent<Sidekick>().SidekickDo(Constants.ANIM_FLAP);
+                }
+                else {
+                    gesture.gameObject.GetComponent<Sidekick>().SidekickSay(
+                        Constants.DEMO_SIDEKICK_SPEECH[this.demospeech]);
+                }
+                this.demospeech = (this.demospeech + 1) % Constants.DEMO_SIDEKICK_SPEECH.Length;
+                
+            }
+
+            // trigger sound on tap
+            //Logger.Log("going to play a sound for " + gesture.gameObject.name);
+            //if(this.allowTouch) PlaySoundAndPulse(gesture.gameObject);
         }
 
 
@@ -414,70 +413,56 @@ namespace opal
             // get the gesture that was sent to us, which will tell us 
             // which object was pressed
             PressGesture gesture = sender as PressGesture;
-            TouchHit hit;
+            HitData hit = gesture.GetScreenPositionHitData();
             // get info about where the hit object was located when the gesture was
             // recognized - i.e., where on the object (in screen dimensions) did
             // the press occur?
-            if(gesture.GetTargetHitResult(out hit)) 
-            {
-                Logger.Log("PRESS on " + gesture.gameObject.name + " at " + hit.Point);
-            
-                // fire event to logger to log this action
-                if(this.logEvent != null) 
-                {
-                    // if this is a social stories game, log additional info about
-                    // what object was pressed
-                    if (this.socialStories)
-                    {
-                        // log the press plus whether or not the pressed object was a YES or NO
-                        // button, or whether the object was a CORRECT or INCORRECT object
-                        this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                            gesture.gameObject.name, "press", hit.Point,
-                            (gesture.gameObject.name.Contains("start_button") ? "START" 
-                            : (gesture.gameObject.name.Contains("no_button") ? "NO"
-                            // If the game object doesn't have SavedProperties component, don't add
-                            // an additional message. Otherwise, log whether it was correct or not.
-                            : gesture.gameObject.GetComponent<SavedProperties>() == null ? ""
-                            : (gesture.gameObject.GetComponent<SavedProperties>().isCorrect ? "CORRECT"
-                            : (gesture.gameObject.GetComponent<SavedProperties>().isIncorrect ? "INCORRECT"
-                            : ""))))));
-                    }
-                    else
-                    {
-                        // log the press
-                        this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                            gesture.gameObject.name, "press", hit.Point));
-                    }
-                }
-            
-                
-				
-                // move highlighting light and set active
-                // don't highlight touches in a story
-                if(this.allowTouch)// && !this.story)
-                {
-                    // send the light the z position of the pressed object because
-                    // the 'hit2d' point doesn't have the right z position (is always
-                    // just zero)
-                    //LightOn(1, new Vector3(hit2d.Point.x, hit2d.Point.y, 
-                    //    gesture.gameObject.transform.position.z));
-                    
-                    // NEW trying out centering light behind the pressed object,
-                    // regardless of where on the pressed object the touch was
-                    LightOn(1, gesture.gameObject.transform.position);
-                }
-                    
-                // trigger sound on press
-                if(this.allowTouch && gesture.gameObject.tag.Contains(Constants.TAG_PLAY_OBJECT)) 
-                {
-                    Logger.Log("going to play a sound for " + gesture.gameObject.name);
-                    PlaySoundAndPulse(gesture.gameObject);
-                }
+            Logger.Log("PRESS on " + gesture.gameObject.name + " at " + hit.Point);
 
-            } else {
-                // this probably won't ever happen, but in case it does, we'll log it
-                Logger.LogWarning("!! could not register where PRESS was located!");
+            // fire event to logger to log this action
+            if(this.logEvent != null)
+            {
+                // if this is a social stories game, log additional info about
+                // what object was pressed
+                if (this.socialStories)
+                {
+                    // log the press plus whether or not the pressed object was a YES or NO
+                    // button, or whether the object was a CORRECT or INCORRECT object
+                    this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+                        gesture.gameObject.name, "press", hit.Point,
+                        (gesture.gameObject.name.Contains("start_button") ? "START"
+                        : (gesture.gameObject.name.Contains("no_button") ? "NO"
+                        // If the game object doesn't have SavedProperties component, don't add
+                        // an additional message. Otherwise, log whether it was correct or not.
+                        : gesture.gameObject.GetComponent<SavedProperties>() == null ? ""
+                        : (gesture.gameObject.GetComponent<SavedProperties>().isCorrect ? "CORRECT"
+                        : (gesture.gameObject.GetComponent<SavedProperties>().isIncorrect ? "INCORRECT"
+                        : ""))))));
+                }
+                else
+                {
+                    // log the press
+                    this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+                        gesture.gameObject.name, "press", hit.Point));
+                }
             }
+
+            // move highlighting light and set active
+            // don't highlight touches in a story
+            if(this.allowTouch)// && !this.story)
+            {
+                // Center the light behind the pressed object, regardless of
+                // where on the pressed object the touch was.
+                LightOn(1, gesture.gameObject.transform.position);
+            }
+
+            // trigger sound on press
+            if(this.allowTouch && gesture.gameObject.tag.Contains(Constants.TAG_PLAY_OBJECT)) 
+            {
+                Logger.Log("going to play a sound for " + gesture.gameObject.name);
+                PlaySoundAndPulse(gesture.gameObject);
+            }
+
         }
 
         /// <summary>
@@ -512,42 +497,38 @@ namespace opal
             // get the gesture that was sent to us, which will tell us 
             // which object was being dragged
             TransformGesture gesture = sender as TransformGesture;
-            TouchHit hit;
+            HitData hit = gesture.GetScreenPositionHitData();
             // get info about where the hit object was located when the gesture was
             // recognized - i.e., where on the object (in screen dimensions) did
             // the drag occur?
-            if(gesture.GetTargetHitResult(out hit)) {
-                Logger.Log("PAN STARTED on " + gesture.gameObject.name + " at " + hit.Point);
-                // move this game object with the drag
-                // note that hit2d.Point sets the z position to 0! does not keep
-                // track what the z position actually was! so we adjust for this when
-                // we check the allowed moves
-                if(this.allowTouch)
-                {
-                    // The transformer component moves object on drag events, but we
-                    // have to check that the object stays within the screen boundaries.
-                    // This happens in the Update loop; here we just save the most
-                    // recently dragged object.
-                    this.mostRecentlyDraggedGO = gesture.gameObject;
+            Logger.Log("DRAG STARTED on " + gesture.gameObject.name + " at " + hit.Point);
+            // move this game object with the drag
+            // note that hit2d.Point sets the z position to 0! does not keep
+            // track what the z position actually was! so we adjust for this when
+            // we check the allowed moves
+            if(this.allowTouch)
+            {
+                // The transformer component moves object on drag events, but we
+                // have to check that the object stays within the screen boundaries.
+                // This happens in the Update loop; here we just save the most
+                // recently dragged object.
+                this.mostRecentlyDraggedGO = gesture.gameObject;
 
-                   // the transformer component moves object on pan events
-                    // send the light the z position of the panned object so it
-                    // shows up in the right plane 
-                    LightOn(1, new Vector3(hit.Point.x, hit.Point.y, 
-                                           gesture.gameObject.transform.position.z));
-                }
-                // fire event indicating that we received a message
-                if(this.logEvent != null) {
-                    // only send subset of msg that is actual message
-                    this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                                                     gesture.gameObject.name, "pan", hit.Point));
-                }
-                
-            } else {
-                // this probably won't ever happen, but in case it does, we'll log it
-                Logger.LogWarning("could not register where PAN was located!");
+                // The transformer component moves the object. We just need to
+                // send the light to the object's position - in particular, we
+                // need the right z position so the light shows up in the right
+                // plane.
+                LightOn(1, new Vector3(
+                    gesture.gameObject.transform.position.x,
+                    gesture.gameObject.transform.position.y,
+                    gesture.gameObject.transform.position.z));
             }
-            
+            // fire event indicating that we received a message
+            if(this.logEvent != null) {
+                // only send subset of msg that is actual message
+                this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+                                                 gesture.gameObject.name, "pan", hit.Point));
+            }
         }
      
         /// <summary>
@@ -560,34 +541,19 @@ namespace opal
             // get the gesture that was sent to us, which will tell us 
             // which object was being dragged
             TransformGesture gesture = sender as TransformGesture;
-            TouchHit hit;
+            HitData hit = gesture.GetScreenPositionHitData();
             // get info about where the hit object was located when the gesture was
             // recognized - i.e., where on the object (in screen dimensions) did
             // the drag occur?
-            
-            if(gesture.GetTargetHitResult(out hit)) {
-                Logger.Log("PAN on " + gesture.gameObject.name + " at " + hit.Point);
-                // move this game object with the drag
-                if(this.allowTouch)
-                {
-                    // send the light the z position of the panned object so it shows
-                    // up in the right plane
-                    LightOn(1, new Vector3(hit.Point.x, hit.Point.y, 
-                                           gesture.gameObject.transform.position.z));
-                // fire event indicating that we received a message
-                }
-                if(this.logEvent != null) {
-                    // only send subset of msg that is actual message
-                    // note that the hit2d.Point may not have the correct z position
-                    this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-                        gesture.gameObject.name, "pan", hit.Point));
-                }
+            Logger.Log("DRAG on " + gesture.gameObject.name + " at " + hit.Point);
 
-            } else {
-                // this probably won't ever happen, but in case it does, we'll log it
-                Logger.LogWarning("could not register where PAN was located!");
+            // fire event indicating that we received a message
+            if(this.logEvent != null) {
+                // only send subset of msg that is actual message
+                // note that the hit.Point may not have the correct z position
+                this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+                    gesture.gameObject.name, "pan", hit.Point));
             }
-
         }
         
         
@@ -598,7 +564,11 @@ namespace opal
         /// <param name="e">E.</param>
         private void transformCompleteHandler (object sender, EventArgs e)
         {
-            Logger.Log("PAN COMPLETE");
+            Logger.Log("DRAG COMPLETE");
+            // Since we use the most recently dragged object's position in the
+            // update loop to move the highlight around, we need to reset it
+            // so we know not to keep the light on.
+            this.mostRecentlyDraggedGO = null;
             LightOff();
         
             // fire event indicating that an action occurred
@@ -619,49 +589,40 @@ namespace opal
 			// get the gesture that was sent to us, which will tell us 
 			// which object was flicked
 			FlickGesture gesture = sender as FlickGesture;
-			
-			TouchHit hit;
+            HitData hit = gesture.GetScreenPositionHitData();
 			// get info about where the hit object was located when the gesture was
 			// recognized - i.e., where on the object (in screen dimensions) did
 			// the flick occur?
-			if(gesture.GetTargetHitResult(out hit)) {
-				Logger.Log("FLICK on " + gesture.gameObject.name + " at " + hit.Point);
+			Logger.Log("FLICK on " + gesture.gameObject.name + " at " + hit.Point);
 				
-				// fire event to logger to log this action
-				if(this.logEvent != null) {
-					// log the flick
-					this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
-					              gesture.gameObject.name, "flick", hit.Point));
+			// fire event to logger to log this action
+			if(this.logEvent != null) {
+				// log the flick
+				this.logEvent(this, new LogEvent(LogEvent.EventType.Action,
+				              gesture.gameObject.name, "flick", hit.Point));
+			}
+
+			if(this.allowTouch)
+			{
+				// if flick/swipe was to the right, advance page
+				if (gesture.ScreenFlickVector.x < 0)
+				{
+					ChangePage(Constants.NEXT);
 				}
 				
-				
-				if(this.allowTouch)
-				{	
-					// if flick/swipe was to the right, advance page
-					if (gesture.ScreenFlickVector.x < 0)
-					{
-						ChangePage(Constants.NEXT);
-					}
-					
-					// if to the left, go back a page
-					else if (gesture.ScreenFlickVector.x > 0)
-					{
-						ChangePage(Constants.PREVIOUS);
-					}
+				// if to the left, go back a page
+				else if (gesture.ScreenFlickVector.x > 0)
+				{
+					ChangePage(Constants.PREVIOUS);
 				}
-				
-				// trigger sound on flick as feedback?
-				//if(this.allowTouch && !gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK)) 
-				//{
-				//	Logger.Log("going to play a sound for " + gesture.gameObject.name);
-				//	PlaySoundAndPulse(gesture.gameObject);
-				//}
-				
-			} else {
-				// this probably won't ever happen, but in case it does, we'll log it
-				Logger.LogWarning("!! could not register where FLICK was located!");
 			}
 			
+			// trigger sound on flick as feedback?
+			//if(this.allowTouch && !gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK))
+			//{
+			//	Logger.Log("going to play a sound for " + gesture.gameObject.name);
+			//	PlaySoundAndPulse(gesture.gameObject);
+			//}
 		}
 		
         

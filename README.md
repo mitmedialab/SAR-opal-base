@@ -7,15 +7,13 @@ mechanics, all using ROS.
 ## Build and Run
 This game was built and tested with:
 
-- Unity 5.4.1f1
+- Unity 2017.2
 - MonoDevelop 5.9.6
 - rosbridge from ROS Indigo
 - opal\_msgs 4.0.0
-- TouchScript 8.2
-- LeanTween [no current version number, latest commit was
-  78b0458171150ed89aba7435f336099f7a81e26b from June 11, 2016, after 2.32
-  release]
-- websocket-sharp [no version number, latest commit was
+- TouchScript 9.0
+- LeanTween 2.45
+- websocket-sharp [no version number, latest commit in the version used was
   0ef00bf0a7d526fa705e938f1114d115691a377a from June 11, 2016]
 
 ## Configuration
@@ -183,7 +181,7 @@ game in the Assets folder.
 
 Instructions on building TouchScript's unitypackage from source are online
 [here] (https://github.com/TouchScript/TouchScript/wiki/How-to-Contribute "How
-to Contribute"). For 8.2, the steps are:
+to Contribute"). Briefly, the steps are:
 
 - init and update TouchScript's git submodules
 - init and update any submodules of those submodules
@@ -192,17 +190,24 @@ to Contribute"). For 8.2, the steps are:
 - import the generated TouchScript.unitypackage file in the Unity editor
 
 Note that the MainCamera and the Moveables Camera in the Unity scene each need
-a CameraLayer2D component attached. The camera layer is used to "see" which
-objects in the scene can be touched - see [Layers]
+a StandardLayer component attached, with the "2D" box checked and the others
+boxes unchecked. The camera layer is used to "see" which objects in the scene
+can be touched - see [Layers]
 (https://github.com/TouchScript/TouchScript/wiki/Layers "TouchScript Layers").
-If you don't have a camera layer of some kind attached to the MainCamera,
-TouchScript will automatically add one, but the default is a CameraLayer that
-handles 3D objects and 3D colliders. Since Opal is a 2D game, we need to use
-the CameraLayer2D, which is for 2D objects and 2D colliders.  (Emphasizing this
-extra because it can cause needless headache.)
+If you don't have a camera layer attached to the MainCamera, TouchScript will
+automatically add one. Previously, the default was a CameraLayer that handles
+3D objects and 3D colliders. Since Opal is a 2D game, we need to use the a
+layer that handles 2D objects and 2D colliders -- double check which boxes are
+checked on the StandardLayer component! (Emphasizing this extra because it can
+cause needless headache.)
 
-The TouchScript game object should have a Touch Manager component attached,
-which will list the different camera layers in the scene.
+You will also need a Touch Manager object, which is available as a Prefab from
+TouchScript. It'll list the different camera layers in the scene and in what
+order they will be processed.
+
+Then, each object that needs to handle touch events will need appropriate
+TapGesture, PressGesture, TransformGesture, etc components attached. The
+Transformer component is used with the TransformGesture to enable drag actions.
 
 ### LeanTween
 
@@ -213,7 +218,7 @@ here](http://dentedpixel.com/LeanTweenDocumentation/classes/LeanTween.html
 
 If you pull in the submodule, you can get the examples, prefabs, etc. The
 necessary .cs files are in the `SAR-opal-base Assets/Plugins` directory
-already.  Note that the LeanTween instructions only tell you to move
+already. Note that the LeanTween instructions only tell you to move
 LeanTween.cs to your Plugins directory; however, you actually need several
 other files that are in LeanTween's Plugins directory as well.
 
@@ -227,6 +232,10 @@ Note that if you try to build this project, the Newtonsoft.Json dll appears to
 be missing. However, a dll is built and placed in bin/Debug anyway. Some
 functionality may be missing as a result, but it doesn't seem to be necessary
 for this project.
+
+Note: The latest version of websocket-sharp (Dec 2017) did not build in
+MonoDevelop on my machine... a library was missing that was necessary. So we
+are still using the older version.
 
 ### MiniJSON
 
@@ -259,9 +268,11 @@ comments on the github gist page added in.
 
 ## Version Notes
 
-The Year 3 SAR study was run using Opal version 1.0.3.
-
-The Cyber4 study was run using Opal version 2.0.0.
+- The Year 3 SAR study used Opal version 1.0.3.
+- The Cyber4 study used Opal version 2.0.0.
+- The Year 5 SAR study used Opal version 3.5.3, but possibly with some
+  downstream/forked adjustments made by the people running that study, which
+  were not provided in a pull request, and thus who knows.
 
 ## Game Versions
 
@@ -274,7 +285,8 @@ game setups. Currently, these include:
 - SAR Year 5 social stories game
 
 For all versions, you may need to adjust the options in the config file for
-your setup.
+your setup, such as the rostopic names, whether to use the Toucan, and IP
+addresses.
 
 ### Demo Version
 

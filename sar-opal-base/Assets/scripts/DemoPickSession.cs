@@ -118,30 +118,24 @@ namespace opal
             // get the gesture that was sent to us
             // this gesture will tell us what object was touched
             TapGesture gesture = sender as TapGesture;
-            TouchHit hit;
+            HitData hit = gesture.GetScreenPositionHitData();
             // get info about where the hit object was located when the gesture was
             // recognized - i.e., where on the object (in screen dimensions) did
             // the tap occur?
-            if(gesture.GetTargetHitResult(out hit)) {
-                Logger.Log("TAP registered on " + gesture.gameObject.name + " at " + hit.Point);
+            Logger.Log("TAP on " + gesture.gameObject.name + " at " + hit.Point);
+
+            // load a scene if its object is touched
+            if (gesture.gameObject.tag.Contains(Constants.TAG_PLAY_OBJECT))
+            {
+                LoadNext(gesture.gameObject.name);
+            }
+            
+            // play sidekick animation if it is touched
+            else if (gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK))
+            {   
+                // tell the sidekick to animate
+                gesture.gameObject.GetComponent<Sidekick>().SidekickDo(Constants.ANIM_FLAP);
                 
-                // load a scene if its object is touched
-                if (gesture.gameObject.tag.Contains(Constants.TAG_PLAY_OBJECT))
-                {
-                    LoadNext(gesture.gameObject.name);
-                }
-                
-                // play sidekick animation if it is touched
-                else if (gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK))
-                {   
-                    // tell the sidekick to animate
-                    gesture.gameObject.GetComponent<Sidekick>().SidekickDo(Constants.ANIM_FLAP);
-                    
-                }
-                
-            } else {
-                // this probably won't ever happen, but in case it does, we'll log it
-                Logger.LogWarning("!! could not register where TAP was located!");
             }
         }
         

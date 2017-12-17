@@ -5,8 +5,8 @@
 [submodule "LeanTween"]
 	path = Libraries/LeanTween
 	url = https://github.com/dentedpixel/LeanTween
-    ignore = dirty
+    ignore = all
 [submodule "Libraries/websocket-sharp"]
 	path = Libraries/websocket-sharp
 	url = https://github.com/sta/websocket-sharp
-    ignore = dirty
+    ignore = all

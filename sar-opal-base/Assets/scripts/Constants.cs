@@ -73,7 +73,6 @@ namespace opal
         /** where images to load as sprites are located in Resources */
         public const string GRAPHICS_FILE_PATH = "graphics/base-images/";
         public const string AUDIO_FILE_PATH = "audio/";
-        public const string FROG_FILE_PATH = "frogwhereareyou/";
         public const string SOCIAL_STORY_FILE_PATH = "socialstories/";
         public const string SS_SCENESLOT_PATH = "scene-slots/";
         public const string SS_ANSWER_SLOT_PATH = "answer-slots/";
@@ -82,6 +81,29 @@ namespace opal
         public const string SS_FEEDBACK_PATH = "feedback/";
         public const string SS_CORRECT_FEEDBACK_NAME = "pos-feedback2";
         public const string SS_INCORRECT_FEEDBACK_NAME = "neg-feedback2";
+
+        // Graphics file paths for storybooks.
+        public const string FROG_FILE_PATH = "frogwhereareyou/";
+        public const string BABY_BIRDS_FIRST_NEST_PATH = "baby_birds_first_nest/";
+        public const string GERALDINE_FIRST_PATH = "geraldine_first/";
+        public const string POSSUM_AND_THE_PEEPER_PATH = "possum_and_the_peeper/";
+        public const string RACCOON_ON_HIS_OWN_PATH = "raccoon_on_his_own/";
+
+        public static string GetStorybookGraphicsPath(string story)
+        {
+            if (story == "baby_birds_first_nest")
+                return BABY_BIRDS_FIRST_NEST_PATH;
+            else if (story == "geraldine_first")
+                return GERALDINE_FIRST_PATH;
+            else if (story == "possum_and_the_peeper")
+                return POSSUM_AND_THE_PEEPER_PATH;
+            else if (story == "frog_where_are_you")
+                return FROG_FILE_PATH;
+            else if (story == "raccoon_on_his_own")
+                return RACCOON_ON_HIS_OWN_PATH;
+            else
+                return "";
+        }
         
         /// <summary>
         /// tags applied to game objects 
@@ -161,6 +183,10 @@ namespace opal
         public const int SHOW_CORRECT = 16;
         public const int HIDE_CORRECT = 17;
         public const int SETUP_STORY_SCENE = 18;
+        public const int STORY_SELECTION = 19;
+        public const int SAME_PAGE = 20;
+        public const int SHOW_FLIP_BUTTONS = 21;
+        public const int HIDE_FLIP_BUTTONS = 22;
         
         /** next page and previous page */
         public const bool NEXT = true;

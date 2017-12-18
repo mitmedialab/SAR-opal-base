@@ -45,14 +45,14 @@ namespace opal
         private bool demo = false;
 
         // STORYBOOK VERSION
-        private bool story = false;
+        private bool story = true;
         /// <summary>
         /// The pages in story.
         /// </summary>
         public int pagesInStory = 0;
 
         // SOCIAL STORIES VERSION
-        private bool socialStories = true;
+        private bool socialStories = false;
         private List<GameObject> incorrectFeedback;
         private GameObject correctFeedback;
         /// <summary>
@@ -187,6 +187,7 @@ namespace opal
 	                }
                 }
             }
+            // TODO if this is a story make sure we have the flip buttons.
 
             // set up fader
             // NOTE right now we're just using one fader that fades out all but the
@@ -1209,6 +1210,64 @@ namespace opal
                         + "properties for setting up a story scene!\n" + e);
                 }
             }
+            else if (cmd == Constants.STORY_SELECTION)
+            {
+                if(props == null)
+                {
+                    Logger.LogWarning("We were told to load a storybook, but "
+                        + "got no properties to tell us which story to load!");
+                }
+                else if(props is String)
+                {
+                    MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                    {
+                        // Load the specified storybook.
+                        this.LoadStorybook((string)props);
+                    });
+                }
+            }
+            else if (cmd == Constants.SAME_PAGE)
+            {
+                // This command was added for a story game, but it is a little
+                // unclear what its use case is. If you don't want to change the
+                // page, then why not just *not send* a "next page" command?
+                // It could be that this command was added because they wanted
+                // to always send *some* command but sometimes didn't want the
+                // page to change. ? It's unclear. We don't do anything for now
+                // for this command, since we don't really know what it is that
+                // we would do.
+                Logger.LogWarning("Got SAME PAGE command. Unclear what the desired "
+                    + "behavior is so we're doing nothing.");
+
+            }
+            else if (cmd == Constants.SHOW_FLIP_BUTTONS)
+            {
+                // Show the arrow buttons for a story book for flipping between
+                // pages in the book.
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                {
+                    GameObject go = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
+                    if (go != null)
+                        go.GetComponent<Renderer>().enabled = true;
+                    go = GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT);
+                    if (go != null)
+                        go.GetComponent<Renderer>().enabled = true;
+                });
+            }
+            else if (cmd == Constants.HIDE_FLIP_BUTTONS)
+            {
+                // Hide the arrow buttons for a story book for flipping between
+                // pages in the book.
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                {
+                    GameObject go = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
+                    if (go != null)
+                        go.GetComponent<Renderer>().enabled = false;
+                    go = GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT);
+                    if (go != null)
+                        go.GetComponent<Renderer>().enabled = false;
+                });
+            }
             else
 	        {
 	            Logger.LogWarning("Got a message that doesn't match any we expect!");
@@ -1795,6 +1854,45 @@ namespace opal
                     // Instantiate the feedback graphic.
                     this.InstantiatePlayObject(pobps, (i < numAnswers - 1 ? feedic : feedc));
                 }
+            }
+        }
+
+        /// <summary>
+        /// Load the specified story into the scene.
+        /// </summary>
+        /// <param name="story">The story to load.</param>
+        void LoadStorybook(string story)
+        {
+            Logger.Log("Loading story: " + story);
+
+            // Load the story:
+            // 1. Find the image files for this story's pages.
+            string path = Constants.GetStorybookGraphicsPath(story);
+            Sprite[] sprites = Resources.LoadAll<Sprite>(Constants.GRAPHICS_FILE_PATH
+                + path);
+
+            // 2. Load each story page.
+            int pageCounter = 0;
+            foreach (Sprite s in sprites)
+            {
+                StorypageObjectProperties sops = new StorypageObjectProperties(
+                    s.name,
+                    Constants.TAG_BACKGROUND,
+                    pageCounter,
+                    path,
+                    new Vector3(16,16,16),
+                    (pageCounter == 0 ? true : false),
+                    (pageCounter == sprites.Length-1 ? true : false),
+                    new Vector2 (0f, -50f)
+                );
+
+                // Instantiate the story page, and skip duplicates.
+                if (GameObject.Find (s.name) == null)
+                {
+                    this.pagesInStory = pageCounter;
+                    this.InstantiateStoryPage(sops, s);
+                }
+                pageCounter++;
             }
         }
 

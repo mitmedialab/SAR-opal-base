@@ -283,6 +283,7 @@ game setups. Currently, these include:
 - SAR Year 3 study game with Toucan
 - Storybook
 - SAR Year 5 social stories game
+- Relational Robot project: Combination of Storybook and SAR Year 3 setups
 
 For all versions, you may need to adjust the options in the config file for
 your setup, such as the rostopic names, whether to use the Toucan, and IP
@@ -352,6 +353,30 @@ To build and deploy the Frog Where Are You storybook, do the following:
 
 You can use the Frog Where Are You book as an example for how to load your own
 set of images for a storybook.
+
+### Relational Robot project game: General game setup with storybook option
+
+This game uses the "basic" game configuration with no special setup as well as
+having storybooks available. It requires a specific set of graphics, which are
+loaded into the scene dynamically via remote ROS commands. The graphics include
+several storybooks. To build and deploy:
+
+1. You will need to get the sr2-scene graphics and put them in the
+   "Resources/graphics/base-images/sr2-scenes" directory.  "Resources/audio"
+   directory. You will also need the graphics for the storybooks "Baby Bird's
+   First Nest", "Geraldine First", "Possum and the Peeper", and "Raccoon on His
+   Own", which should be put in directories based on the story name:
+   "Resources/graphics/base-images/baby_birds_first_nest", etc.
+2. In Unity > Build Settings > Scenes, check the start-scene and uncheck the
+   others.
+3. In Unity > Build Settings > Player Settings, change the deployed name of the
+   game to be "RR Opal" and the bundle identifier to be "rr" instead of
+   "base". Technically, this step is not necessary, but if you have another
+   version of Opal deployed on your device, you'll want to change these
+   settings so you can have both side by side.
+4. In the MainGameController, set the flag `story` to true, `demo` to false,
+   and `socialStories` to false.
+5. Build and deploy
 
 ### Social Stories Version
 

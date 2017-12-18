@@ -32,7 +32,6 @@ using TouchScript.Hit;
 
 namespace opal
 {
-
     /// <summary>
     /// Manage gesture events and actions taken as a result of
     /// gestures (e.g., play sound, show highlight)
@@ -41,7 +40,7 @@ namespace opal
     {
         // allow touch? if false, doesn't react to touch events
         public bool allowTouch = true;
-        
+
         // light for highlighting objects
         private GameObject highlight = null; 
         
@@ -714,16 +713,20 @@ namespace opal
 						if (this.mainCam.transform.position.z < this.pagesInStory-1)
 						{
 							this.mainCam.transform.Translate(new Vector3(0,0,1));
-							GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT).transform.Translate(new Vector3(0,0,1));
-							GameObject.FindGameObjectWithTag(Constants.TAG_BACK).transform.Translate(new Vector3(0,0,1));
+							GameObject.FindGameObjectWithTag(
+                                Constants.TAG_GO_NEXT).transform.Translate(new Vector3(0,0,1));
+							GameObject.FindGameObjectWithTag(
+                                Constants.TAG_BACK).transform.Translate(new Vector3(0,0,1));
 						}
 						else // this is the end page, loop back to beginning of story
 						{
 							this.mainCam.transform.position = new Vector3(0,0,-1);
 							GameObject tb = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
 							GameObject tn = GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT);
-							tb.transform.position = new Vector3(tb.transform.position.x,tb.transform.position.y,0);
-							tn.transform.position = new Vector3(tn.transform.position.x,tn.transform.position.y,0);
+							tb.transform.position = new Vector3(tb.transform.position.x,
+                                tb.transform.position.y,0);
+							tn.transform.position = new Vector3(tn.transform.position.x,
+                                tn.transform.position.y,0);
 						}
 					}
 					else {
@@ -740,8 +743,10 @@ namespace opal
                         if (this.mainCam.transform.position.z > -1)
                         {
                             this.mainCam.transform.Translate(new Vector3(0,0,-1));
-							GameObject.FindGameObjectWithTag(Constants.TAG_BACK).transform.Translate(new Vector3(0,0,-1));
-							GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT).transform.Translate(new Vector3(0,0,-1));
+							GameObject.FindGameObjectWithTag(
+                                Constants.TAG_BACK).transform.Translate(new Vector3(0,0,-1));
+							GameObject.FindGameObjectWithTag(
+                                Constants.TAG_GO_NEXT).transform.Translate(new Vector3(0,0,-1));
                         }
                         
                     }
@@ -786,7 +791,8 @@ namespace opal
             if(go != null) {
                 // play a sound, if it exists and is not already playing
                 // and also pulse size
-                if(PlaySound(go) && (go.GetComponent<AudioSource>() != null) && !go.GetComponent<AudioSource>().isPlaying)
+                if(PlaySound(go) && (go.GetComponent<AudioSource>() != null) &&
+                    !go.GetComponent<AudioSource>().isPlaying)
                     go.GetComponent<GrowShrinkBehavior>().ScaleUpOnce();
             }
         }

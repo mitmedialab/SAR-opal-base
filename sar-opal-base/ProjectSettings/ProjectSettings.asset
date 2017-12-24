@@ -7,7 +7,7 @@ PlayerSettings:
   productGUID: 18336ee1e2a864dd38aa113f5d439bc2
   AndroidProfiler: 0
   AndroidFilterTouchesWhenObscured: 0
-  defaultScreenOrientation: 0
+  defaultScreenOrientation: 4
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
@@ -127,7 +127,7 @@ PlayerSettings:
     16:10: 0
     16:9: 1
     Others: 0
-  bundleVersion: 3.5.3
+  bundleVersion: 4.0.0
   preloadedAssets: []
   metroInputSource: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -152,14 +152,14 @@ PlayerSettings:
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
-    Android: mit.media.prg.opal
+    Android: mit.media.prg.opal.rr
     Standalone: unity.Personal Robots Group.Opal
     Tizen: mit.media.prg.opal
     iOS: mit.media.prg.opal
     tvOS: mit.media.prg.opal
   buildNumber:
     iOS: 30300
-  AndroidBundleVersionCode: 30503
+  AndroidBundleVersionCode: 40000
   AndroidMinSdkVersion: 16
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1

@@ -10,10 +10,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -45,7 +45,7 @@ namespace opal
         public string[] correct;
         public string[] incorrect;
     }
-    
+
     // object with info for setting up a social stories scene
     public struct SetupStorySceneObject
     {
@@ -53,7 +53,7 @@ namespace opal
         public int numAnswers;
         public bool scenesInOrder;
     }
-    
+
     // configuration
     public struct GameConfig
     {
@@ -104,9 +104,9 @@ namespace opal
             else
                 return "";
         }
-        
+
         /// <summary>
-        /// tags applied to game objects 
+        /// tags applied to game objects
         /// </summary>
         public const string TAG_PLAY_OBJECT = "PlayObject";
         public const string TAG_LIGHT = "Light";
@@ -124,7 +124,12 @@ namespace opal
         public const string TAG_CORRECT_FEEDBACK = "CorrectFeedback";
         public const string TAG_INCORRECT_FEEDBACK = "IncorrectFeedback";
         public const string TAG_ANSWER_SLOT = "AnswerSlot";
-    
+        public const string TAG_VALIDATION = "ValidationText";
+
+        // Actual Opal game - scene numbers by index. See the list of scenes in
+        // the build settings.
+        public const int START_SCENE = 1;
+
         // DEMO - scene numbers (by index -- see list of scenes in build settings)
         public const int SCENE_DEMO_INTRO = 0;
         public const int SCENE_1_PACK = 1;
@@ -135,7 +140,7 @@ namespace opal
         public const int SCENE_6_BATH = 6;
         public const int SCENE_7_PARTY = 7;
         public const int SCENE_8_BYE = 8;
-        
+
         // DEMO - names for scenes
         public const string NAME_1_PACK = "Session1";
         public const string NAME_2_ZOO = "Session2";
@@ -145,11 +150,11 @@ namespace opal
         public const string NAME_6_BATH = "Session6";
         public const string NAME_7_PARTY = "Session7";
         public const string NAME_8_BYE = "Session8";
-    
+
         // layers
         public const int LAYER_MOVEABLES = 10;
         public const int LAYER_STATICS = 8;
-    
+
         // z positions
         public const int Z_BACKGROUND = 3;
         public const int Z_FOREGROUND = -4;
@@ -157,12 +162,12 @@ namespace opal
         public const int Z_FEEDBACK = -1;
         public const int Z_SLOT = 1;
         public const int Z_COLLIDE_SLOT = 2;
-    
+
         // for social story game, slot names
         public const string SCENE_SLOT = "scene-slot";
         public const string ANSWER_SLOT = "answer-slot";
         public const string SCENE_COLLIDE_SLOT = "scene-collide-slot";
-    
+
         /** messages we can receive */
         public const int DISABLE_TOUCH = 1;
         public const int ENABLE_TOUCH = 2;
@@ -187,11 +192,12 @@ namespace opal
         public const int SAME_PAGE = 20;
         public const int SHOW_FLIP_BUTTONS = 21;
         public const int HIDE_FLIP_BUTTONS = 22;
-        
+        public const int GO_TO_STORY_PAGE = 23;
+
         /** next page and previous page */
         public const bool NEXT = true;
         public const bool PREVIOUS = false;
-    
+
         /** sidekick animations */
         // name of each animation, from unity editor
         // we can receive rosmsgs with name of animation to play
@@ -206,11 +212,11 @@ namespace opal
             { ANIM_FLAP, "Fly" },
             { ANIM_FLAP_BEAKOPEN, "FlyBeakOpen"}
         };
-        
+
         // DEMO sidekick speech
-        public static string[] DEMO_SIDEKICK_SPEECH = new string[] { "ImAToucan", 
+        public static string[] DEMO_SIDEKICK_SPEECH = new string[] { "ImAToucan",
             "ImFromSpain", "AdiosSeeYouNext", ""};
-        
+
         /** config file path */
         // if playing in unity on desktop:
         public const string OPAL_CONFIG = "opal_config.txt";
@@ -219,15 +225,20 @@ namespace opal
         public const string CONFIG_PATH_ANDROID = "mnt/sdcard/edu.mit.media.prg.sar.opal.base/";
         // if a linux game:
         public const string CONFIG_PATH_LINUX = "/Resources/";
-    
-    
+
+        // Participant ID. Can be specified during the initial game startup, and may be
+        // used for logging purposes later.
+        public static string PID = "";
+
         /** Default ROS-related constants: topics and message types */
+        // ROSMASTER IP address.
+        public static string ROSMASTER_IP = "";
         // general string log messages (e.g., "started up", "error", whatever)
         public static string LOG_ROSTOPIC = "/opal_tablet";
         public const string DEFAULT_LOG_ROSTOPIC = "/opal_tablet";
         public const string LOG_ROSMSG_TYPE = "std_msgs/String";
         // messages about actions taken on tablet (e.g., tap occurred on object x at xyz)
-        // contains: 
+        // contains:
         //  string object: name
         //  string action_type: tap
         //  float[] position: xyz
@@ -244,12 +255,12 @@ namespace opal
         // commands from elsewhere that we should deal with
         public static string CMD_ROSTOPIC = "/opal_tablet_command";
         public const string DEFAULT_CMD_ROSTOPIC = "/opal_tablet_command";
-        public const string CMD_ROSMSG_TYPE = "/sar_opal_msgs/OpalCommand";   
+        public const string CMD_ROSMSG_TYPE = "/sar_opal_msgs/OpalCommand";
         // messages to tell the game node when we're done playing audio
         // contains:
         //   bool done playing
         public static string AUDIO_ROSTOPIC = "/opal_tablet_audio";
         public const string DEFAULT_AUDIO_ROSTOPIC = "/opal_tablet_audio";
-        public const string AUDIO_ROSMSG_TYPE = "/std_msgs/Bool";     
+        public const string AUDIO_ROSMSG_TYPE = "/std_msgs/Bool";
     }
 }

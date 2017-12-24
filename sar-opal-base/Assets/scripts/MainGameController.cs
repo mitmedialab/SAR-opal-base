@@ -227,14 +227,27 @@ namespace opal
             // demo mode does not use ROS!
             if(this.clientSocket == null && !this.demo)
             {
-                // load file
-                if (this.gameConfig.server.Equals("") || this.gameConfig.port.Equals("")) {
+                // We can get the IP address from the user at startup. It will get put
+                // a static variable. We try this IP address first. If it doesn't work,
+                // we try the value listed in the config file. If that doesn't work, we
+                // try a default hardcoded IP. If that doesn't work, well, the user has
+                // issues...
+                if (!Constants.ROSMASTER_IP.Equals("")) {
+                    Logger.Log("Trying to start websocket with IP: " + Constants.ROSMASTER_IP);
+                    this.clientSocket = new RosbridgeWebSocketClient(
+                    Constants.ROSMASTER_IP,
+                    // We use the port number from the config file if it's there, or otherwise,
+                    // a default of 9090.
+                    (this.gameConfig.port.Equals("") ? "9090" : this.gameConfig.port));
+                }
+                else if (this.gameConfig.server.Equals("") || this.gameConfig.port.Equals("")) {
                     Logger.LogWarning("Do not have opal configuration... trying "
                         + "hardcoded IP 192.168.1.254 and port 9090");
                     this.clientSocket = new RosbridgeWebSocketClient(
                     "192.168.1.254",// server, // can pass hostname or IP address
                     "9090"); //port);
                 } else {
+                    Logger.Log("Trying to start websocket with values from config");
                     this.clientSocket = new RosbridgeWebSocketClient(
                     this.gameConfig.server, // can pass hostname or IP address
                     this.gameConfig.port);
@@ -244,8 +257,6 @@ namespace opal
                 {
                     this.clientSocket.receivedMsgEvent +=
                     new ReceivedMessageEventHandler(HandleClientSocketReceivedMsgEvent);
-
-
 
                     // advertise that we will publish opal action messages
                     if (this.gameConfig.opalActionTopic == "")

@@ -133,7 +133,7 @@ namespace opal
             // read config file
             if(!Utilities.ParseConfig(path, out gameConfig)) {
                 Logger.LogWarning("Could not read config file! Will try default "
-                    + "values of toucan=true, server IP=192.168.1.254, port=9090, "
+                    + "values of toucan=false, server IP=192.168.1.254, port=9090, "
                     + "opal_action_topic=" + Constants.ACTION_ROSTOPIC
                     + ", opal_audio_topic=" + Constants.AUDIO_ROSTOPIC
                     + ", opal_command_topic=" + Constants.CMD_ROSTOPIC
@@ -155,10 +155,10 @@ namespace opal
             this.gestureManager.story = this.story;
             this.gestureManager.socialStories = this.socialStories;
 
-            // find our sidekick
-            if (!this.story)
+            // Find our sidekick.
+            GameObject sidekick = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
+            if (this.gameConfig.sidekick)
             {
-	            GameObject sidekick = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
 	            if(sidekick == null) {
 	                Logger.LogError("ERROR: Could not find sidekick!");
 	            } else {
@@ -174,20 +174,37 @@ namespace opal
 	                        Logger.LogError("ERROR: Could not get sidekick script!");
 	                    } else {
 	                        Logger.Log("Got sidekick script");
-	                        this.sidekickScript.donePlayingEvent += new DonePlayingEventHandler(HandleDonePlayingAudioEvent);
+	                        this.sidekickScript.donePlayingEvent += new DonePlayingEventHandler(
+                                HandleDonePlayingAudioEvent);
 	                    }
-	                }
-	                else {
-	                    // we don't have a sidekick in this game, set as inactive
-	                    Logger.Log("Don't need sidekick... disabling");
-	                    sidekick.SetActive(false);
-
-	                    // try to disable the sidekick's highlight as well
-	                    GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK_LIGHT).SetActive(false);
 	                }
                 }
             }
-            // TODO if this is a story make sure we have the flip buttons.
+            // No sidekick - make sure the sidekick and its highlight are disabled.
+            else 
+            {
+                Logger.Log("Don't need sidekick... disabling");
+                sidekick.SetActive(false);
+
+                // try to disable the sidekick's highlight as well
+                GameObject.FindGameObjectWithTag(
+                    Constants.TAG_SIDEKICK_LIGHT).GetComponent<Renderer>().enabled = false;
+            }
+            // If this is a story make sure we have the flip buttons, and make sure
+            // they start out hidden.
+            if (this.story)
+            {
+                GameObject go = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
+                if (go != null)
+                    go.GetComponent<Renderer>().enabled = false;
+                else
+                    Logger.LogError("No back arrow / back button found!");
+                go = GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT);
+                if (go != null)
+                    go.GetComponent<Renderer>().enabled = false;
+                else
+                    Logger.LogError("No forward arrow / forward button found!");
+            }
 
             // set up fader
             // NOTE right now we're just using one fader that fades out all but the

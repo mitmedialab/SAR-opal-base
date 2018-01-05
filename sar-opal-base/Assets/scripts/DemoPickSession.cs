@@ -10,10 +10,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,14 +33,14 @@ namespace opal
 {
     /**
      * scene lets user pick which story scene to go to next
-     * 
+     *
      * */
-    public class DemoPickSession : MonoBehaviour 
+    public class DemoPickSession : MonoBehaviour
     {
         /**
     	 * Initialize stuff
     	 **/
-        void OnEnable() 
+        void OnEnable()
         {
             // subscribe to tap gesture events
             GameObject[] gos = GameObject.FindGameObjectsWithTag(Constants.TAG_PLAY_OBJECT);
@@ -55,11 +55,11 @@ namespace opal
     	            tg.Tapped += tappedHandler; // subscribe to tap events
     	            Logger.Log(go.name + " subscribed to tap events");
     	        }
-                
+
                 // and start pulsing
                 go.GetComponent<GrowShrinkBehavior>().StartPulsing();
             }
-            
+
             // also subscribe for the sidekick
             GameObject sk = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
             // add a tap gesture component if one doesn't exist
@@ -73,7 +73,7 @@ namespace opal
                 Logger.Log(sk.name + " subscribed to tap events");
             }
         }
-        
+
         void OnDestroy()
         {
             // unsubscribe from tap events
@@ -85,7 +85,7 @@ namespace opal
                     Logger.Log(go.name + " unsubscribed from tap events");
                 }
             }
-            
+
             // also unsubscribe for the sidekick
             GameObject gob = GameObject.FindGameObjectWithTag(Constants.TAG_SIDEKICK);
             if (gob != null)
@@ -97,17 +97,17 @@ namespace opal
                 }
             }
         }
-        
+
         /**
-    	 * update 
+    	 * update
     	 **/
-        void Update() 
+        void Update()
         {
             // if user presses escape or 'back' button on android, exit program
             if (Input.GetKeyDown(KeyCode.Escape))
                 Application.Quit();
         }
-        
+
         /// <summary>
         /// Handle all tap events - log them and trigger actions in response
         /// </summary>
@@ -129,23 +129,23 @@ namespace opal
             {
                 LoadNext(gesture.gameObject.name);
             }
-            
+
             // play sidekick animation if it is touched
             else if (gesture.gameObject.tag.Contains(Constants.TAG_SIDEKICK))
-            {   
+            {
                 // tell the sidekick to animate
                 gesture.gameObject.GetComponent<Sidekick>().SidekickDo(Constants.ANIM_FLAP);
-                
+
             }
         }
-        
+
         /**
     	 * load next scene
     	 **/
         void LoadNext(string toLoad)
         {
             Logger.Log("attempting to load next scene...");
-            
+
             switch (toLoad)
             {
             case Constants.NAME_1_PACK:
@@ -180,13 +180,9 @@ namespace opal
                 Logger.Log (">> Loading goodbye scene");
                 SceneManager.LoadScene(Constants.SCENE_8_BYE);
                 break;
-                
             }
-            
+
         }
-        
-        
-        
     }
 }
 

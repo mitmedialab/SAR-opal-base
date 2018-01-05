@@ -1899,6 +1899,13 @@ namespace opal
             Sprite[] sprites = Resources.LoadAll<Sprite>(Constants.GRAPHICS_FILE_PATH
                 + path);
 
+            if (sprites == null)
+                Logger.LogError("Could not load any images for the story!");
+
+            // All the images loaded for a particular story are the same size.
+            // We only need to get the scale for the images for this story once.
+            Vector3 scale = Constants.GetStorybookScale(story);
+
             // 2. Load each story page.
             int pageCounter = 0;
             foreach (Sprite s in sprites)
@@ -1908,7 +1915,7 @@ namespace opal
                     Constants.TAG_BACKGROUND,
                     pageCounter,
                     path,
-                    new Vector3(16,16,16),
+                    scale,
                     (pageCounter == 0 ? true : false),
                     (pageCounter == sprites.Length-1 ? true : false),
                     new Vector2 (0f, -50f)

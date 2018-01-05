@@ -84,25 +84,48 @@ namespace opal
 
         // Graphics file paths for storybooks.
         public const string FROG_FILE_PATH = "frogwhereareyou/";
-        public const string BABY_BIRDS_FIRST_NEST_PATH = "baby_birds_first_nest/";
-        public const string GERALDINE_FIRST_PATH = "geraldine_first/";
-        public const string POSSUM_AND_THE_PEEPER_PATH = "possum_and_the_peeper/";
-        public const string RACCOON_ON_HIS_OWN_PATH = "raccoon_on_his_own/";
 
+        /// <summary>
+        /// Gets the storybook graphics file path.
+        /// </summary>
+        /// <returns>The storybook graphics file path.</returns>
+        /// <param name="story">The name of the story to load.</param>
         public static string GetStorybookGraphicsPath(string story)
         {
             if (story == "baby_birds_first_nest")
-                return BABY_BIRDS_FIRST_NEST_PATH;
-            else if (story == "geraldine_first")
-                return GERALDINE_FIRST_PATH;
+                return "baby_birds_first_nest/";
+            else if (story == "baby_ducks_new_friend")
+                return "baby_ducks_new_friend/";
             else if (story == "possum_and_the_peeper")
-                return POSSUM_AND_THE_PEEPER_PATH;
+                return "possum_and_the_peeper/";
             else if (story == "frog_where_are_you")
                 return FROG_FILE_PATH;
-            else if (story == "raccoon_on_his_own")
-                return RACCOON_ON_HIS_OWN_PATH;
+            else if (story == "henrys_happy_birthday")
+                return "henrys_happy_birthday/";
             else
                 return "";
+        }
+
+        /// <summary>
+        /// Gets the scale to use for each storybook. This is the hard-coded
+        /// workaround to figuring out how to dynamically scale the pages.
+        /// </summary>
+        /// <returns>The scale to use for a particular storybook's pages.</returns>
+        /// <param name="story">The storybook to use.</param>
+        public static Vector3 GetStorybookScale(string story)
+        {
+            if (story == "baby_birds_first_nest")
+                return new Vector3(90, 90, 90);
+            else if (story == "baby_ducks_new_friend")
+                return new Vector3(55, 55, 55);
+            else if (story == "possum_and_the_peeper")
+                return new Vector3(110, 110, 110);
+            else if (story == "frog_where_are_you")
+                return new Vector3(16, 16, 16);
+            else if (story == "henrys_happy_birthday")
+                return new Vector3(50, 50, 50);
+            else
+                return new Vector3(20, 20, 20);
         }
 
         /// <summary>

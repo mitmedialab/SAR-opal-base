@@ -1296,6 +1296,16 @@ namespace opal
                         go.GetComponent<Renderer>().enabled = false;
                 });
             }
+            else if (cmd == Constants.GO_TO_STORY_PAGE)
+            {
+                // In a story game, goes to the specified page in the story.
+                MainGameController.ExecuteOnMainThread.Enqueue(() =>
+                {
+                    if (this.gestureManager != null)
+                        this.gestureManager.GoToPage(Convert.ToInt32(props));
+                });
+
+            }
             else
 	        {
 	            Logger.LogWarning("Got a message that doesn't match any we expect!");

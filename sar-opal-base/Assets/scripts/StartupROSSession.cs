@@ -37,10 +37,14 @@ namespace opal
     /// </summary>
     public class StartupROSSession : MonoBehaviour
     {
+        public InputField InputIP;
+        public InputField InputPID;
+
         GameObject validationText;
         void OnAwake()
         {
         }
+
         void OnEnable()
         {
             this.validationText = GameObject.FindGameObjectWithTag(Constants.TAG_VALIDATION);
@@ -58,9 +62,20 @@ namespace opal
                 Application.Quit();
         }
 
-        public void OnROSIPChanged(string ip)
+        public void OnPIDChanged(string pid) 
         {
-            Logger.Log("IP changed: " + ip);
+            Logger.Log("pid changed: " + pid);
+        }
+
+        public void OnIPChanged(string ip) 
+        {
+            Logger.Log("ip changed: " + ip);
+        }
+
+
+        public void OnStartButtonClick()
+        {
+            string ip = this.InputIP.text;
             IPAddress addr;
             // Check whether the string entered in the ROSMASTER IP address box
             // was actually a valid IP address. If not, don't save it.
@@ -78,17 +93,9 @@ namespace opal
                 // another scene.
                 Constants.ROSMASTER_IP = ip;
             }
-        }
 
-        public void OnPIDChanged(string pid)
-        {
-            // The PID is a static variable so we can access it from another scene.
-            Logger.Log("PID changed: " + pid);
-            Constants.PID = pid;
-        }
+            Constants.PID = this.InputPID.text;
 
-        public void OnStartButtonClick()
-        {
             Logger.Log("Attempting to start game with ROSMASTER IP: " + 
                 Constants.ROSMASTER_IP + " and PID: " + Constants.PID);
             SceneManager.LoadScene(Constants.START_SCENE);

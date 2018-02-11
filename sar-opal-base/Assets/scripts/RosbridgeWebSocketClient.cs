@@ -32,25 +32,36 @@ using MiniJSON;
 namespace opal
 {
 
-// received message event -- fire when we get a message
-// so others can listen for the messages
+    /// <summary>
+    /// Received message event -- fire when we get a message so others can
+    /// listen for the messages.
+    /// </summary>
     public delegate void ReceivedMessageEventHandler(object sender,
-                               int command,object properties);
+                               int command, object properties);
+    /// <summary>
+    /// Handles websocket re-connection events -- i.e., the connection was
+    /// lost and regained, so whoever is using the socket may care.
+    /// </summary>
+    public delegate void RestartedConnectionEventHandler(object sender);
 
 
-/**
- * Web socket client
- * For receiving commands from a remote controller or teleop
- * and to allow us to send back log messages
- * */
+     /// <summary>
+     /// Web socket client
+     /// For receiving commands from a remote controller or teleop and to
+     /// allow us to send back log messages.
+     /// </summary>
     public class RosbridgeWebSocketClient
     {
         private string SERVER = "";
         private string PORT_NUM = null;
         // create a timer to use when trying to reconnect the websocket
         private System.Timers.Timer timer = new System.Timers.Timer(1000); // in ms
+        // We do not start out having restarted the socket connection.
+        private bool restarted = false;
 
         public event ReceivedMessageEventHandler receivedMsgEvent;
+
+        public event RestartedConnectionEventHandler restartedConnectionEvent;
 
         private WebSocket clientSocket; // client websocket
     
@@ -68,10 +79,10 @@ namespace opal
             
             // TODO test this
             if (!System.Net.IPAddress.TryParse(rosIP, out ip))
-                throw new ArgumentException("[websocket] IP address is not valid!", "rosIP");
+                throw new ArgumentException("[websocket] IP address is not valid!", rosIP);
             
             if (!UInt16.TryParse(portNum, out num))
-                throw new ArgumentException("[websocket] Port number is not a port!", "portNum");
+                throw new ArgumentException("[websocket] Port number is not a port!", portNum);
             
             this.SERVER = rosIP;    
             this.PORT_NUM = portNum;
@@ -223,8 +234,20 @@ namespace opal
         /// <param name="e">E.</param>
         void HandleOnOpen (object sender, EventArgs e)
         {
-            // connection opened
+            // Connection opened.
             Logger.Log("[websocket] ---- Opened WebSocket ----");
+
+            // If this is a reconnection (i.e. not the first open event), then
+            // fire an event indicating that we re-opened the socket.
+            if (this.restarted && this.restartedConnectionEvent != null) 
+            {
+                this.restartedConnectionEvent(this);
+            }
+            // Set the restarted flag after we have opened the socket once so
+            // that all future open event raise a restartedConnectionEvent.
+            else if (!this.restarted) {
+                this.restarted = true;
+            }
         }
     
         /// <summary>
@@ -286,8 +309,10 @@ namespace opal
             
             // turn on timer so we try reconnecting later
             // probably sets timer enabled twice - here and in reconnect
-            this.timer.Enabled = true;
-            this.Reconnect();
+            if (!this.timer.Enabled) {
+                this.timer.Enabled = true;
+                this.Reconnect();
+            }
         }
         
         /// <summary>

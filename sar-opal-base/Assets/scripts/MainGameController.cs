@@ -181,7 +181,7 @@ namespace opal
                 }
             }
             // No sidekick - make sure the sidekick and its highlight are disabled.
-            else 
+            else
             {
                 Logger.Log("Don't need sidekick... disabling");
                 sidekick.SetActive(false);
@@ -273,82 +273,10 @@ namespace opal
                 if (this.clientSocket.SetupSocket())
                 {
                     this.clientSocket.receivedMsgEvent +=
-                    new ReceivedMessageEventHandler(HandleClientSocketReceivedMsgEvent);
-
-                    // advertise that we will publish opal action messages
-                    if (this.gameConfig.opalActionTopic == "")
-                    {
-                        Logger.LogWarning("Do not have opal configuration... trying "
-                                          + "default topic " + Constants.DEFAULT_ACTION_ROSTOPIC);
-                        Constants.ACTION_ROSTOPIC = Constants.DEFAULT_ACTION_ROSTOPIC;
-                    }
-                    else
-                    {
-                        Constants.ACTION_ROSTOPIC = this.gameConfig.opalActionTopic;
-                    }
-                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
-                        Constants.ACTION_ROSTOPIC, Constants.ACTION_ROSMSG_TYPE));
-
-                    // advertise that we will publish opal audio messages
-                    if (this.gameConfig.opalAudioTopic == "")
-                    {
-                        Logger.LogWarning("Do not have opal configuration... trying "
-                                          + "default topic " + Constants.DEFAULT_AUDIO_ROSTOPIC);
-                        Constants.AUDIO_ROSTOPIC = Constants.DEFAULT_AUDIO_ROSTOPIC;
-                    }
-                    else
-                    {
-                        Constants.AUDIO_ROSTOPIC = this.gameConfig.opalAudioTopic;
-                    }
-                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
-                        Constants.AUDIO_ROSTOPIC, Constants.AUDIO_ROSMSG_TYPE));
-
-                    // advertise that we will subscribe to opal command messages
-                    if (this.gameConfig.opalCommandTopic == "")
-                    {
-                        Logger.LogWarning("Do not have opal configuration... trying "
-                                          + "default topic " + Constants.DEFAULT_CMD_ROSTOPIC);
-
-                        Constants.CMD_ROSTOPIC = Constants.DEFAULT_CMD_ROSTOPIC;
-                    }
-                    else
-                    {
-                        Constants.CMD_ROSTOPIC = this.gameConfig.opalCommandTopic;
-                    }
-                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonSubscribeMsg(
-                        Constants.CMD_ROSTOPIC, Constants.CMD_ROSMSG_TYPE));
-
-                    // advertise that we will publish opal log messages
-                    if (this.gameConfig.opalLogTopic == "")
-                    {
-                        Logger.LogWarning("Do not have opal configuration... trying "
-                                          + "default topic " + Constants.DEFAULT_LOG_ROSTOPIC);
-                        Constants.LOG_ROSTOPIC = Constants.DEFAULT_LOG_ROSTOPIC;
-                    }
-                    else
-                    {
-                        Constants.LOG_ROSTOPIC = this.gameConfig.opalLogTopic;
-                    }
-                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
-                        Constants.LOG_ROSTOPIC, Constants.LOG_ROSMSG_TYPE));
-
-                    // advertise that we will publish opal scene messages
-                    if (this.gameConfig.opalSceneTopic == "")
-                    {
-                        Logger.LogWarning("Do not have opal configuration... trying "
-                                          + "default topic " + Constants.DEFAULT_SCENE_ROSTOPIC);
-                        Constants.SCENE_ROSTOPIC = Constants.DEFAULT_SCENE_ROSTOPIC;
-                    }
-                    else
-                    {
-                        Constants.SCENE_ROSTOPIC = this.gameConfig.opalSceneTopic;
-                    }
-                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonSubscribeMsg(
-                        Constants.SCENE_ROSTOPIC, Constants.SCENE_ROSMSG_TYPE));
-
-                    // publish log message to opal log topic
-                    this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
-                        Constants.LOG_ROSTOPIC, "Opal game checking in!"));
+                        new ReceivedMessageEventHandler(HandleClientSocketReceivedMsgEvent);
+                    this.clientSocket.restartedConnectionEvent +=
+                        new RestartedConnectionEventHandler(HandleClientSocketRestartedEvent);
+                    this.AdvertiseROSMsgs();
                 }
                 else {
                     Logger.LogError("Could not set up websocket!");
@@ -357,6 +285,87 @@ namespace opal
             Application.logMessageReceivedThreaded += HandleApplicationLogMessageReceived;
 
             }
+        }
+
+        /// <summary>
+        /// Advertise that we publish and subscribe to various ROS messages.
+        /// </summary>
+        private void AdvertiseROSMsgs()
+        {
+            // Advertise that we will publish opal action messages.
+            if (this.gameConfig.opalActionTopic == "")
+            {
+                Logger.LogWarning("Do not have opal configuration... trying "
+                                  + "default topic " + Constants.DEFAULT_ACTION_ROSTOPIC);
+                Constants.ACTION_ROSTOPIC = Constants.DEFAULT_ACTION_ROSTOPIC;
+            }
+            else
+            {
+                Constants.ACTION_ROSTOPIC = this.gameConfig.opalActionTopic;
+            }
+            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+                Constants.ACTION_ROSTOPIC, Constants.ACTION_ROSMSG_TYPE));
+
+            // Advertise that we will publish opal audio messages.
+            if (this.gameConfig.opalAudioTopic == "")
+            {
+                Logger.LogWarning("Do not have opal configuration... trying "
+                                  + "default topic " + Constants.DEFAULT_AUDIO_ROSTOPIC);
+                Constants.AUDIO_ROSTOPIC = Constants.DEFAULT_AUDIO_ROSTOPIC;
+            }
+            else
+            {
+                Constants.AUDIO_ROSTOPIC = this.gameConfig.opalAudioTopic;
+            }
+            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+                Constants.AUDIO_ROSTOPIC, Constants.AUDIO_ROSMSG_TYPE));
+
+            // Advertise that we will subscribe to opal command messages.
+            if (this.gameConfig.opalCommandTopic == "")
+            {
+                Logger.LogWarning("Do not have opal configuration... trying "
+                                  + "default topic " + Constants.DEFAULT_CMD_ROSTOPIC);
+
+                Constants.CMD_ROSTOPIC = Constants.DEFAULT_CMD_ROSTOPIC;
+            }
+            else
+            {
+                Constants.CMD_ROSTOPIC = this.gameConfig.opalCommandTopic;
+            }
+            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonSubscribeMsg(
+                Constants.CMD_ROSTOPIC, Constants.CMD_ROSMSG_TYPE));
+
+            // Advertise that we will publish opal log messages.
+            if (this.gameConfig.opalLogTopic == "")
+            {
+                Logger.LogWarning("Do not have opal configuration... trying "
+                                  + "default topic " + Constants.DEFAULT_LOG_ROSTOPIC);
+                Constants.LOG_ROSTOPIC = Constants.DEFAULT_LOG_ROSTOPIC;
+            }
+            else
+            {
+                Constants.LOG_ROSTOPIC = this.gameConfig.opalLogTopic;
+            }
+            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonAdvertiseMsg(
+                Constants.LOG_ROSTOPIC, Constants.LOG_ROSMSG_TYPE));
+
+            // Advertise that we will publish opal scene messages.
+            if (this.gameConfig.opalSceneTopic == "")
+            {
+                Logger.LogWarning("Do not have opal configuration... trying "
+                                  + "default topic " + Constants.DEFAULT_SCENE_ROSTOPIC);
+                Constants.SCENE_ROSTOPIC = Constants.DEFAULT_SCENE_ROSTOPIC;
+            }
+            else
+            {
+                Constants.SCENE_ROSTOPIC = this.gameConfig.opalSceneTopic;
+            }
+            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonSubscribeMsg(
+                Constants.SCENE_ROSTOPIC, Constants.SCENE_ROSMSG_TYPE));
+
+            // Publish a log message to the opal log topic.
+            this.clientSocket.SendMessage(RosbridgeUtilities.GetROSJsonPublishStringMsg(
+                Constants.LOG_ROSTOPIC, "Opal started!"));
         }
 
 
@@ -863,7 +872,19 @@ namespace opal
         }
 
         /// <summary>
-        /// Received message from remote controller - process and deal with message
+        /// The websocket was closed and reopened, so we should re-broadcast the
+        /// rostopics we publish.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        void HandleClientSocketRestartedEvent(object sender)
+        {
+            Logger.Log("Websocket restarted - re-advertising rostopics we publish " +
+                    "and subscribe to.");
+            this.AdvertiseROSMsgs();
+        }
+
+        /// <summary>
+        /// Received message from remote controller - process and deal with message.
         /// </summary>
         /// <param name="sender">Sender.</param>
         /// <param name="cmd">Cmd.</param>

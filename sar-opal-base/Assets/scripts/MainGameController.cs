@@ -1181,6 +1181,8 @@ namespace opal
                 {
                     if (this.gestureManager != null)
                 		this.gestureManager.ChangePage(Constants.NEXT);
+                    else
+                        Logger.LogWarning("Cannot go to next page! No gesture manager!");
         		});
             }
 			else if (cmd == Constants.PREV_PAGE)
@@ -1190,6 +1192,8 @@ namespace opal
                 {
                     if (this.gestureManager != null)
     					this.gestureManager.ChangePage(Constants.PREVIOUS);
+                    else
+                        Logger.LogWarning("Cannot go to previous page! No gesture manager!");
 				});
 			}
             else if (cmd == Constants.EXIT)

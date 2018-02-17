@@ -696,61 +696,58 @@ namespace opal
   		/// <param name="next">If set to <c>true</c> next page, otherwise, previous page</param>
   		public void ChangePage (bool next)
   		{
-			if(this.allowTouch)
-			{
-				// if flick/swipe was to the right, advance page
-				if (next)
-				{
-					if (this.mainCam != null)
-					{
-						Logger.Log ("swiping right...");
-						// don't go past end of story
-						if (this.mainCam.transform.position.z < this.pagesInStory-1)
-						{
-							this.mainCam.transform.Translate(new Vector3(0,0,1));
-                            this.currentPage++;
-							GameObject.FindGameObjectWithTag(
-                                Constants.TAG_GO_NEXT).transform.Translate(new Vector3(0,0,1));
-							GameObject.FindGameObjectWithTag(
-                                Constants.TAG_BACK).transform.Translate(new Vector3(0,0,1));
-						}
-						else // this is the end page, loop back to beginning of story
-						{
-							this.mainCam.transform.position = new Vector3(0,0,-1);
-                            this.currentPage = 1;
-							GameObject tb = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
-							GameObject tn = GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT);
-							tb.transform.position = new Vector3(tb.transform.position.x,
-                                tb.transform.position.y,0);
-							tn.transform.position = new Vector3(tn.transform.position.x,
-                                tn.transform.position.y,0);
-						}
-					}
-					else {
-						Logger.Log ("no main cam! can't change page!");
-					}
-				}
-
-				else
+            // if flick/swipe was to the right, advance page
+            if (next)
+            {
+                if (this.mainCam != null)
                 {
-                    if (this.mainCam != null)
+                    Logger.Log ("swiping right...");
+                    // don't go past end of story
+                    if (this.mainCam.transform.position.z < this.pagesInStory-1)
                     {
-                        Logger.Log("swiping left...");
-                        // don't go before start of story
-                        if (this.mainCam.transform.position.z > -1)
-                        {
-                            this.mainCam.transform.Translate(new Vector3(0,0,-1));
-                            this.currentPage--;
-							GameObject.FindGameObjectWithTag(
-                                Constants.TAG_BACK).transform.Translate(new Vector3(0,0,-1));
-							GameObject.FindGameObjectWithTag(
-                                Constants.TAG_GO_NEXT).transform.Translate(new Vector3(0,0,-1));
-                        }
+                        this.mainCam.transform.Translate(new Vector3(0,0,1));
+                        this.currentPage++;
+                        GameObject.FindGameObjectWithTag(
+                            Constants.TAG_GO_NEXT).transform.Translate(new Vector3(0,0,1));
+                        GameObject.FindGameObjectWithTag(
+                            Constants.TAG_BACK).transform.Translate(new Vector3(0,0,1));
+                    }
+                    else // this is the end page, loop back to beginning of story
+                    {
+                        this.mainCam.transform.position = new Vector3(0,0,-1);
+                        this.currentPage = 1;
+                        GameObject tb = GameObject.FindGameObjectWithTag(Constants.TAG_BACK);
+                        GameObject tn = GameObject.FindGameObjectWithTag(Constants.TAG_GO_NEXT);
+                        tb.transform.position = new Vector3(tb.transform.position.x,
+                            tb.transform.position.y,0);
+                        tn.transform.position = new Vector3(tn.transform.position.x,
+                            tn.transform.position.y,0);
+                    }
+                }
+                else {
+                    Logger.Log ("no main cam! can't change page!");
+                }
+            }
 
+            else
+            {
+                if (this.mainCam != null)
+                {
+                    Logger.Log("swiping left...");
+                    // don't go before start of story
+                    if (this.mainCam.transform.position.z > -1)
+                    {
+                        this.mainCam.transform.Translate(new Vector3(0,0,-1));
+                        this.currentPage--;
+                        GameObject.FindGameObjectWithTag(
+                            Constants.TAG_BACK).transform.Translate(new Vector3(0,0,-1));
+                        GameObject.FindGameObjectWithTag(
+                            Constants.TAG_GO_NEXT).transform.Translate(new Vector3(0,0,-1));
                     }
-					else {
-						Logger.Log ("no main cam! can't change page!");
-                    }
+
+                }
+                else {
+                    Logger.Log ("no main cam! can't change page!");
                 }
             }
   		}
